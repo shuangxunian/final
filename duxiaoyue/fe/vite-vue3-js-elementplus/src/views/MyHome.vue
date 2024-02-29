@@ -9,13 +9,13 @@ const router = useRouter()
 
 const routerList = ref([
   {
-    index: "studentUsers",
-    name: "学生列表",
+    index: "allClass",
+    name: "全部课程",
     icon: "Menu"
   },
   {
-    index: "classList",
-    name: "课程列表",
+    index: "myClass",
+    name: "我的课程",
     icon: "Menu"
   },
   {
@@ -24,6 +24,23 @@ const routerList = ref([
     icon: "Service"
   },
 ])
+// const routerList = ref([
+//   {
+//     index: "studentUsers",
+//     name: "学生列表",
+//     icon: "Menu"
+//   },
+//   {
+//     index: "classList",
+//     name: "课程列表",
+//     icon: "Menu"
+//   },
+//   {
+//     index: "info",
+//     name: "个人信息",
+//     icon: "Service"
+//   },
+// ])
 // const routerList = ref([
 //   {
 //     index: "adminUsers",
