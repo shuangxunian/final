@@ -9,7 +9,17 @@ const router = useRouter()
 const routerList = ref([
   {
     index: "users",
-    name: "用户",
+    name: "用户列表",
+    icon: "Menu"
+  },
+  {
+    index: "options",
+    name: "用户操作记录",
+    icon: "Menu"
+  },
+  {
+    index: "dataList",
+    name: "数据列表",
     icon: "Menu"
   },
   {
@@ -89,8 +99,9 @@ function logout() {
       background-color: #fff
     }
     .right {
-      width: calc(100% - 200px);
-      height: 100%;
+      margin: 10px;
+      width: calc(100% - 220px);
+      height: calc(100% - 20px);
     }
   }
 }
