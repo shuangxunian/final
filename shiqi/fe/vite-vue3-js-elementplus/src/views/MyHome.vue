@@ -11,7 +11,10 @@ const menus = ref([
     name: "产品"
   },{
     value: "crm",
-    name: "进销存"
+    name: "入库"
+  },{
+    value: "sell",
+    name: "卖出"
   },{
     value: "user",
     name: "用户管理"

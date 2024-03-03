@@ -7,6 +7,7 @@ import Product from '../views/Product.vue'
 import CRM from '../views/CRM.vue'
 import User from '../views/User.vue'
 import Option from '../views/Option.vue'
+import Sell from '../views/Sell.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -22,7 +23,8 @@ const router = createRouter({
         { path: '/product', component: Product },
         { path: '/crm', component: CRM },
         { path: '/user', component: User },
-        { path: '/option', component: Option }
+        { path: '/option', component: Option },
+        { path: '/sell', component: Sell }
       ]
     },
   ]
