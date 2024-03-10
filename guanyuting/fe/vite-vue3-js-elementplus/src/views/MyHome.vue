@@ -1,23 +1,47 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 
 const route = useRoute()
 const router = useRouter()
 
+
 const routerList = ref([
   {
-    index: "users",
-    name: "用户",
+    index: "teacherUsers",
+    name: "学生信息",
+    icon: "Menu"
+  },
+  {
+    index: "teacherClass",
+    name: "课程信息",
     icon: "Menu"
   },
   {
     index: "info",
-    name: "信息",
+    name: "个人信息",
     icon: "Service"
   },
 ])
+
+// const routerList = ref([
+//   {
+//     index: "adminUsers",
+//     name: "用户信息",
+//     icon: "Menu"
+//   },
+//   {
+//     index: "adminClass",
+//     name: "课程信息",
+//     icon: "Service"
+//   },
+//   {
+//     index: "info",
+//     name: "个人信息",
+//     icon: "Service"
+//   },
+// ])
 
 function handleSelect(key, keyPath) {
   router.push('/' + key)
@@ -28,13 +52,17 @@ function logout() {
   router.push('/login')
 }
 
+onMounted(() => {
+  router.push('/' + routerList.value[0].index)
+})
+
 </script>
 
 <template>
   <div class="home-container">
     <div class="header">
       <div class="title">
-        <span>肤质管理后台</span>
+        <span>学生学习状态预警系统</span>
       </div>
       <div class="options">
         <el-button type="info" @click="logout">退出</el-button>
@@ -89,8 +117,9 @@ function logout() {
       background-color: #fff
     }
     .right {
-      width: calc(100% - 200px);
-      height: 100%;
+      width: calc(100% - 220px);
+      height: calc(100% - 20px);
+      margin: 10px;
     }
   }
 }
