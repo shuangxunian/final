@@ -17,8 +17,31 @@ const form = ref({
   teacher: '',
   num: 0
 })
+const testForm = ref({
+  name: '',
+  checkQuestionList: [
+    {
+      key: 0,
+      question: '',
+      check1: '',
+      check2: '',
+      check3: '',
+      check4: '',
+      answer: ''
+    }
+  ],
+  textQuestionList: [
+    {
+      key: 1,
+      question: '',
+    }
+  ],
+
+})
 const dialogFormVisible = ref(false)
 const classDetailDialogVisible = ref(false)
+const dialogAddTestVisible = ref(false)
+const testFindData = ref('')
 const nowSelectClass = ref({})
 const activeName = ref('0')
 const className = ref('')
@@ -31,7 +54,6 @@ function refreshFrom() {
     num: 0
   }
 }
-
 
 function getList() {}
 
@@ -68,6 +90,51 @@ function showHomework(scoped) {}
 function showTest(scoped) {}
 function showStudent(scoped) {}
 
+function addNewCheck() {
+  testForm.value.checkQuestionList.push({
+    key: Date.now(),
+    question: '',
+    check1: '',
+    check2: '',
+    check3: '',
+    check4: '',
+  })
+}
+
+function addNewText() {
+  testForm.value.textQuestionList.push({
+    key: Date.now(),
+    question: ''
+  })
+}
+
+function removeCheck(item) {
+  const index = testForm.value.checkQuestionList.indexOf(item)
+  console.log(item, index)
+  if (index !== -1) {
+    testForm.value.checkQuestionList.splice(index, 1)
+  }
+}
+
+function removeText(item) {
+  const index = testForm.value.textQuestionList.indexOf(item)
+  if (index !== -1) {
+    testForm.value.textQuestionList.splice(index, 1)
+  }
+}
+
+function refreshTestFrom() {}
+
+function doNotAddTest() {
+  refreshTestFrom()
+  dialogAddTestVisible = false
+}
+
+function addTest() {
+  refreshTestFrom()
+  dialogAddTestVisible = false
+}
+
 async function getUserList() {
   // const { data } = await axios.post('http://localhost:3000/user/alldata', {})
 }
@@ -100,21 +167,6 @@ onMounted(async() => {
         <el-table-column prop="homeworkNum" label="作业次数"/>
         <el-table-column prop="testNum" label="考试次数"/>
         <el-table-column prop="num" label="选课人数"/>
-        <!-- <el-table-column prop="homeWorkNum" label="作业次数">
-          <template #default="scoped">
-            <el-button link type="primary" size="small" @click="showHomework(scoped)">{{ scoped.row.homeworkNum }}</el-button>
-          </template>
-        </el-table-column>
-        <el-table-column prop="testNum" label="考试次数">
-          <template #default="scoped">
-            <el-button link type="primary" size="small" @click="showTest(scoped)">{{ scoped.row.testNum }}</el-button>
-          </template>
-        </el-table-column>
-        <el-table-column prop="num" label="选课人数">
-          <template #default="scoped">
-            <el-button link type="primary" size="small" @click="showStudent(scoped)">{{ scoped.row.num }}</el-button>
-          </template>
-        </el-table-column> -->
         <el-table-column fixed="right" label="操作" width="200">
           <template #default="scoped">
             <el-button link type="primary" size="small" @click="editData(scoped)">详情</el-button>
@@ -151,7 +203,7 @@ onMounted(async() => {
     >
       <div class="my-class">
         <div class="left">
-          <el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
+          <el-tabs v-model="activeName" class="demo-tabs">
             <el-tab-pane label="课程信息" name="0">
               <div class="class-info">
                 <el-row>
@@ -165,22 +217,75 @@ onMounted(async() => {
                 </div>
               </div>
             </el-tab-pane>
-            <el-tab-pane label="考试列表" name="1">Config</el-tab-pane>
+            <el-tab-pane label="考试列表" name="1">
+              <div class="class-test">
+                <div class="header">
+                  <el-input v-model="testFindData" style="width: 240px" placeholder="搜索" />
+                  <el-button type="primary" @click="dialogAddTestVisible = true">新建考试</el-button>
+                </div>
+              </div>
+            </el-tab-pane>
             <el-tab-pane label="作业列表" name="2">Role</el-tab-pane>
             <el-tab-pane label="选课学生列表" name="3">Task</el-tab-pane>
           </el-tabs>
         </div>
         <div class="right"></div>
       </div>
-      <!-- <span>This is a message</span> -->
-      <!-- <template #footer>
+    </el-dialog>
+    <el-dialog v-model="dialogAddTestVisible" title="新建考试" width="600" height="900">
+      <div class="add-question-form">
+        <el-form :model="form">
+          <el-form-item label="试卷名" label-width="62">
+            <el-input v-model="testForm.name" />
+          </el-form-item>
+          <el-form-item
+            v-for="(domain, index) in testForm.checkQuestionList"
+            :key="domain.key"
+            :label="'单选题' + index"
+            :prop="'domains.' + index + '.value'"
+          >
+            <el-input v-model="domain.question" placeholder="请输入选择题题目" />
+            <el-row>
+              <el-col :span="10">
+                <el-input v-model="domain.check1" placeholder="请输入选项1的题面" />
+              </el-col>
+              <el-col :span="10" :offset="2">
+                <el-input v-model="domain.check2" placeholder="请输入选项2的题面" />
+              </el-col>
+              <el-col :span="10">
+                <el-input v-model="domain.check3" placeholder="请输入选项3的题面" />
+              </el-col>
+              <el-col :span="10" :offset="2">
+                <el-input v-model="domain.check4" placeholder="请输入选项4的题面" />
+              </el-col>
+            </el-row>
+            <el-button class="mt-2" @click.prevent="removeCheck(domain)"
+              >删除</el-button
+            >
+          </el-form-item>
+          <el-form-item
+            v-for="(domain, index) in testForm.textQuestionList"
+            :key="domain.key"
+            :label="'简答题' + index"
+            :prop="'domains.' + index + '.value'"
+          >
+            <el-input v-model="domain.value" />
+            <el-button class="mt-2" @click.prevent="removeText(domain)"
+              >删除</el-button
+            >
+          </el-form-item>
+        </el-form>
+      </div>
+      <template #footer>
         <div class="dialog-footer">
-          <el-button @click="dialogVisible = false">Cancel</el-button>
-          <el-button type="primary" @click="dialogVisible = false">
-            Confirm
+          <el-button @click="addNewCheck">添加单选题</el-button>
+          <el-button @click="addNewText">添加简答题</el-button>
+          <el-button @click="doNotAddTest">取消新建</el-button>
+          <el-button type="primary" @click="addTest">
+            确定添加
           </el-button>
         </div>
-      </template> -->
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -218,6 +323,16 @@ onMounted(async() => {
             // padding: auto;
           }
         }
+        .class-test {
+          height: 700px;
+          width: 100%;
+          display: flex;
+          .header {
+            width: 100%;
+            height: 32px;
+            display: flex;
+          }
+        }
       }
     }
     .right {
@@ -225,6 +340,10 @@ onMounted(async() => {
       width: 30%;
       background-color: green;
     }
+  }
+  .add-question-form {
+    height: 700px;
+    overflow: auto;
   }
 }
 </style>
