@@ -19,6 +19,7 @@ const form = ref({
 })
 const testForm = ref({
   name: '',
+  type: "1",
   checkQuestionList: [
     {
       key: 0,
@@ -45,6 +46,21 @@ const testFindData = ref('')
 const nowSelectClass = ref({})
 const activeName = ref('0')
 const className = ref('')
+const testList = ref([])
+const studentFindData = ref([])
+const studentListHeader = ref([])
+const studentList = ref([])
+const talkingList = ref([
+  {
+    user: '张三',
+    text: '为啥这题选a啊'
+  },
+  {
+    user: '王老师',
+    text: '因为1+1=2'
+  },
+])
+const talkText = ref('')
 
 
 function refreshFrom() {
@@ -135,6 +151,30 @@ function addTest() {
   dialogAddTestVisible = false
 }
 
+async function getStudentList() {
+  studentListHeader.value = [
+    {
+      prop: 'name',
+      label: '学生姓名'
+    },{
+      prop: 'work1',
+      label: '作业1'
+    },{
+      prop: 'test1',
+      label: '考试1'
+    },
+  ]
+}
+
+function tabClick(tab, event) {
+  // console.log(tab, event)
+  // console.log(tab.props.name)
+  const name = tab.props.name
+  if (name === '3') {
+    getStudentList()
+  }
+}
+
 async function getUserList() {
   // const { data } = await axios.post('http://localhost:3000/user/alldata', {})
 }
@@ -203,7 +243,7 @@ onMounted(async() => {
     >
       <div class="my-class">
         <div class="left">
-          <el-tabs v-model="activeName" class="demo-tabs">
+          <el-tabs v-model="activeName" class="demo-tabs" @tab-click="tabClick">
             <el-tab-pane label="课程信息" name="0">
               <div class="class-info">
                 <el-row>
@@ -217,25 +257,81 @@ onMounted(async() => {
                 </div>
               </div>
             </el-tab-pane>
-            <el-tab-pane label="考试列表" name="1">
+            <el-tab-pane label="考试/作业列表" name="1">
               <div class="class-test">
                 <div class="header">
                   <el-input v-model="testFindData" style="width: 240px" placeholder="搜索" />
-                  <el-button type="primary" @click="dialogAddTestVisible = true">新建考试</el-button>
+                  <el-button type="primary" @click="dialogAddTestVisible = true">新建考试/作业</el-button>
+                </div>
+                <div class="body">
+                  <el-table :data="testList" style="width: 100%">
+                    <el-table-column prop="name" label="考试/作业名称" />
+                    <el-table-column prop="finishNum" label="完成人数" />
+                    <el-table-column fixed="right" label="操作">
+                      <template #default="scoped">
+                        <el-button link type="primary" size="small" @click="editData(scoped)">题目详情</el-button>
+                        <el-button link type="danger" size="small" @click="delData(scoped)">删除</el-button>
+                      </template>
+                    </el-table-column>
+                  </el-table>
                 </div>
               </div>
             </el-tab-pane>
-            <el-tab-pane label="作业列表" name="2">Role</el-tab-pane>
-            <el-tab-pane label="选课学生列表" name="3">Task</el-tab-pane>
+            <!-- <el-tab-pane label="作业列表" name="2">Role</el-tab-pane> -->
+            <el-tab-pane label="选课学生列表" name="3">
+              <div class="student-list">
+                <div class="header">
+                  <el-input v-model="studentFindData" style="width: 240px" placeholder="搜索" />
+                  <el-button type="primary" @click="dialogAddTestVisible = true">添加学生</el-button>
+                </div>
+                <div class="body">
+                  <el-table :data="studentList" style="width: 100%">
+                    <el-table-column v-for="(item,index) in studentListHeader" 
+                      :key="index" 
+                      :label="item.label" 
+                      :prop="item.prop" 
+                      :index="item.index" 
+                    ></el-table-column>
+                    <el-table-column fixed="right" label="操作">
+                      <template #default="scoped">
+                        <el-button link type="primary" size="small" @click="editData(scoped)">编辑</el-button>
+                        <el-button link type="danger" size="small" @click="delData(scoped)">删除</el-button>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </div>
+              </div>
+            </el-tab-pane>
           </el-tabs>
         </div>
-        <div class="right"></div>
+        <div class="right">
+          <div class="talk-list">
+            <div class="talk-item" v-for="(item, index) in talkingList" :key="index">
+              <p>{{ item.user }}:</p>
+              <p>{{ item.text}}</p>
+            </div>
+          </div>
+          <div class="my-input">
+            <el-input
+              v-model="talkText"
+              type="textarea"
+              placeholder="请输入评论"
+            />
+            <el-button class="btn" type="primary">提交</el-button>
+          </div>
+        </div>
       </div>
     </el-dialog>
-    <el-dialog v-model="dialogAddTestVisible" title="新建考试" width="600" height="900">
+    <el-dialog v-model="dialogAddTestVisible" title="新建考试/作业" width="600" height="900">
       <div class="add-question-form">
         <el-form :model="form">
-          <el-form-item label="试卷名" label-width="62">
+          <el-form-item label="类别" label-width="62">
+            <el-radio-group v-model="testForm.type" class="ml-4">
+              <el-radio value="1" size="large">作业</el-radio>
+              <el-radio value="2" size="large">考试</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="名称" label-width="62">
             <el-input v-model="testForm.name" />
           </el-form-item>
           <el-form-item
@@ -326,11 +422,28 @@ onMounted(async() => {
         .class-test {
           height: 700px;
           width: 100%;
-          display: flex;
+          // display: flex;
           .header {
-            width: 100%;
+            width: 95%;
             height: 32px;
             display: flex;
+          }
+          .body {
+            width: 100%;
+            height: 650px;
+          }
+        }
+        .student-list {
+          height: 700px;
+          width: 100%;
+          .header {
+            width: 95%;
+            height: 32px;
+            display: flex;
+          }
+          .body {
+            width: 100%;
+            height: 650px;
           }
         }
       }
@@ -338,7 +451,21 @@ onMounted(async() => {
     .right {
       height: 100%;
       width: 30%;
-      background-color: green;
+      padding: 10px;
+      .talk-list {
+        height: 80%;
+        overflow: auto;
+        .talk-item {
+          border:1px solid #ccc;
+          margin-top: 10px;
+        }
+      }
+      .my-input {
+        height: 20%;
+        .btn {
+          margin-top: 10px;
+        }
+      }
     }
   }
   .add-question-form {

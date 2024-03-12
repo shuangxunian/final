@@ -6,24 +6,31 @@ import { useRoute, useRouter } from 'vue-router'
 const route = useRoute()
 const router = useRouter()
 
-
 const routerList = ref([
   {
-    index: "teacherUsers",
-    name: "学生信息",
+    index: "student",
+    name: "计算机网络",
     icon: "Menu"
-  },
-  {
-    index: "teacherClass",
-    name: "课程信息",
-    icon: "Menu"
-  },
-  {
-    index: "info",
-    name: "个人信息",
-    icon: "Service"
   },
 ])
+
+// const routerList = ref([
+//   {
+//     index: "teacherUsers",
+//     name: "学生信息",
+//     icon: "Menu"
+//   },
+//   {
+//     index: "teacherClass",
+//     name: "课程信息",
+//     icon: "Menu"
+//   },
+//   {
+//     index: "info",
+//     name: "个人信息",
+//     icon: "Service"
+//   },
+// ])
 
 // const routerList = ref([
 //   {
