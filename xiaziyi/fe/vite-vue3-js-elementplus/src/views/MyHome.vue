@@ -34,7 +34,7 @@ function logout() {
   <div class="home-container">
     <div class="header">
       <div class="title">
-        <span>肤质管理后台</span>
+        <span>财务知识评估与培训系统</span>
       </div>
       <div class="options">
         <el-button type="info" @click="logout">退出</el-button>

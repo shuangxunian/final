@@ -27,7 +27,7 @@ function login () {
 <template>
   <div class="about">
     <div class="login_box">
-      <h3 align="center">肤质管理后台</h3>
+      <h3 align="center">财务知识评估与培训系统</h3>
       <!-- 登录表单区域 -->
       <el-form ref="loginFormRef" :model="loginForm" label-width="0px" class="login_form">
         <!-- 用户名 -->
