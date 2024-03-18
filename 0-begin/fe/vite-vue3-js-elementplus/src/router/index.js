@@ -3,12 +3,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import MyLogin from '../views/MyLogin.vue'
 import MyHome from '../views/MyHome.vue'
 
-import adminKnow from '../views/adminKnow.vue'
-import adminKnowList from '../views/adminKnowList.vue'
-import adminTest from '../views/adminTest.vue'
-import adminClass from '../views/adminClass.vue'
-import adminQuestion from '../views/adminQuestion.vue'
-import adminUser from '../views/adminUser.vue'
 import Users from '../views/Users.vue'
 import Info from '../views/Info.vue'
 
@@ -23,12 +17,6 @@ const router = createRouter({
       children: [
         { path: '/home', redirect: '/users' },
         { path: '/users', component: Users },
-        { path: '/adminClass', component: adminClass },
-        { path: '/adminQuestion', component: adminQuestion },
-        { path: '/adminUser', component: adminUser },
-        { path: '/adminKnow', component: adminKnow },
-        { path: '/adminKnowList', component: adminKnowList },
-        { path: '/adminTest', component: adminTest },
         { path: '/info', component: Info }
       ]
     },

@@ -8,33 +8,8 @@ const router = useRouter()
 
 const routerList = ref([
   {
-    index: "adminKnow",
-    name: "知识点知识图谱",
-    icon: "Menu"
-  },
-  {
-    index: "adminKnowList",
-    name: "知识点列表",
-    icon: "Menu"
-  },
-  {
-    index: "adminClass",
-    name: "课程",
-    icon: "Menu"
-  },
-  {
-    index: "adminQuestion",
-    name: "题库",
-    icon: "Menu"
-  },
-  {
-    index: "adminTest",
-    name: "试卷",
-    icon: "Menu"
-  },
-  {
-    index: "adminUser",
-    name: "用户列表",
+    index: "users",
+    name: "用户",
     icon: "Menu"
   },
   {
@@ -59,7 +34,7 @@ function logout() {
   <div class="home-container">
     <div class="header">
       <div class="title">
-        <span>财务知识评估与培训系统</span>
+        <span>用户评论分类系统</span>
       </div>
       <div class="options">
         <el-button type="info" @click="logout">退出</el-button>
@@ -114,9 +89,8 @@ function logout() {
       background-color: #fff
     }
     .right {
-      margin: 10px;
-      width: calc(100% - 220px);
-      height: calc(100% - 20px);
+      width: calc(100% - 200px);
+      height: 100%;
     }
   }
 }
