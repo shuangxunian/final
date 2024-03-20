@@ -8,8 +8,18 @@ const router = useRouter()
 
 const routerList = ref([
   {
-    index: "users",
-    name: "用户",
+    index: "adminUser",
+    name: "用户列表",
+    icon: "Menu"
+  },
+  {
+    index: "talkList",
+    name: "评论列表",
+    icon: "Menu"
+  },
+  {
+    index: "titleList",
+    name: "标签列表",
     icon: "Menu"
   },
   {
@@ -89,8 +99,9 @@ function logout() {
       background-color: #fff
     }
     .right {
-      width: calc(100% - 200px);
-      height: 100%;
+      padding: 10px;
+      width: calc(100% - 220px);
+      height: calc(100% - 20px);
     }
   }
 }

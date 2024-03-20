@@ -5,6 +5,9 @@ import MyHome from '../views/MyHome.vue'
 
 import Users from '../views/Users.vue'
 import Info from '../views/Info.vue'
+import adminUser from '../views/adminUser.vue'
+import talkList from '../views/talkList.vue'
+import titleList from '../views/titleList.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -16,6 +19,9 @@ const router = createRouter({
       component: MyHome,
       children: [
         { path: '/home', redirect: '/users' },
+        { path: '/adminUser', component: adminUser },
+        { path: '/talkList', component: talkList },
+        { path: '/titleList', component: titleList },
         { path: '/users', component: Users },
         { path: '/info', component: Info }
       ]
