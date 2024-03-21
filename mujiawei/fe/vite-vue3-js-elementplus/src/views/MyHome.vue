@@ -9,7 +9,12 @@ const router = useRouter()
 const routerList = ref([
   {
     index: "users",
-    name: "用户",
+    name: "无人机列表",
+    icon: "Menu"
+  },
+  {
+    index: "option",
+    name: "活动列表",
     icon: "Menu"
   },
   {
@@ -34,10 +39,10 @@ function logout() {
   <div class="home-container">
     <div class="header">
       <div class="title">
-        <span>用户评论分类系统</span>
+        <span>无人机物流配送管理系统</span>
       </div>
       <div class="options">
-        <el-button type="info" @click="logout">退出</el-button>
+        <!-- <el-button type="info" @click="logout">退出</el-button> -->
       </div>
     </div>
     <div class="body">
@@ -89,8 +94,9 @@ function logout() {
       background-color: #fff
     }
     .right {
-      width: calc(100% - 200px);
-      height: 100%;
+      padding: 10px;
+      width: calc(100% - 220px);
+      height: calc(100% - 20px);
     }
   }
 }
