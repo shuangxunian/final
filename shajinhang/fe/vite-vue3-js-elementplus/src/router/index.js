@@ -4,6 +4,9 @@ import MyLogin from '../views/MyLogin.vue'
 import MyHome from '../views/MyHome.vue'
 
 import Users from '../views/Users.vue'
+import dataList from '../views/dataList.vue'
+import getData from '../views/getData.vue'
+import modelRun from '../views/modelRun.vue'
 import Info from '../views/Info.vue'
 
 const router = createRouter({
@@ -17,6 +20,9 @@ const router = createRouter({
       children: [
         { path: '/home', redirect: '/users' },
         { path: '/users', component: Users },
+        { path: '/dataList', component: dataList },
+        { path: '/getData', component: getData },
+        { path: '/modelRun', component: modelRun },
         { path: '/info', component: Info }
       ]
     },

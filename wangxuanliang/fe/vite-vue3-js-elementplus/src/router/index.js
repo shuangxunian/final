@@ -4,6 +4,8 @@ import MyLogin from '../views/MyLogin.vue'
 import MyHome from '../views/MyHome.vue'
 
 import Users from '../views/Users.vue'
+import adminAddress from '../views/adminAddress.vue'
+import adminUser from '../views/adminUser.vue'
 import Info from '../views/Info.vue'
 
 const router = createRouter({
@@ -17,6 +19,8 @@ const router = createRouter({
       children: [
         { path: '/home', redirect: '/users' },
         { path: '/users', component: Users },
+        { path: '/adminAddress', component: adminAddress },
+        { path: '/adminUser', component: adminUser },
         { path: '/info', component: Info }
       ]
     },

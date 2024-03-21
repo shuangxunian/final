@@ -8,8 +8,18 @@ const router = useRouter()
 
 const routerList = ref([
   {
-    index: "users",
-    name: "用户",
+    index: "getData",
+    name: "获取数据",
+    icon: "Menu"
+  },
+  {
+    index: "dataList",
+    name: "数据列表",
+    icon: "Menu"
+  },
+  {
+    index: "modelRun",
+    name: "模型",
     icon: "Menu"
   },
   {
@@ -34,7 +44,7 @@ function logout() {
   <div class="home-container">
     <div class="header">
       <div class="title">
-        <span>用户评论分类系统</span>
+        <span>短文本情感分析系统</span>
       </div>
       <div class="options">
         <el-button type="info" @click="logout">退出</el-button>
@@ -89,8 +99,9 @@ function logout() {
       background-color: #fff
     }
     .right {
-      width: calc(100% - 200px);
-      height: 100%;
+      padding: 10px;
+      width: calc(100% - 220px);
+      height: calc(100% - 20px);
     }
   }
 }

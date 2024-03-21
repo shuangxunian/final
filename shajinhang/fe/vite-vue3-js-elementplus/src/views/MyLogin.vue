@@ -27,7 +27,7 @@ function login () {
 <template>
   <div class="about">
     <div class="login_box">
-      <h3 align="center">用户评论分类系统</h3>
+      <h3 align="center">短文本情感分析系统</h3>
       <!-- 登录表单区域 -->
       <el-form ref="loginFormRef" :model="loginForm" label-width="0px" class="login_form">
         <!-- 用户名 -->
