@@ -6,11 +6,11 @@ class Database
   //js的构造器
   constructor(){
     this.connection = mysql.createConnection({
-      host: '', //数据库所在主机IP
-      user: '',     //数据库用户名
-      password: '',     //数据库密码
-      port: '',       
-      database: '', //数据库名称
+      host: process.env.host, //数据库所在主机IP
+      user: process.env.user,     //数据库用户名
+      password: process.env.password,     //数据库密码
+      port: process.env.port,       
+      database: process.env.database, //数据库名称
     });
     this.connection.connect((err) => {
       if (err) { console.log("连接失败") }
