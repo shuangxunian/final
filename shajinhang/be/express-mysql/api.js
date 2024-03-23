@@ -31,6 +31,7 @@ const getId = () => {
   const regex = /BV[0-9A-Z]+/i;
   const matches = rawBVID.match(regex);
   const realBVID = matches ? matches[0].replace(/^BV/, "") : rawBVID;
+  console.log(realBVID)
   const url = `https://api.bilibili.com/x/web-interface/view?bvid=${realBVID}`;
   axios
     .get(url)
