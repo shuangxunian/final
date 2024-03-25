@@ -76,7 +76,7 @@ async function addProduct () {
     })
     if (flag) {
       const list = tableData.value
-      form.value.id = list[list.length - 1].id + 1
+      form.value.id = list.length === 0 ? 0 : list[list.length - 1].id + 1
       const { data } = await axios.post('/product/add', form.value)
       if (data.code === 2) {
         ElMessage({
@@ -166,7 +166,7 @@ onMounted(() => {
     <div class="body">
       <div class="table">
         <el-table :data="tableData" style="width: 100%" height="600">
-          <el-table-column prop="productName" label="产品名称" width="100" />
+          <el-table-column prop="productName" label="产品名称" width="200" />
           <el-table-column prop="brand" label="所属品牌" width="100" />
           <el-table-column prop="kind" label="所属种类" width="100" />
           <el-table-column prop="isOil" label="适合干皮油皮" width="120" />
