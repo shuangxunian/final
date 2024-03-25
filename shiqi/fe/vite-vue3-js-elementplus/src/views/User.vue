@@ -1,15 +1,27 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
+import { ElMessage } from 'element-plus'
 
 const findData = ref('')
-const tableData = ref([
-  {
-    name: 'zhangsan',
-    optionNum: 10
-  },
-])
+const tableData = ref([])
+const userList = ref([])
 
 const getList = function () {}
+
+const getTableData = async function () {
+  const { data } = await axios.post('http://localhost:3000/user/allData', {})
+  if (data.code === 2) {
+    userList.value = data.info
+    tableData.value = data.info
+  }
+
+}
+
+
+onMounted(() => {
+  getTableData()
+})
 
 </script>
 
