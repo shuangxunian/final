@@ -1,19 +1,102 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
+import { ElMessage } from 'element-plus'
 
 const findData = ref('')
-const tableData = ref([
-  {
-    productLot: "20231201AA",
-    name: '健胃消食片',
-    belong: '江中',
-    patientName: '张三',
-    phone: '13012345678',
-    optionNum: 10
-  },
-])
+const tableData = ref([])
+const productList = ref([])
+const CRMList = ref([])
+const sellList = ref([])
+const dialogAddSell = ref(false)
+const addForm = ref ({
+  productID: null,
+  patientName: '',
+  phone: '',
+  optionNum: 0
+})
+const loading = ref(true)
+
 
 const getList = function () {}
+
+const clearFrom = function () {
+  addForm.value = {
+    productID: null,
+    patientName: '',
+    phone: '',
+    optionNum: 0
+  }
+}
+
+const doNotAddSell = function () {
+  clearFrom()
+  dialogAddSell.value = false
+}
+const addSell = async function () {
+  if (addForm.value.productID === null) return ElMessage.error('请选择药品')
+  if (addForm.value.patientName === '') return ElMessage.error('请输入病人姓名')
+  if (addForm.value.phone === '') return ElMessage.error('请输入病人手机号')
+  if (addForm.value.optionNum === 0) return ElMessage.error('请输入出库数量')
+  for (let i = 0; i < productList.value.length; i++) {
+    if (addForm.value.productID === productList.value[i].id) break
+    if (i === productList.value.length - 1) return ElMessage.error('此药品数据库不存在，请核实')
+  }
+  const { data } = await axios.post('http://localhost:3000/sell/add', addForm.value)
+  if (data.code === 4) return ElMessage.error(data.msg)
+  ElMessage({
+    message: '添加成功！',
+    type: 'success',
+  })
+  doNotAddSell()
+  getTableData()
+}
+
+
+const getProductList = async function () {
+  const { data } = await axios.post('http://localhost:3000/product/allData', {})
+  if (data.code === 2) {
+    productList.value = []
+    data.info.forEach(item => {
+      productList.value.push({
+        ...item,
+        showName: item.name + '-' + item.belong
+      })
+    })
+  }
+  tableData.value = []
+  sellList.value.forEach(item => {
+    let name,belong
+    productList.value.forEach(obj => {
+      if (item.productID === obj.id) {
+        name = obj.name
+        belong = obj.belong
+      }
+    })
+    tableData.value.push({
+      ...item,
+      name,
+      belong
+    })
+  })
+  loading.value = false
+}
+
+const getSellList = async function () {
+  const { data } = await axios.post('http://localhost:3000/sell/allData', {})
+  if (data.code === 2) {
+    sellList.value = data.info
+  }
+}
+
+const getTableData = async function () {
+  await getSellList()
+  await getProductList()
+}
+
+onMounted(() => {
+  getTableData()
+})
 
 </script>
 
@@ -25,25 +108,50 @@ const getList = function () {}
         <el-button @click="getList">筛选</el-button>
       </div>
       <div class="right">
-        <el-button type="primary" @click="addProduct">新建出库单</el-button>
+        <el-button type="primary" @click="dialogAddSell = true">新建出库单</el-button>
       </div>
     </div>
     <div class="body">
-      <el-table :data="tableData" border style="width: 100%" max-height="600">
+      <el-table v-loading="loading" :data="tableData" border style="width: 100%" max-height="600">
         <el-table-column prop="productLot" label="产品批号" width="300" />
         <el-table-column prop="name" label="药品名称" width="300" />
         <el-table-column prop="belong" label="所属厂家" width="300" />
         <el-table-column prop="patientName" label="病人姓名" width="200" />
         <el-table-column prop="phone" label="病人电话" width="200" />
         <el-table-column prop="optionNum" label="出库量" />
-        <el-table-column fixed="right" label="操作" width="120">
-          <template #default="scoped">
-            <el-button link type="primary" size="small" @click="handleClick">编辑</el-button>
-            <el-button link type="primary" size="small">删除</el-button>
-          </template>
-        </el-table-column>
       </el-table>
     </div>
+    <el-dialog v-model="dialogAddSell" title="新建出库单" width="500">
+      <el-form :model="addForm">
+        <el-form-item label="出库药品" label-width="100">
+          <el-select v-model="addForm.productID" filterable placeholder="请选择出库药品">
+            <el-option
+              v-for="item in productList"
+              :key="item.id"
+              :label="item.showName"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="病人姓名" label-width="100">
+          <el-input v-model="addForm.patientName" placeholder="请输入病人姓名"/>
+        </el-form-item>
+        <el-form-item label="病人电话" label-width="100">
+          <el-input v-model="addForm.phone" placeholder="请输入病人电话"/>
+        </el-form-item>
+        <el-form-item label="出库数量" label-width="100">
+          <el-input-number v-model="addForm.optionNum" :min="0" placeholder="请输入出库数量"/>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="doNotAddSell">取消</el-button>
+          <el-button type="primary" @click="addSell">
+            确定
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 

@@ -30,8 +30,8 @@ const doNotAddCRM = function () {
 }
 
 const addCRM = async function () {
-  console.log(addForm.value)
-  if (addForm.value.productLot === '') return ElMessage.error('请输入生产编号')
+  // console.log(addForm.value)
+  if (addForm.value.productLot === '') return ElMessage.error('请输入产品批号')
   if (addForm.value.productID === null) return ElMessage.error('请选择药品')
   if (addForm.value.buildDate === '') return ElMessage.error('请选择生产日期')
   if (addForm.value.endDate === '') return ElMessage.error('请选择截止日期')
@@ -119,18 +119,12 @@ onMounted(() => {
         <el-table-column prop="buildDate" label="生产日期" width="200" />
         <el-table-column prop="endDate" label="截止日期" width="200" />
         <el-table-column prop="optionNum" label="数量新增" />
-        <!-- <el-table-column fixed="right" label="操作" width="120">
-          <template #default="scoped">
-            <el-button link type="primary" size="small" @click="handleClick">编辑</el-button>
-            <el-button link type="primary" size="small">删除</el-button>
-          </template>
-        </el-table-column> -->
       </el-table>
     </div>
     <el-dialog v-model="dialogAddCRM" title="新建入库单" width="500">
       <el-form :model="addForm">
-        <el-form-item label="入库数量" label-width="100">
-          <el-input v-model="addForm.productLot" placeholder="请输入生产编号"/>
+        <el-form-item label="产品批号" label-width="100">
+          <el-input v-model="addForm.productLot" placeholder="请输入产品批号"/>
         </el-form-item>
         <el-form-item label="入库药品" label-width="100">
           <el-select v-model="addForm.productID" filterable placeholder="请选择入库药品">
