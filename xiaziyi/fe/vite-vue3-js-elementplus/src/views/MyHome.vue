@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 
@@ -52,6 +52,10 @@ function logout() {
   window.sessionStorage.clear()
   router.push('/login')
 }
+
+onMounted(() => {
+  router.push('/' + routerList.value[0].index)
+})
 
 </script>
 
