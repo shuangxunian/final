@@ -1,29 +1,161 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+import { ElMessage } from 'element-plus'
 
 const testValue = ref(true)
-const tableData = ref([
-  {
-    userid: 'admin',
-    username: 'xinyu zhang',
-    useTime: 10
-  },
-  {
-    userid: '203401010101',
-    username: 'xinyu zhang',
-    useTime: 11
-  },
-  {
-    userid: '203401010102',
-    username: 'xinyu zhang',
-    useTime: 12
-  },
-  {
-    userid: '203401010103',
-    username: 'xinyu zhang',
-    useTime: 13
-  },
-])
+const tableData = ref([])
+const userList = ref([])
+const loading = ref(true)
+const addUserForm = ref({
+  userid: '203401010101',
+  username: '张三',
+  password: '123456',
+  optionTime: 0
+})
+const editUserForm = ref({
+  userid: '',
+  username: '',
+  password: '',
+})
+const loginForm = ref({
+  userid: '203401010101',
+  password: '123456',
+})
+const addUserDialog = ref(false)
+const editUserDialog = ref(false)
+const loginUserDialog = ref(false)
+
+const formLabelWidth = ref(100)
+
+
+const addUser = () => {}
+
+const editUser = (scoped) => {
+  editUserForm.value = scoped.row
+  editUserForm.value.password = '密码仅能重置，不支持手动修改'
+  editUserDialog.value = true
+  // console.log(scoped.row)
+}
+
+const dontEditUser = () => {
+  editUserDialog.value = false
+  clearForm()
+}
+
+const goEditUser = async () => {
+  if (editUserForm.value.username === '') return ElMessage.error('请输入学生姓名')
+  editUserForm.value.password = ''
+  const { data } = await axios.post('http://localhost:3000/user/fix', {
+    ...editUserForm.value
+  })
+  if (data.code === 2) {
+    ElMessage({
+      message: '修改成功！',
+      type: 'success',
+    })
+  }
+  dontEditUser()
+  getTableData()
+}
+
+const fixPassWord = async () => {
+  editUserForm.value.password = '123456'
+  const { data } = await axios.post('http://localhost:3000/user/fix', {
+    ...editUserForm.value
+  })
+  if (data.code === 2) {
+    ElMessage({
+      message: '重置成功！',
+      type: 'success',
+    })
+  }
+  dontEditUser()
+  getTableData()
+}
+
+
+const delUser = (scoped) => {}
+
+const dontLogin = () => {
+  loginUserDialog.value = false
+  clearForm()
+}
+
+const goLogin = async () => {
+  if (addUserForm.value.userid === '') return ElMessage.error('请输入学号')
+  if (addUserForm.value.password === '') return ElMessage.error('请输入学生密码')
+  const { data } = await axios.post('http://localhost:3000/user/login', {
+    ...addUserForm.value
+  })
+  if (data.code === 2) {
+    ElMessage({
+      message: '登录成功！',
+      type: 'success',
+    })
+  } else {
+    ElMessage.error('账号或密码错误')
+  }
+}
+
+const clearForm = () => {
+  addUserForm.value = {
+    userid: '',
+    username: '',
+    password: '123456',
+    optionTime: 0
+  }
+  loginForm.value = {
+    userid: '',
+    password: '123456',
+  }
+  editUserForm.value = {
+    userid: '',
+    username: '',
+    password: '',
+  }
+}
+
+const dontAddUser = () => {
+  addUserDialog.value = false
+  clearForm()
+}
+
+const goAddUser = async () => {
+  if (addUserForm.value.userid === '') return ElMessage.error('请输入学号')
+  if (addUserForm.value.username === '') return ElMessage.error('请输入学生名')
+  if (addUserForm.value.password === '') return ElMessage.error('请输入学生密码')
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  const formattedDate = `${year}-${month}-${day}`
+  const { data } = await axios.post('http://localhost:3000/user/add', {
+    ...addUserForm.value,
+    buildDate: formattedDate
+  })
+  if (data.code === 2) {
+    ElMessage({
+      message: '添加成功！',
+      type: 'success',
+    })
+    dontAddUser()
+    getTableData()
+  }
+}
+
+const getTableData = async () => {
+  const { data } = await axios.post('http://localhost:3000/user/allData', {})
+  if (data.code === 2) {
+    userList.value = data.info
+    tableData.value = data.info
+  }
+  loading.value = false
+}
+
+onMounted(() => {
+  getTableData()
+})
 
 </script>
 
@@ -34,24 +166,81 @@ const tableData = ref([
         启动模拟：<el-switch v-model="testValue" />
       </div>
       <div class="test-button" v-if="testValue">
-        <el-button type="primary">用户注册</el-button>
-        <el-button type="primary">用户登录</el-button>
-        <el-button type="primary">用户密码修改</el-button>
+        <el-button type="primary" @click="addUserDialog = true">用户注册</el-button>
+        <el-button type="primary" @click="loginUserDialog = true">用户登录</el-button>
       </div>
     </div>
     <div class="body">
-      <el-table :data="tableData" border style="width: calc(100% - 20px);height: 600px;">
+      <el-table v-loading="loading" :data="tableData" border style="width: calc(100% - 20px);height: 600px;">
         <el-table-column prop="userid" label="用户ID"/>
         <el-table-column prop="username" label="用户昵称"/>
-        <el-table-column prop="useTime" label="使用次数"/>
+        <el-table-column prop="optionTime" label="使用次数"/>
         <el-table-column fixed="right" label="操作">
-          <template #default>
-            <el-button link type="primary" size="small" @click="handleClick">删除</el-button>
-            <el-button link type="primary" size="small">编辑</el-button>
+          <template #default="scoped">
+            <el-button link type="primary" size="small" @click="editUser(scoped)">编辑</el-button>
+            <el-button link type="danger" size="small" @click="delUser(scoped)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
     </div>
+
+    <el-dialog v-model="addUserDialog" title="添加学生" width="500">
+      <el-form :model="addUserForm">
+        <el-form-item label="学号" :label-width="formLabelWidth">
+          <el-input v-model="addUserForm.userid" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="姓名" :label-width="formLabelWidth">
+          <el-input v-model="addUserForm.username" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="密码" :label-width="formLabelWidth">
+          <el-input v-model="addUserForm.password" autocomplete="off" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="dontAddUser">取消</el-button>
+          <el-button type="primary" @click="goAddUser">确认</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="loginUserDialog" title="试验学生账号密码" width="500">
+      <el-form :model="loginForm">
+        <el-form-item label="学号" :label-width="formLabelWidth">
+          <el-input v-model="loginForm.userid" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="密码" :label-width="formLabelWidth">
+          <el-input v-model="addUserForm.password" autocomplete="off" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="dontLogin">取消</el-button>
+          <el-button type="primary" @click="goLogin">确认</el-button>
+        </div>
+      </template>
+    </el-dialog>
+    
+    <el-dialog v-model="editUserDialog" title="编辑信息" width="500">
+      <el-form :model="editUserForm">
+        <el-form-item label="学号" :label-width="formLabelWidth">
+          <el-input v-model="editUserForm.userid" disabled />
+        </el-form-item>
+        <el-form-item label="姓名" :label-width="formLabelWidth">
+          <el-input v-model="editUserForm.username"/>
+        </el-form-item>
+        <el-form-item label="密码" :label-width="formLabelWidth">
+          <el-input v-model="editUserForm.password" disabled />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button type="danger" @click="fixPassWord">重置密码</el-button>
+          <el-button @click="dontEditUser">取消</el-button>
+          <el-button type="primary" @click="goEditUser">确认</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
