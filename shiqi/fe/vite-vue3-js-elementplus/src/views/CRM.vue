@@ -15,6 +15,7 @@ const addForm = ref({
   endDate: '',
   optionNum: 0
 })
+const loading = ref(true)
 
 const refreshAddForm = function () {
   addForm.value.productID = null
@@ -83,6 +84,7 @@ const getProductList = async function () {
       belong
     })
   })
+  loading.value = false
 }
 
 const getTableData = async function () {
@@ -112,7 +114,7 @@ onMounted(() => {
       </div>
     </div>
     <div class="body">
-      <el-table :data="tableData" border style="width: 100%" max-height="600">
+      <el-table v-loading="loading" :data="tableData" border style="width: 100%" max-height="600">
         <el-table-column prop="productLot" label="产品批号" width="100" />
         <el-table-column prop="name" label="药品名称" width="200" />
         <el-table-column prop="belong" label="所属厂家" width="200" />

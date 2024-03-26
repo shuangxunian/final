@@ -10,6 +10,7 @@ const addForm = ref({
   name: '',
   belong: ''
 })
+const loading = ref(true)
 
 
 // {
@@ -66,6 +67,7 @@ const getTableData = async function () {
   if (data.code === 2) {
     tableData.value = data.info
   }
+  loading.value = false
 }
 
 const editClick = async function (scoped) {
@@ -93,7 +95,7 @@ onMounted(async() => {
       </div>
     </div>
     <div class="body">
-      <el-table :data="tableData" border style="width: 100%" max-height="600" empty-text="暂无数据">
+      <el-table v-loading="loading" :data="tableData" border style="width: 100%" max-height="600" empty-text="暂无数据">
         <el-table-column prop="name" label="药品名称" width="300" />
         <el-table-column prop="belong" label="所属厂家" width="300" />
         <el-table-column prop="haveNum" label="当前库存" />
