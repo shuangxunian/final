@@ -44,23 +44,11 @@ const fixPassword = (row) => {}
 
 const getTableList = async () => {
   tableList.value = []
+  const userid = '1001'
   for (let i = 0; i < userList.value.length; i++) {
     const nowData = userList.value[i]
-    if (nowData.master === '') {
-      tableList.value.push({
-        ...nowData,
-        children: []
-      })
-    }
-  }
-  for (let i = 0; i < userList.value.length; i++) {
-    const nowData = userList.value[i]
-    if (nowData.master !== '') {
-      for (let j = 0; j < tableList.value.length; j++) {
-        if (nowData.master === tableList.value[j].id) {
-          tableList.value[j].children.push(nowData)
-        }
-      }
+    if (nowData.master === userid) {
+      tableList.value.push(nowData)
     }
   }
 }
@@ -108,7 +96,7 @@ onMounted(async () => {
 <template>
   <div class="admin-user">
     <div class="header">
-      <el-button type="primary" @click="addUserDialog = true">新建负责人</el-button>
+      <el-button type="primary" @click="addUserDialog = true">新建成员</el-button>
     </div>
     <div class="body">
       <el-table :data="tableList" row-key="id" border style="width: 100%">
@@ -122,7 +110,7 @@ onMounted(async () => {
               </template>
             </el-popconfirm>
             <el-button link type="primary" size="small" @click="editUser(scope.row)">编辑</el-button>
-            <el-popconfirm v-if="!scope.row.children || (scope.row.children.length === 0 && scope.row.id !== 'admin')" confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scope.row)">
+            <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scope.row)">
               <template #reference>
                 <el-button link type="danger" size="small">删除</el-button>
               </template>
@@ -132,15 +120,15 @@ onMounted(async () => {
       </el-table>
     </div>
 
-    <el-dialog v-model="addUserDialog" title="添加负责人" width="500"  @close="clearForm">
+    <el-dialog v-model="addUserDialog" title="添加成员" width="500"  @close="clearForm">
       <el-form :model="addUserForm">
-        <el-form-item label="负责人工号" :label-width="formLabelWidth">
+        <el-form-item label="成员工号" :label-width="formLabelWidth">
           <el-input v-model="addUserForm.id" />
         </el-form-item>
-        <el-form-item label="负责人姓名" :label-width="formLabelWidth">
+        <el-form-item label="成员姓名" :label-width="formLabelWidth">
           <el-input v-model="addUserForm.name" />
         </el-form-item>
-        <el-form-item label="负责人密码" :label-width="formLabelWidth">
+        <el-form-item label="成员密码" :label-width="formLabelWidth">
           <el-input v-model="addUserForm.password" disabled/>
         </el-form-item>
       </el-form>

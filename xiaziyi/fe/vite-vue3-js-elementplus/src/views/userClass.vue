@@ -5,7 +5,7 @@ import { ElMessage } from 'element-plus'
 
 const tableData = ref([])
 const knowList = ref([])
-const testList = ref([])
+const myClassList = ref([])
 const classList = ref([])
 const addClassDialog = ref(false)
 const editClassDialog = ref(false)
@@ -48,6 +48,25 @@ const trueAddClass = async () => {
   editClassDialog.value = false
   clearForm()
 }
+
+const beginStudy = async (row) => {
+  for(let i = 0; i < tableData.value.length; i++) {
+    if (tableData.value[i].id === row.id) {
+      tableData.value[i].type = 1
+      tableData.value[i].typeText = '在学'
+    }
+  }
+}
+
+const endStudy = async (row) => {
+  for(let i = 0; i < tableData.value.length; i++) {
+    if (tableData.value[i].id === row.id) {
+      tableData.value[i].type = 2
+      tableData.value[i].typeText = '学完'
+    }
+  }
+}
+
 
 const getTableData = async () => {}
 
@@ -164,7 +183,47 @@ const getKnowList = async () => {
   ]
 }
 
-const getTestList = async () => {}
+const getMyClass = async () => {
+  myClassList.value = [
+    {
+      userid: '2001',
+      classid: 0,
+      type: 0,
+    },
+    {
+      userid: '2001',
+      classid: 1,
+      type: 1,
+    },
+    {
+      userid: '2001',
+      type: 0,
+      testid: 0,
+      score: null
+    },
+  ]
+  tableData.value = []
+  let typeMap = {
+    0: '未学',
+    1: '在学',
+    2: '学完',
+  }
+  myClassList.value.forEach(item => {
+    if (item.classid) {
+      for (let i = 0; i < classList.value.length; i++) {
+        if (classList.value[i].id === item.classid) {
+          tableData.value.push({
+            ...classList.value[i],
+            type: item.type,
+            typeText: typeMap[item.type]
+          })
+          break
+        }
+      }
+    }
+    
+  })
+}
 
 const getClassList = async () => {
   classList.value = [
@@ -198,27 +257,18 @@ const getClassList = async () => {
   for (let i = 0; i <knowList.value.length; i++) {
     knowMap[knowList.value[i].id] = knowList.value[i].label
   }
-  const testMap = {}
-  for (let i = 0; i <testList.value.length; i++) {
-    testMap[testList.value[i].id] = testList.value[i].label
-  }
-  tableData.value = []
-  classList.value.forEach(item => {
+  for (let i = 0; i <classList.value.length; i++) {
+    const item = classList.value[i]
     const know = knowMap[item.knowID] || '--'
-    const test = testMap[item.testID] || '--'
-    tableData.value.push({
-      ...item,
-      know,
-      test
-    })
-  })
+    classList.value[i].know = know
+  }
 }
 
 
 onMounted(async() => {
   await getKnowList()
-  await getTestList()
   await getClassList()
+  await getMyClass()
   // getTableData()
 })
 
@@ -227,30 +277,24 @@ onMounted(async() => {
 
 <template>
   <div class="admin-class">
-    <div class="header">
-      <el-button type="primary" @click="addClassDialog = true">新建课程</el-button>
-    </div>
+    <div class="header"></div>
     <div class="table">
       <el-table :data="tableData" border style="width: 100%">
         <el-table-column prop="name" label="课程名称" width="180" />
+        <el-table-column prop="typeText" label="当前状态" width="100" />
         <el-table-column prop="know" label="知识点" width="180" />
         <el-table-column prop="url" label="学习文档" width="700" >
           <template #default="scope">
-            <el-link :href="scope.row.url" type="primary" target="_blank">
+            <p v-if="scope.row.type === 0">请点击学习，即可看见课程文章</p>
+            <el-link v-else :href="scope.row.url" type="primary" target="_blank">
               {{ scope.row.url }}
             </el-link>
           </template>
         </el-table-column>
-        <el-table-column prop="test" label="关联考试" width="180">
-        </el-table-column>
         <el-table-column fixed="right" label="操作" width="120">
           <template #default="scope">
-            <el-button link type="primary" size="small" @click="editClass(scope.row)">编辑</el-button>
-            <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scope.row)">
-              <template #reference>
-                <el-button link type="danger" size="small">删除</el-button>
-              </template>
-            </el-popconfirm>
+            <el-button v-if="scope.row.type === 0" link type="primary" size="small" @click="beginStudy(scope.row)">开始学习</el-button>
+            <el-button v-if="scope.row.type === 1" link type="primary" size="small" @click="endStudy(scope.row)">结束学习</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -338,10 +382,9 @@ onMounted(async() => {
   height: 100%;
   background-color: #fff;
   .header {
-    height: 70px;
-    line-height: 70px;
+    height: 20px;
+    line-height: 20px;
     width: calc(100% - 40px);
-    padding: 0 20px;
   }
   .table {
     height: 600px;

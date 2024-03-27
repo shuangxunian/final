@@ -6,10 +6,11 @@ import { ElMessage } from 'element-plus'
 const tableData = ref([])
 const knowList = ref([])
 const testList = ref([])
+const myClassList = ref([])
 const formLabelWidth = ref(100)
 const addTestDialog = ref(false)
 const watchQuestionDialog = ref(false)
-const addTestForm = ref({
+const testForm = ref({
   name: '',
   questionList: [],
   knowList: [],
@@ -40,7 +41,6 @@ const clearForm = () => {
 const editTest = async (row) => {
   addTestForm.value = row
   addTestDialog.value = true
-  // console.log(row)
 }
 const makeSureDel = async (row) => {}
 const dontAddQuestion = async (row) => {
@@ -59,7 +59,10 @@ const delQuestion = (item) => {
   console.log(item)
 }
 
-
+const beginTest = async () => {
+  watchQuestionDialog.value = true
+  // testForm
+}
 
 const getTestList = async () => {
   testList.value = [
@@ -70,21 +73,6 @@ const getTestList = async () => {
       knowList: [0,1],
     }
   ]
-  const knowMap = {}
-  for (let i = 0; i <knowList.value.length; i++) {
-    knowMap[knowList.value[i].id] = knowList.value[i].label
-  }
-  tableData.value = []
-  testList.value.forEach(item => {
-    let know = ''
-    item.knowList.forEach(key => {
-      know += knowMap[key] + ','
-    })
-    tableData.value.push({
-      ...item,
-      know
-    })
-  })
 }
 
 const getKnowList = async () => {
@@ -200,9 +188,52 @@ const getKnowList = async () => {
   ]
 }
 
+const getMyClass = async () => {
+  myClassList.value = [
+    {
+      userid: '2001',
+      classid: 0,
+      type: 0,
+    },
+    {
+      userid: '2001',
+      classid: 1,
+      type: 1,
+    },
+    {
+      userid: '2001',
+      type: 0,
+      testid: 0,
+      score: null
+    },
+  ]
+  const knowMap = {}
+  for (let i = 0; i <knowList.value.length; i++) {
+    knowMap[knowList.value[i].id] = knowList.value[i].label
+  }
+  tableData.value = []
+  myClassList.value.forEach(obj => {
+    if (obj.testid !== undefined) {
+      testList.value.forEach(item => {
+        let know = ''
+        item.knowList.forEach(key => {
+          know += knowMap[key] + ','
+        })
+        tableData.value.push({
+          ...item,
+          score: obj.score || '--',
+          know
+        })
+      })
+    }
+  })
+
+}
+
 onMounted(async() => {
   await getKnowList()
   await getTestList()
+  await getMyClass()
 })
 
 
@@ -212,96 +243,42 @@ onMounted(async() => {
 
 <template>
   <div class="admin-test">
-    <div class="header">
-      <el-button type="primary" @click="addTestDialog = true">新建试卷</el-button>
-    </div>
+    <div class="header"></div>
     <div class="table">
       <el-table :data="tableData" border style="width: 100%">
         <el-table-column prop="name" label="考试名称" width="180" />
-        <el-table-column prop="know" label="知识点" />
-        <el-table-column label="所含题目" width="180">
-          <template #default="scope">
-            <span  v-for="item in scope.row.questionList" :key="item">
-              <el-link @click="watchQuestion(item)">{{item}}</el-link>
-              <span>，</span>
-            </span>
-          </template>
-        </el-table-column>
+        <el-table-column prop="know" label="涉及到的知识点" />
+        <el-table-column prop="score" label="成绩" />
         <el-table-column fixed="right" label="操作" width="120">
           <template #default="scope">
-            <el-button link type="primary" size="small" @click="editTest(scope.row)">编辑</el-button>
-            <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scope.row)">
-              <template #reference>
-                <el-button link type="danger" size="small">删除</el-button>
-              </template>
-            </el-popconfirm>
+            <el-button :disabled="scope.row.score !== '--'" link type="primary" size="small" @click="beginTest(scope.row)">开始考试</el-button>
           </template>
         </el-table-column>
       </el-table>
     </div>
 
-    <el-dialog v-model="addTestDialog" title="添加考试" width="500"  @close="clearForm">
-      <el-form :model="addTestForm">
-        <el-form-item label="考试名称" :label-width="formLabelWidth">
-          <el-input v-model="addTestForm.name" />
-        </el-form-item>
-        <el-form-item label="所关联知识点" :label-width="formLabelWidth">
-          <el-checkbox-group v-model="addTestForm.knowList">
-            <el-checkbox v-for="item in knowList" :label="item.label" :value="item.id" :key="item.id" />
-          </el-checkbox-group>
-        </el-form-item>
-        <el-form-item v-if="addTestForm.questionList.length === 0" label="问题数量" :label-width="formLabelWidth">
-          <el-input v-model="addTestForm.num" />
-        </el-form-item>
-        <el-form-item v-if="addTestForm.questionList.length !== 0" label="问题" :label-width="formLabelWidth">
-          <span v-for="item in addTestForm.questionList" :key="item">
-            <!-- <el-link @click="watchQuestion(item)">{{item}}</el-link> -->
-            <el-tag @click.stop="watchQuestion(item)" closable @close="delQuestion(item)">
-              问题{{ item }}
-            </el-tag>
-            <span>，</span>
-          </span>
-        </el-form-item>
-      </el-form>
+    <el-dialog v-model="watchQuestionDialog" title="问题详情" width="500" :fullscreen="true">
+      <div class="form">
+        <p>({{ questionForm.type }}){{ questionForm.question }}</p>
+        <el-checkbox-group v-model="questionForm.checkList">
+          <p>
+            <el-checkbox :label="questionForm.answerAText" value="A" />
+          </p>
+          <p>
+            <el-checkbox :label="questionForm.answerBText" value="B" />
+          </p>
+          <p>
+            <el-checkbox :label="questionForm.answerCText" value="C" />
+          </p>
+          <p>
+            <el-checkbox :label="questionForm.answerDText" value="D" />
+          </p>
+        </el-checkbox-group>
+      </div>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="dontAddQuestion">取消</el-button>
-          <el-button v-if="addTestForm.questionList.length !== 0" type="primary" @click="trueAddQuestion">确定</el-button>
-          <el-button v-else @click="addQuestionList">生成问题</el-button>
-        </div>
-      </template>
-    </el-dialog>
-
-    <el-dialog v-model="watchQuestionDialog" title="问题详情" width="500">
-      <el-form :model="questionForm">
-        <el-form-item label="问题" :label-width="formLabelWidth">
-          <span>{{ questionForm.question }}</span>
-        </el-form-item>
-        <el-form-item label="知识点" :label-width="formLabelWidth">
-          <span>{{ questionForm.know }}</span>
-        </el-form-item>
-        <el-form-item label="类型" :label-width="formLabelWidth">
-          <span>{{ questionForm.type }}</span>
-        </el-form-item>
-        <el-form-item label="答案A" :label-width="formLabelWidth">
-          <span>{{ questionForm.answerAText }}</span>
-        </el-form-item>
-        <el-form-item label="答案B" :label-width="formLabelWidth">
-          <span>{{ questionForm.answerBText }}</span>
-        </el-form-item>
-        <el-form-item label="答案C" :label-width="formLabelWidth">
-          <span>{{ questionForm.answerCText }}</span>
-        </el-form-item>
-        <el-form-item label="答案D" :label-width="formLabelWidth">
-          <span>{{ questionForm.answerDText }}</span>
-        </el-form-item>
-        <el-form-item label="答案" :label-width="formLabelWidth">
-          <span>{{ questionForm.answer }}</span>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="watchQuestionDialog = false">关闭</el-button>
+          <el-button @click="backQuestion">上一题</el-button>
+          <el-button @click="nextQuestion">下一题</el-button>
         </div>
       </template>
     </el-dialog>
@@ -314,14 +291,19 @@ onMounted(async() => {
   height: 100%;
   background-color: #fff;
   .header {
-    height: 70px;
-    line-height: 70px;
+    height: 20px;
+    line-height: 20px;
     width: calc(100% - 40px);
-    padding: 0 20px;
   }
   .table {
     height: 600px;
     width: 100%;
+  }
+  .form {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, 0);
   }
 }
 </style>

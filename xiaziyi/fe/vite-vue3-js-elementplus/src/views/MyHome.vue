@@ -34,7 +34,22 @@ const routerList = ref([
   },
   {
     index: "adminUser",
-    name: "用户列表",
+    name: "用户列表（管理员视角）",
+    icon: "Menu"
+  },
+  {
+    index: "masterUser",
+    name: "用户列表（负责人视角）",
+    icon: "Menu"
+  },
+  {
+    index: "userClass",
+    name: "我的课程（成员视角）",
+    icon: "Menu"
+  },
+  {
+    index: "userTest",
+    name: "我的考试（成员视角）",
     icon: "Menu"
   },
   {

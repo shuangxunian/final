@@ -164,12 +164,12 @@ const getTableData = async () => {
     tableData.value[i].upstreamIDList.forEach(item => {
       upstream += nameMap[item] + ','
     })
-    tableData.value[i].upstream = upstream
+    tableData.value[i].upstream = upstream || '--'
     let downstream = ''
     tableData.value[i].downstreamIDList.forEach(item => {
       downstream += nameMap[item] + ','
     })
-    tableData.value[i].downstream = downstream
+    tableData.value[i].downstream = downstream || '--'
   }
 }
 

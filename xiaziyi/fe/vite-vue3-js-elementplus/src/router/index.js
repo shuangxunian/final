@@ -9,6 +9,9 @@ import adminTest from '../views/adminTest.vue'
 import adminClass from '../views/adminClass.vue'
 import adminQuestion from '../views/adminQuestion.vue'
 import adminUser from '../views/adminUser.vue'
+import masterUser from '../views/masterUser.vue'
+import userClass from '../views/userClass.vue'
+import userTest from '../views/userTest.vue'
 import Users from '../views/Users.vue'
 import Info from '../views/Info.vue'
 
@@ -26,9 +29,12 @@ const router = createRouter({
         { path: '/adminClass', component: adminClass },
         { path: '/adminQuestion', component: adminQuestion },
         { path: '/adminUser', component: adminUser },
+        { path: '/masterUser', component: masterUser },
         { path: '/adminKnow', component: adminKnow },
         { path: '/adminKnowList', component: adminKnowList },
         { path: '/adminTest', component: adminTest },
+        { path: '/userClass', component: userClass },
+        { path: '/userTest', component: userTest },
         { path: '/info', component: Info }
       ]
     },
