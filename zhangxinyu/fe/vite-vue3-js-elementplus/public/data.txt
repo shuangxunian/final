@@ -1,0 +1,40 @@
+
+// 1. 中文词语: 好
+//    英文单词: good
+//    英文词语解释: having the qualities required for a particular role or task; of a high standard
+
+// 2. 中文词语: 高兴
+//    英文单词: happy
+//    英文词语解释: feeling or showing pleasure or contentment
+
+// 3. 中文词语: 学习
+//    英文单词: study
+//    英文词语解释: the devotion of time and attention to acquiring knowledge
+
+// 4. 中文词语: 美丽
+//    英文单词: beautiful
+//    英文词语解释: pleasing the senses or mind aesthetically
+
+// 5. 中文词语: 家庭
+//    英文单词: family
+//    英文词语解释: a group consisting of parents and children living together in a household
+
+// 6. 中文词语: 食物
+//    英文单词: food
+//    英文词语解释: any nutritious substance that people or animals eat or drink or that plants absorb in order to maintain life and growth
+
+// 7. 中文词语: 爱
+//    英文单词: love
+//    英文词语解释: an intense feeling of deep affection
+
+// 8. 中文词语: 希望
+//    英文单词: hope
+//    英文词语解释: a feeling of expectation and desire for a certain thing to happen
+
+// 9. 中文词语: 健康
+//    英文单词: health
+//    英文词语解释: the state of being free from illness or injury
+
+// 10. 中文词语: 时间
+//     英文单词: time
+//     英文词语解释: the indefinite continued progress of existence and events in the past, present, and future

@@ -29,7 +29,9 @@ const loginUserDialog = ref(false)
 const formLabelWidth = ref(100)
 
 
-const addUser = () => {}
+const addUser = () => {
+
+}
 
 const editUser = (scoped) => {
   editUserForm.value = scoped.row
@@ -47,6 +49,7 @@ const goEditUser = async () => {
   if (editUserForm.value.username === '') return ElMessage.error('请输入学生姓名')
   editUserForm.value.password = ''
   const { data } = await axios.post('http://localhost:3000/user/fix', {
+    user: 'admin',
     ...editUserForm.value
   })
   if (data.code === 2) {
@@ -62,6 +65,7 @@ const goEditUser = async () => {
 const fixPassWord = async () => {
   editUserForm.value.password = '123456'
   const { data } = await axios.post('http://localhost:3000/user/fix', {
+    user: 'admin',
     ...editUserForm.value
   })
   if (data.code === 2) {
@@ -75,7 +79,20 @@ const fixPassWord = async () => {
 }
 
 
-const delUser = (scoped) => {}
+const delUser = async (scoped) => {
+  // console.log(scoped.row)
+  const { data } = await axios.post('http://localhost:3000/user/del', {
+    user: 'admin',
+    ...scoped.row
+  })
+  if (data.code === 2) {
+    ElMessage({
+      message: '删除成功！',
+      type: 'success',
+    })
+  }
+  getTableData()
+}
 
 const dontLogin = () => {
   loginUserDialog.value = false
@@ -83,10 +100,10 @@ const dontLogin = () => {
 }
 
 const goLogin = async () => {
-  if (addUserForm.value.userid === '') return ElMessage.error('请输入学号')
-  if (addUserForm.value.password === '') return ElMessage.error('请输入学生密码')
+  if (loginForm.value.userid === '') return ElMessage.error('请输入学号')
+  if (loginForm.value.password === '') return ElMessage.error('请输入学生密码')
   const { data } = await axios.post('http://localhost:3000/user/login', {
-    ...addUserForm.value
+    ...loginForm.value
   })
   if (data.code === 2) {
     ElMessage({
@@ -125,14 +142,8 @@ const goAddUser = async () => {
   if (addUserForm.value.userid === '') return ElMessage.error('请输入学号')
   if (addUserForm.value.username === '') return ElMessage.error('请输入学生名')
   if (addUserForm.value.password === '') return ElMessage.error('请输入学生密码')
-  const today = new Date()
-  const year = today.getFullYear()
-  const month = String(today.getMonth() + 1).padStart(2, '0')
-  const day = String(today.getDate()).padStart(2, '0')
-  const formattedDate = `${year}-${month}-${day}`
   const { data } = await axios.post('http://localhost:3000/user/add', {
     ...addUserForm.value,
-    buildDate: formattedDate
   })
   if (data.code === 2) {
     ElMessage({
@@ -141,6 +152,8 @@ const goAddUser = async () => {
     })
     dontAddUser()
     getTableData()
+  } else {
+    ElMessage.error(data.msg)
   }
 }
 
@@ -166,8 +179,8 @@ onMounted(() => {
         启动模拟：<el-switch v-model="testValue" />
       </div>
       <div class="test-button" v-if="testValue">
-        <el-button type="primary" @click="addUserDialog = true">用户注册</el-button>
-        <el-button type="primary" @click="loginUserDialog = true">用户登录</el-button>
+        <el-button type="primary" @click="addUserDialog = true">添加学生</el-button>
+        <el-button type="primary" @click="loginUserDialog = true">模拟学生登录</el-button>
       </div>
     </div>
     <div class="body">
@@ -178,13 +191,17 @@ onMounted(() => {
         <el-table-column fixed="right" label="操作">
           <template #default="scoped">
             <el-button link type="primary" size="small" @click="editUser(scoped)">编辑</el-button>
-            <el-button link type="danger" size="small" @click="delUser(scoped)">删除</el-button>
+            <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="delUser(scoped)">
+              <template #reference>
+                <el-button link type="danger" size="small">删除</el-button>
+              </template>
+            </el-popconfirm>
           </template>
         </el-table-column>
       </el-table>
     </div>
 
-    <el-dialog v-model="addUserDialog" title="添加学生" width="500">
+    <el-dialog v-model="addUserDialog" title="添加学生" width="500" @close="clearForm">
       <el-form :model="addUserForm">
         <el-form-item label="学号" :label-width="formLabelWidth">
           <el-input v-model="addUserForm.userid" autocomplete="off" />
@@ -204,7 +221,7 @@ onMounted(() => {
       </template>
     </el-dialog>
 
-    <el-dialog v-model="loginUserDialog" title="试验学生账号密码" width="500">
+    <el-dialog v-model="loginUserDialog" title="试验学生账号密码" width="500" @close="clearForm">
       <el-form :model="loginForm">
         <el-form-item label="学号" :label-width="formLabelWidth">
           <el-input v-model="loginForm.userid" autocomplete="off" />
@@ -221,7 +238,7 @@ onMounted(() => {
       </template>
     </el-dialog>
     
-    <el-dialog v-model="editUserDialog" title="编辑信息" width="500">
+    <el-dialog v-model="editUserDialog" title="编辑信息" width="500" @close="clearForm">
       <el-form :model="editUserForm">
         <el-form-item label="学号" :label-width="formLabelWidth">
           <el-input v-model="editUserForm.userid" disabled />
