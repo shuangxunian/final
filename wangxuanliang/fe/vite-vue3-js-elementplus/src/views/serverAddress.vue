@@ -4,6 +4,7 @@ import AMapLoader from "@amap/amap-jsapi-loader"
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
+const belong = ref('')
 const tableData = ref([])
 const locationList = ref([])
 const nowSelectLocation = ref({
@@ -19,9 +20,6 @@ const form = ref({
   location: '',
 })
 
-
-
-
 let map = null
 let AmapObj = null
 
@@ -29,7 +27,12 @@ const showSelect = () => {}
 const getLocationList = async () => {
   const { data } = await axios.post('http://localhost:3000/location/allData', {})
   if (data.code === 2) {
-    tableData.value = data.info
+    tableData.value = []
+    data.info.forEach(item => {
+      if (item.server === belong.value) {
+        tableData.value.push(item)
+      }
+    })
   }
 }
 
@@ -65,8 +68,8 @@ const makeSureDel = async (row) => {
 
 const addLocation = async () => {
   if (form.value.name === '') return ElMessage.error('请输入地点！')
-  if (form.value.server === '') return ElMessage.error('请输入服务商！')
   if (form.value.location === '') return ElMessage.error('请重新获取坐标！')
+  form.value.server = belong.value
   const { data } = await axios.post('http://localhost:3000/location/add', {
     ...form.value
   })
@@ -169,6 +172,7 @@ const getAMap = async () => {
 }
 
 onMounted(async () => {
+  belong.value = window.sessionStorage.getItem('belong')
   await getLocationList()
   await getAMap()
 });
@@ -200,18 +204,11 @@ onUnmounted(() => {
         <el-col :span="18">
           {{ nowSelectLocation.location }}
         </el-col>
-        <el-col :span="6">
-          服务商：
-        </el-col>
-        <el-col :span="18">
-          {{ nowSelectLocation.serverList }}
-        </el-col>
       </el-row>
       <div class="table">
         <el-table :data="tableData" style="width: 100%" border height="600">
           <el-table-column prop="name" label="地点名"  width="200"/>
-          <el-table-column prop="server" label="服务商" min-width="100" />
-          <el-table-column prop="location" label="坐标"  width="200"/>
+          <el-table-column prop="location" label="坐标"  min-width="200"/>
           <el-table-column fixed="right" label="操作" width="60">
             <template #default="scope">
               <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scope.row)">
@@ -234,10 +231,6 @@ onUnmounted(() => {
         <el-form-item label="地点名" :label-width="formLabelWidth">
           <el-input v-model="form.name"/>
         </el-form-item>
-        <el-form-item label="服务商" :label-width="formLabelWidth">
-          <el-input v-model="form.server"/>
-        </el-form-item>
-        <!-- <el-button @click="">获取坐标</el-button> -->
         <el-form-item label="坐标" :label-width="formLabelWidth">
           <el-input v-model="form.location" disabled/>
         </el-form-item>

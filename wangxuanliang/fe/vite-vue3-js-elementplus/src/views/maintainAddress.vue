@@ -4,6 +4,7 @@ import AMapLoader from "@amap/amap-jsapi-loader"
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
+const belong = ref('')
 const tableData = ref([])
 const locationList = ref([])
 const nowSelectLocation = ref({
@@ -19,9 +20,6 @@ const form = ref({
   location: '',
 })
 
-
-
-
 let map = null
 let AmapObj = null
 
@@ -29,7 +27,12 @@ const showSelect = () => {}
 const getLocationList = async () => {
   const { data } = await axios.post('http://localhost:3000/location/allData', {})
   if (data.code === 2) {
-    tableData.value = data.info
+    tableData.value = []
+    data.info.forEach(item => {
+      if (item.server === belong.value) {
+        tableData.value.push(item)
+      }
+    })
   }
 }
 
@@ -65,8 +68,8 @@ const makeSureDel = async (row) => {
 
 const addLocation = async () => {
   if (form.value.name === '') return ElMessage.error('请输入地点！')
-  if (form.value.server === '') return ElMessage.error('请输入服务商！')
   if (form.value.location === '') return ElMessage.error('请重新获取坐标！')
+  form.value.server = belong.value
   const { data } = await axios.post('http://localhost:3000/location/add', {
     ...form.value
   })
@@ -134,6 +137,32 @@ const clearForm = () => {
   }
 }
 
+const getNowLocation = async () => {
+  AmapObj.plugin('AMap.Geolocation', function() {
+    let geolocation = new AmapObj.Geolocation({
+      enableHighAccuracy: true, // 是否使用高精度定位，默认：true
+      timeout: 10000, // 设置定位超时时间，默认：无穷大
+      offset: [10, 20],  // 定位按钮的停靠位置的偏移量
+      zoomToAccuracy: true,  //  定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
+      position: 'RB' //  定位按钮的排放位置,  RB表示右下
+    })
+
+    geolocation.getCurrentPosition(function(status,result){
+      if(status=='complete'){
+        onComplete(result)
+      }else{
+        onError(result)
+      }
+    })
+
+    function onComplete (data) {
+      form.value.location = data.position.lng + ',' + data.position.lat
+    }
+
+    function onError (data) {}
+  })
+}
+
 const getAMap = async () => {
   AMapLoader.load({
     key: "72fb17f4455270a5b7463474e7b8c134", // 申请好的Web端开发者Key，首次调用 load 时必填
@@ -149,6 +178,7 @@ const getAMap = async () => {
         center: [123.408243,41.927417],
       })
       getMarker()
+      
       // const position = new AMap.LngLat(123.408243,41.927417); //Marker 经纬度
       // const marker = new AMap.Marker({
       //   position: position,
@@ -169,6 +199,7 @@ const getAMap = async () => {
 }
 
 onMounted(async () => {
+  belong.value = window.sessionStorage.getItem('belong')
   await getLocationList()
   await getAMap()
 });
@@ -200,18 +231,11 @@ onUnmounted(() => {
         <el-col :span="18">
           {{ nowSelectLocation.location }}
         </el-col>
-        <el-col :span="6">
-          服务商：
-        </el-col>
-        <el-col :span="18">
-          {{ nowSelectLocation.serverList }}
-        </el-col>
       </el-row>
       <div class="table">
         <el-table :data="tableData" style="width: 100%" border height="600">
           <el-table-column prop="name" label="地点名"  width="200"/>
-          <el-table-column prop="server" label="服务商" min-width="100" />
-          <el-table-column prop="location" label="坐标"  width="200"/>
+          <el-table-column prop="location" label="坐标"  min-width="200"/>
           <el-table-column fixed="right" label="操作" width="60">
             <template #default="scope">
               <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scope.row)">
@@ -234,10 +258,6 @@ onUnmounted(() => {
         <el-form-item label="地点名" :label-width="formLabelWidth">
           <el-input v-model="form.name"/>
         </el-form-item>
-        <el-form-item label="服务商" :label-width="formLabelWidth">
-          <el-input v-model="form.server"/>
-        </el-form-item>
-        <!-- <el-button @click="">获取坐标</el-button> -->
         <el-form-item label="坐标" :label-width="formLabelWidth">
           <el-input v-model="form.location" disabled/>
         </el-form-item>
@@ -245,6 +265,7 @@ onUnmounted(() => {
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="dialogFormVisible = false">取消</el-button>
+          <el-button type="primary" @click="getNowLocation">获取当前坐标</el-button>
           <el-button v-if="form.location === ''" type="primary" @click="getLocation">获取坐标</el-button>
           <el-button v-else type="primary" @click="addLocation">创建</el-button>
         </div>

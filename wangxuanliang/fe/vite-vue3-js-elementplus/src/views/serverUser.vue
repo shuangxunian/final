@@ -1,6 +1,5 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import AMapLoader from "@amap/amap-jsapi-loader"
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
@@ -34,6 +33,7 @@ const form = ref({
   belong: '',
   password: '123456',
 })
+const belong = ref('')
 
 const clearForm = () => {
   form.value = {
@@ -54,10 +54,9 @@ const editUser = (row) => {
 
 const addUser = async () => {
   if (form.value.userid === '') return ElMessage.error('请输入用户工号/手机号！')
-  if (form.value.roleType !== '3' && form.value.belong === '') return ElMessage.error('请输入用户所属平台！')
   if (form.value.username === '') return ElMessage.error('请输入用户姓名！')
   if (form.value.password === '') return ElMessage.error('请输入用户密码！')
-  if (form.value.roleType === '3') form.value.belong = ''
+  form.value.belong = belong.value
   const { data } = await axios.post('http://localhost:3000/user/add', form.value)
   if (data.code === 2) {
     ElMessage({
@@ -112,16 +111,20 @@ const getUserList = async () => {
     }
     tableData.value = []
     data.info.forEach(item => {
-      let role = roleMap[item.roleType]
-      tableData.value.push({
-        ...item,
-        role
-      })
+      if (item.belong === belong.value) {
+        let role = roleMap[item.roleType]
+        tableData.value.push({
+          ...item,
+          role
+        })
+      }
+
     })
   }
 }
 
 onMounted(async () => {
+  belong.value = window.sessionStorage.getItem('belong')
   await getUserList()
 })
 
@@ -161,14 +164,10 @@ onMounted(async () => {
           <el-radio-group v-model="form.roleType">
             <el-radio value="1">代理商</el-radio>
             <el-radio value="2">信息维护人员</el-radio>
-            <el-radio value="3">普通用户</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="用户姓名" :label-width="formLabelWidth">
           <el-input v-model="form.username"/>
-        </el-form-item>
-        <el-form-item v-if="form.roleType !== '3'" label="所属平台" :label-width="formLabelWidth">
-          <el-input v-model="form.belong"/>
         </el-form-item>
         <el-form-item label="密码" :label-width="formLabelWidth">
           <el-input v-model="form.password"/>
