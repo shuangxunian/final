@@ -1,7 +1,32 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
+import { ElMessage } from 'element-plus'
 
-const textarea = ref('于`time`执行的行动代号为`name`的行动，需你单位提供协助，请发现机型为`warplane`的机型请放行！')
+const textarea = ref('')
+
+const save = async () => {
+  const { data } = await axios.post('http://localhost:3000/option/fixmodel', {
+    text: textarea.value
+  })
+  if (data.code === 2) {
+    ElMessage({
+      message: `保存成功`,
+      type: 'success',
+    })
+  }
+}
+
+const getModelList = async () => {
+  const { data } = await axios.post('http://localhost:3000/option/model', {})
+  if (data.code === 2) {
+    textarea.value = data.info[0].model
+  }
+}
+
+onMounted(async () => {
+  getModelList()
+})
 
 </script>
 
@@ -19,7 +44,7 @@ const textarea = ref('于`time`执行的行动代号为`name`的行动，需你�
       </div>
     </div>
     <div class="body">
-      <el-button>保存</el-button>
+      <el-button @click="save">保存</el-button>
     </div>
   </div>
 </template>
