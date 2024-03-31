@@ -61,6 +61,7 @@ option.post('/send', async (req, res) => {
   let getEmailModel = `select * from mail_model`
   const emailModelDataBase = new DataBase()
   const emailModel = await emailModelDataBase.getSqlData(getEmailModel)
+  // 生成文本
   let model = ''
   for(let i = 0; i < emailModel[0].model.length; i++) {
     if (emailModel[0].model[i]!=='`') {

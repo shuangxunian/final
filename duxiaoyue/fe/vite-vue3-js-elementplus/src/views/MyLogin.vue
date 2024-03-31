@@ -1,22 +1,29 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
+import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const loginForm = ref({
-  userName: 'admin',
+  userid: 'admin',
   password: '123456'
 })
 
 function resetLoginForm() {
-  loginForm.value.userName = 'admin'
+  loginForm.value.userid = 'admin'
   loginForm.value.password = '123456'
 }
 
-function login () {
-  if (loginForm.value.userName === 'admin' && loginForm.value.password === '123456') {
-    window.sessionStorage.setItem('userName', loginForm.value.userName)
+async function login () {
+  const { data } = await axios.post('http://localhost:3000/user/login', loginForm.value)
+  if (data.code === 2) {
+    window.sessionStorage.setItem('userid', data.body.userid)
+    window.sessionStorage.setItem('username', data.body.username)
+    window.sessionStorage.setItem('roleType', data.body.roleType)
     router.push('/home')
+  } else {
+    ElMessage.error(data.msg)
   }
 }
 
@@ -27,12 +34,12 @@ function login () {
 <template>
   <div class="about">
     <div class="login_box">
-      <h3 align="center">肤质管理后台</h3>
+      <h3 align="center">项目案例库平台</h3>
       <!-- 登录表单区域 -->
       <el-form ref="loginFormRef" :model="loginForm" label-width="0px" class="login_form">
         <!-- 用户名 -->
         <el-form-item prop="phone">
-          <el-input v-model="loginForm.userName" placeholder="请输入用户名"></el-input>
+          <el-input v-model="loginForm.userid" placeholder="请输入学工号"></el-input>
         </el-form-item>
         <!-- 密码 -->
         <el-form-item prop="password">

@@ -35,8 +35,6 @@ const goAddText = async () => {
     textDialog.value = false
     getTextList()
   }
-
-
 }
 
 const getTextList = async () => {
