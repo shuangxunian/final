@@ -6,12 +6,12 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const loginForm = ref({
-  userid: 'admin',
+  userid: '203401010101',
   password: '123456'
 })
 
 function resetLoginForm() {
-  loginForm.value.userid = 'admin'
+  loginForm.value.userid = '203401010101'
   loginForm.value.password = '123456'
 }
 

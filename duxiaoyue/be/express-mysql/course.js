@@ -1,10 +1,10 @@
 const express = require('express')
 const DataBase = require('./mysql')
 
-const user = express.Router()
+const course = express.Router()
 
-user.post('/allData', async (req, res) => {
-  let sql = 'select * from user_info'
+course.post('/allData', async (req, res) => {
+  let sql = 'select * from course_list'
   const database = new DataBase()
   let info = await database.getSqlData(sql)
   res.send({
@@ -13,27 +13,11 @@ user.post('/allData', async (req, res) => {
   })
 })
 
-user.post('/login', async (req, res) => {
-  const { body } = req
-  let sql = `select * from user_info where userid='${body.userid}' and password='${body.password}'`
-  const addDatabase = new DataBase()
-  const info = await addDatabase.getSqlData(sql)
-  if (info.length) {
-    res.send({
-      code: 2,
-      body: info[0]
-    })
-  } else {
-    res.send({
-      code: 4,
-      msg: '账号或密码有误！'
-    })
-  }
-})
 
-user.post('/del', async (req, res) => {
+course.post('/del', async (req, res) => {
   const { body } = req
-  let sql = `delete from user_info where userid='${body.userid}'`
+  console.log(body)
+  let sql = `delete from course_list where id='${body.id}'`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({
@@ -41,7 +25,7 @@ user.post('/del', async (req, res) => {
   })
 })
 
-user.post('/fix', async (req, res) => {
+course.post('/fix', async (req, res) => {
   const { body } = req
   let sql = `update user_info set password = '123456' where userid = '${body.userid}'`
   const database = new DataBase()
@@ -51,7 +35,7 @@ user.post('/fix', async (req, res) => {
   })
 })
 
-user.post('/fixPassword', async (req, res) => {
+course.post('/fixPassword', async (req, res) => {
   const { body } = req
   let sql = `select * from user_info where userid='${body.userid}' and password='${body.oldPwd}'`
   const findDatabase = new DataBase()
@@ -72,7 +56,7 @@ user.post('/fixPassword', async (req, res) => {
   }
 })
 
-user.post('/edit', async (req, res) => {
+course.post('/edit', async (req, res) => {
   const { body } = req
   let sql = `update user_info set username='${body.username}', roleType ='${body.roleType}' where userid = '${body.userid}'`
   console.log(sql)
@@ -83,28 +67,37 @@ user.post('/edit', async (req, res) => {
   })
 })
 
-user.post('/add', async (req, res) => {
+course.post('/add', async (req, res) => {
   const { body } = req
-  let sql = `select * from user_info where userid='${body.userid}'`
+  let sql = `insert into course_list (id,className,statusType,teacherid,switchShow) values ('${new Date().getTime()}','${body.className}','${body.statusType}','${body.teacherid}','false')`
   const database = new DataBase()
-  const info = await database.getSqlData(sql)
-  if (info.length) {
-    res.send({
-      code: 4,
-      msg: '此账户已存在！'
-    })
-  } else {
-    sql = `insert into user_info (userid,username,password,roleType) values ('${body.userid}','${body.username}','${body.password}','${body.roleType}')`
-    const addDatabase = new DataBase()
-    await addDatabase.getSqlData(sql)
-    res.send({
-      code: 2,
-      msg: ''
-    })
-  }
+  await database.getSqlData(sql)
+  res.send({
+    code: 2,
+    msg: ''
+  })
+  // new Date().getTime()
+  // const { body } = req
+  // let sql = `select * from user_info where userid='${body.userid}'`
+  // const database = new DataBase()
+  // const info = await database.getSqlData(sql)
+  // if (info.length) {
+  //   res.send({
+  //     code: 4,
+  //     msg: '此账户已存在！'
+  //   })
+  // } else {
+  //   sql = `insert into user_info (userid,username,password,roleType) values ('${body.userid}','${body.username}','${body.password}','${body.roleType}')`
+  //   const addDatabase = new DataBase()
+  //   await addDatabase.getSqlData(sql)
+  //   res.send({
+  //     code: 2,
+  //     msg: ''
+  //   })
+  // }
 })
 
-user.post('/addList', async (req, res) => {
+course.post('/addList', async (req, res) => {
   const { body } = req
   const list = body.list
   for (let i = 0; i < list.length; i++) {
@@ -118,4 +111,4 @@ user.post('/addList', async (req, res) => {
   })
 })
 
-module.exports = user
+module.exports = course

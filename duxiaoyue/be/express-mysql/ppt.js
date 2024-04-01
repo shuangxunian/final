@@ -4,31 +4,13 @@ const DataBase = require('./mysql')
 const user = express.Router()
 
 user.post('/allData', async (req, res) => {
-  let sql = 'select * from user_info'
+  let sql = 'select * from ppt_list'
   const database = new DataBase()
   let info = await database.getSqlData(sql)
   res.send({
     code: 2,
     body: info
   })
-})
-
-user.post('/login', async (req, res) => {
-  const { body } = req
-  let sql = `select * from user_info where userid='${body.userid}' and password='${body.password}'`
-  const addDatabase = new DataBase()
-  const info = await addDatabase.getSqlData(sql)
-  if (info.length) {
-    res.send({
-      code: 2,
-      body: info[0]
-    })
-  } else {
-    res.send({
-      code: 4,
-      msg: '账号或密码有误！'
-    })
-  }
 })
 
 user.post('/del', async (req, res) => {
@@ -85,23 +67,14 @@ user.post('/edit', async (req, res) => {
 
 user.post('/add', async (req, res) => {
   const { body } = req
-  let sql = `select * from user_info where userid='${body.userid}'`
+  // '${new Date().getTime()}',
+  let sql = `insert into ppt_list (id,name,docUrl,courseid,know) values ('${new Date().getTime()}','${body.name}','${body.docUrl}','${body.courseid}','${body.know}')`
   const database = new DataBase()
-  const info = await database.getSqlData(sql)
-  if (info.length) {
-    res.send({
-      code: 4,
-      msg: '此账户已存在！'
-    })
-  } else {
-    sql = `insert into user_info (userid,username,password,roleType) values ('${body.userid}','${body.username}','${body.password}','${body.roleType}')`
-    const addDatabase = new DataBase()
-    await addDatabase.getSqlData(sql)
-    res.send({
-      code: 2,
-      msg: ''
-    })
-  }
+  await database.getSqlData(sql)
+  res.send({
+    code: 2,
+    msg: ''
+  })
 })
 
 user.post('/addList', async (req, res) => {

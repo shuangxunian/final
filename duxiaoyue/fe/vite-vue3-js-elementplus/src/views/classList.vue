@@ -1,52 +1,45 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
+import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
 import Papa from 'papaparse'
 
-const tableData = ref([
-  {
-    className: "计算机组成原理",
-    knowledgePoint: ['1', '2', '3'],
-    status: "待审核",
-    product: [
-      {
-        name: 'PN结理解',
-        knowledgePoint: ['1'],
-        docUrl: 'https://ldwd4y8oeh.feishu.cn/docx/DWstdkeRMooDKJxS0XAcR9ChnIe?from=from_copylink'
-      },
-      {
-        name: '芯片理解',
-        knowledgePoint: ['2'],
-        docUrl: 'https://ldwd4y8oeh.feishu.cn/docx/DWstdkeRMooDKJxS0XAcR9ChnIe?from=from_copylink'
-      },
-      {
-        name: '单片机理解',
-        knowledgePoint: ['3'],
-        docUrl: 'https://ldwd4y8oeh.feishu.cn/docx/DWstdkeRMooDKJxS0XAcR9ChnIe?from=from_copylink'
-      },
-      {
-        name: '单片机组成',
-        knowledgePoint: ['4'],
-        docUrl: 'https://ldwd4y8oeh.feishu.cn/docx/DWstdkeRMooDKJxS0XAcR9ChnIe?from=from_copylink'
-      },
-    ]
-  }
-])
-const allType = ref([
-  {
-    value: "0",
-    label: "全部"
-  },{
-    value: "1",
-    label: "未审核"
-  },{
-    value: "2",
-    label: "已审核"
-  }
-])
+const tableData = ref([])
+const courseList = ref([])
+const pptList = ref([])
 const findString = ref('')
 const nowSelectType = ref('0')
+const userid = ref('')
 const fileList = ref([])
-const uploadDialogVisible = ref(false)
+const formLabelWidth= ref(100)
+const addCourseDialog = ref(false)
+const addPPTDialog = ref(false)
+const form = ref({
+  className: '',
+  statusType: '1',
+})
+const pptForm = ref({
+  name: 'PN结理解',
+  docUrl: 'https://ldwd4y8oeh.feishu.cn/docx/DWstdkeRMooDKJxS0XAcR9ChnIe?from=from_copylink',
+  courseid: '',
+  coursename: '',
+  know: 'PN结',
+})
+
+const refreshForm = function() {
+  form.value = {
+    className: '',
+    statusType: '1',
+  }
+  pptForm.value = {
+    name: '',
+    docUrl: '',
+    courseid: '',
+    coursename: '',
+    know: '',
+  }
+}
 
 const handleSuccess = function(index, scope) {
   console.log(index, scope)
@@ -60,24 +53,99 @@ const handleDelete = function(index, scope) {
   console.log(index, scope)
 }
 
-const handleChange = function(uploadFile, uploadFiles) {
-  var reader = new FileReader()
-  reader.readAsDataURL(uploadFile.raw)
-  reader.onload = evt => {
-    Papa.parse(uploadFile.raw, {
-      complete: res => {
-        let data = res.data
-        const result = Papa.unparse(data)
-        const csvRecordsArray = result?.split(/\r\n|\n/)
-        fileList.value = csvRecordsArray.slice(1)
-        console.log(fileList.value)
-      }
+const makeSureUpload = function() {}
+
+const addPPT = function(row) {
+  pptForm.value.courseid = row.id
+  pptForm.value.coursename = row.className
+  addPPTDialog.value = true
+}
+
+const toAddPPT = async function() {
+  if (form.value.name === '') return ElMessage.error('请输入项目名')
+  if (form.value.docUrl === '') return ElMessage.error('请输入课程链接')
+  if (form.value.know === '') return ElMessage.error('请输入知识点')
+
+  const { data } = await axios.post('http://localhost:3000/ppt/add', pptForm.value)
+  if (data.code === 2) {
+    ElMessage({
+      message: '添加成功！',
+      type: 'success',
     })
+    addPPTDialog.value = false
+    await getPPTList()
   }
 }
 
-const makeSureUpload = function() {
+const makeSureDel = async function(row) {
+  const { data } = await axios.post('http://localhost:3000/course/del', row)
+  if (data.code === 2) {
+    ElMessage({
+      message: '删除成功！',
+      type: 'success',
+    })
+    await getCourseList()
+  }
+}
 
+const addClass = async function() {
+  const { data } = await axios.post('http://localhost:3000/course/add', {
+    ...form.value,
+    switchShow: 'false',
+    teacherid: userid.value
+  })
+  if (data.code === 2) {
+    ElMessage({
+      message: '添加成功！',
+      type: 'success',
+    })
+    addCourseDialog.value = false
+    await getCourseList()
+  }
+}
+
+const getPPTList = async function() {
+  const { data } = await axios.post('http://localhost:3000/ppt/allData', {})
+  if (data.code === 2) {
+    pptList.value = data.body
+  }
+  for(let i = 0;i < tableData.value.length; i++) {
+    const id = tableData.value[i].id
+    tableData.value[i].product = []
+    pptList.value.forEach(item => {
+      if(item.courseid === id) {
+        tableData.value[i].product.push(item)
+      }
+    })
+  }
+  for(let i = 0;i < tableData.value.length; i++) {
+    let knowList = ''
+    tableData.value[i].product.forEach(item => {
+      knowList+=item.know + ','
+    })
+    tableData.value[i].know = knowList
+  }
+}
+
+
+const getCourseList = async function() {
+  const { data } = await axios.post('http://localhost:3000/course/allData', {})
+  if (data.code === 2) {
+    courseList.value = []
+    tableData.value = []
+    data.body.forEach(item => {
+      if (item.teacherid === userid.value) {
+        let status = item.statusType === '1' ? '审核中' : '正常'
+        tableData.value.push({
+          ...item,
+          status,
+          product: []
+        })
+      }
+    })
+    courseList.value = tableData.value
+    await getPPTList()
+  }
 }
 
 const gotoFind = function() {
@@ -85,7 +153,10 @@ const gotoFind = function() {
 }
 
 
-onMounted(() => {})
+onMounted(async () => {
+  userid.value = window.sessionStorage.getItem('userid')
+  await getCourseList()
+})
 
 </script>
 
@@ -97,36 +168,12 @@ onMounted(() => {})
           <div class="find-string">
             <el-input v-model="findString" placeholder="请输入筛选内容" style="width: 160px"/>
           </div>
-          <div class="find-type">
-            <el-select
-              v-model="nowSelectType"
-              class="m-2"
-              placeholder="请选择类别"
-              style="width: 160px"
-            >
-              <el-option
-                v-for="item in allType"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              />
-            </el-select>
-          </div>
           <div class="find-button">
             <el-button type="primary" @click="gotoFind">筛选</el-button>
           </div>
         </div>
         <div class="right">
-          <el-upload
-            class="upload-demo"
-            :on-change="handleChange"
-            :auto-upload="false"
-            :show-file-list="false"
-            :limit="1"
-          >
-            <el-button type="primary">新建课程</el-button>
-          </el-upload>
-            <!-- <el-button type="primary" @click="gotoFind">导入学生</el-button> -->
+          <el-button type="primary" @click="addCourseDialog = true">新建课程</el-button>
         </div>
       </div>
       <div class="table">
@@ -136,7 +183,7 @@ onMounted(() => {})
               <div>
                 <el-table :data="props.row.product" :border="true">
                   <el-table-column prop="name" label="项目名称" />
-                  <el-table-column prop="knowledgePoint" label="知识点" />
+                  <el-table-column prop="know" label="知识点" />
                   <el-table-column prop="docUrl" label="关联内容链接">
                     <template #default="scope">
                       <el-link type="primary" :href="scope.row.docUrl" target="_blank">文档访问</el-link>
@@ -153,30 +200,62 @@ onMounted(() => {})
             </template>
           </el-table-column>
           <el-table-column prop="className" label="课程名称" />
-          <el-table-column prop="knowledgePoint" label="知识点" />
+          <el-table-column prop="know" label="知识点" />
           <el-table-column prop="status" label="状态" />
+          <el-table-column prop="status" label="是否可见">
+            <template #default="scope">
+              <el-switch :disabled="scope.row.statusType === '1'" v-model="scope.row.switchShow" active-text="可见" inactive-text="不可见" />
+            </template>
+          </el-table-column>
           <el-table-column fixed="right" label="操作" width="200">
             <template #default="scope">
-              <el-button link type="primary" size="small" @click="handleSuccess(scope.$index, scope)">添加项目</el-button>
+              <el-button link type="primary" size="small" @click="addPPT(scope.row)">添加项目</el-button>
               <el-button link type="primary" size="small" @click="handleSuccess(scope.$index, scope)">新建</el-button>
-              <el-button link type="primary" size="small" @click="handleDelete(scope.$index, scope)">删除</el-button>
+              <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scope.row)">
+                <template #reference>
+                  <el-button link type="danger" size="small">删除</el-button>
+                </template>
+              </el-popconfirm>
+              <!-- <el-button link type="primary" size="small" @click="handleDelete(scope.$index, scope)">删除</el-button> -->
             </template>
           </el-table-column>
         </el-table>
       </div>
     </div>
-    <el-dialog
-      v-model="uploadDialogVisible"
-      title="Tips"
-      width="500"
-    >
-      <span>一共{{ fileList.length }}条数据，确定上传吗？</span>
+
+    <el-dialog v-model="addCourseDialog" title="新建课程" width="500" @close="refreshForm">
+      <el-form :model="form">
+        <el-form-item label="课程名" :label-width="formLabelWidth">
+          <el-input v-model="form.className"/>
+        </el-form-item>
+      </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="uploadDialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="makeSureUpload">
-            确定
-          </el-button>
+          <el-button @click="addCourseDialog = false">取消</el-button>
+          <el-button type="primary" @click="addClass">添加</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="addPPTDialog" title="新建项目" width="500" @close="refreshForm">
+      <el-form :model="pptForm">
+        <el-form-item label="项目名" :label-width="formLabelWidth">
+          <el-input v-model="pptForm.name"/>
+        </el-form-item>
+        <el-form-item label="课件链接" :label-width="formLabelWidth">
+          <el-input v-model="pptForm.docUrl"/>
+        </el-form-item>
+        <el-form-item label="关联课程名称" :label-width="formLabelWidth">
+          <el-input disabled v-model="pptForm.coursename"/>
+        </el-form-item>
+        <el-form-item label="知识点" :label-width="formLabelWidth">
+          <el-input v-model="pptForm.know"/>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="addPPTDialog = false">取消</el-button>
+          <el-button type="primary" @click="toAddPPT">添加</el-button>
         </div>
       </template>
     </el-dialog>

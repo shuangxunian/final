@@ -1,8 +1,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
 const dialogFormVisible = ref(false)
+const userid = ref('')
+const username = ref('')
+const role = ref('')
+const roleType = ref('')
 const form = ref({
   oldPwd: '',
   newPwd1: '',
@@ -22,18 +27,44 @@ const doNotPost = function() {
   refresh()
 }
 
-const goPost = function() {
+const goPost = async function() {
   if (form.value.oldPwd === '') {
     return ElMessage.error('请输入旧密码！')
-  } else if (form.value.oldPwd === '') {
+  } else if (form.value.newPwd1 === '') {
     return ElMessage.error('请输入新密码！')
-  } else if (form.value.oldPwd === '') {
+  } else if (form.value.newPwd2 === '') {
     return ElMessage.error('请再次输入新密码！')
+  } else if (form.value.newPwd2 !== form.value.newPwd1) {
+    return ElMessage.error('两次密码不一致！')
   }
-  refresh()
+  const { data } = await axios.post('http://localhost:3000/user/fixPassword', {
+    ...form.value,
+    userid: userid.value
+  })
+  if (data.code === 2) {
+    ElMessage({
+      message: '修改成功！',
+      type: 'success',
+    })
+    refresh()
+  } else {
+    ElMessage.error(msg)
+  }
+  
 }
 
-onMounted(() => {})
+onMounted(() => {
+  userid.value = window.sessionStorage.getItem('userid')
+  username.value = window.sessionStorage.getItem('username')
+  roleType.value = window.sessionStorage.getItem('roleType')
+  if (roleType.value === '0') {
+    role.value='管理员'
+  } else if (roleType.value === '1') {
+    role.value='教师'
+  } else if (roleType.value === '2') {
+    role.value='学生'
+  } 
+})
 
 </script>
 
@@ -42,10 +73,18 @@ onMounted(() => {})
     <div class="body">
       <div class="every-data">
         <div class="left">
+          学工号：
+        </div>
+        <div class="right">
+          {{ userid }}
+        </div>
+      </div>
+      <div class="every-data">
+        <div class="left">
           昵称：
         </div>
         <div class="right">
-          admin
+          {{ username }}
         </div>
       </div>
       <div class="every-data">
@@ -53,7 +92,7 @@ onMounted(() => {})
           身份：
         </div>
         <div class="right">
-          管理员
+          {{ role }}
         </div>
       </div>
       <div class="every-data">

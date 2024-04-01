@@ -7,9 +7,13 @@ const app = express()
 app.use(cors())
 
 const user = require('./user')
+const course = require('./course')
+const ppt = require('./ppt')
 app.use(bodyParser.json())
 
 app.use('/user', user)
+app.use('/course', course)
+app.use('/ppt', ppt)
 
 app.listen(3000)
 console.log('服务启动成功')
