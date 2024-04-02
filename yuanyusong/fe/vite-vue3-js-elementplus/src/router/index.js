@@ -8,6 +8,8 @@ import Info from '../views/Info.vue'
 import foodList from '../views/foodList.vue'
 import recipeList from '../views/recipeList.vue'
 import adminHome from '../views/adminHome.vue'
+import buyList from '../views/buyList.vue'
+import userList from '../views/userList.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,6 +25,8 @@ const router = createRouter({
         { path: '/foodList', component: foodList },
         { path: '/recipeList', component: recipeList },
         { path: '/adminHome', component: adminHome },
+        { path: '/buyList', component: buyList },
+        { path: '/userList', component: userList },
         { path: '/info', component: Info }
       ]
     },

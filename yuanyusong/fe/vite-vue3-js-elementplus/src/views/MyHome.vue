@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 
@@ -13,6 +13,11 @@ const routerList = ref([
     icon: "Menu"
   },
   {
+    index: "userList",
+    name: "用户列表",
+    icon: "Menu"
+  },
+  {
     index: "foodList",
     name: "食材列表",
     icon: "Menu"
@@ -20,6 +25,11 @@ const routerList = ref([
   {
     index: "recipeList",
     name: "食谱列表",
+    icon: "Menu"
+  },
+  {
+    index: "buyList",
+    name: "采购记录",
     icon: "Menu"
   },
   {
@@ -38,13 +48,17 @@ function logout() {
   router.push('/login')
 }
 
+onMounted(() => {
+  router.push('/' + routerList.value[0].index)
+})
+
 </script>
 
 <template>
   <div class="home-container">
     <div class="header">
       <div class="title">
-        <span>肤质管理后台</span>
+        <span>幼儿园膳食管理系统后台</span>
       </div>
       <div class="options">
         <el-button type="info" @click="logout">退出</el-button>

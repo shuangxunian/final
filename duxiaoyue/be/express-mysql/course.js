@@ -76,25 +76,6 @@ course.post('/add', async (req, res) => {
     code: 2,
     msg: ''
   })
-  // new Date().getTime()
-  // const { body } = req
-  // let sql = `select * from user_info where userid='${body.userid}'`
-  // const database = new DataBase()
-  // const info = await database.getSqlData(sql)
-  // if (info.length) {
-  //   res.send({
-  //     code: 4,
-  //     msg: '此账户已存在！'
-  //   })
-  // } else {
-  //   sql = `insert into user_info (userid,username,password,roleType) values ('${body.userid}','${body.username}','${body.password}','${body.roleType}')`
-  //   const addDatabase = new DataBase()
-  //   await addDatabase.getSqlData(sql)
-  //   res.send({
-  //     code: 2,
-  //     msg: ''
-  //   })
-  // }
 })
 
 course.post('/addList', async (req, res) => {

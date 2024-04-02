@@ -66,7 +66,6 @@ const editUser = async function() {
     editUserDialog.value = false
     await getUserList()
   }
-
 }
 
 const makeSureDel = async function(row) {
