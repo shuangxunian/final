@@ -1,33 +1,13 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 
 const route = useRoute()
 const router = useRouter()
 
-const routerList = ref([
-  {
-    index: "adminUser",
-    name: "用户列表",
-    icon: "Menu"
-  },
-  {
-    index: "talkList",
-    name: "评论列表",
-    icon: "Menu"
-  },
-  {
-    index: "titleList",
-    name: "标签列表",
-    icon: "Menu"
-  },
-  {
-    index: "info",
-    name: "信息",
-    icon: "Service"
-  },
-])
+const routerList = ref([])
+const roleType = ref('')
 
 function handleSelect(key, keyPath) {
   router.push('/' + key)
@@ -37,6 +17,54 @@ function logout() {
   window.sessionStorage.clear()
   router.push('/login')
 }
+
+
+onMounted(() => {
+  roleType.value = window.sessionStorage.getItem('roleType')
+  if (roleType.value === '0') {
+    routerList.value = [
+      {
+        index: "adminUser",
+        name: "用户列表",
+        icon: "Menu"
+      },
+      {
+        index: "talkList",
+        name: "评论列表",
+        icon: "Menu"
+      },
+      {
+        index: "titleList",
+        name: "标签列表",
+        icon: "Menu"
+      },
+      {
+        index: "info",
+        name: "信息",
+        icon: "Service"
+      },
+    ]
+  } else if (roleType.value === '1') {
+    routerList.value = [
+      {
+        index: "talkList",
+        name: "评论列表",
+        icon: "Menu"
+      },
+      {
+        index: "titleList",
+        name: "标签列表",
+        icon: "Menu"
+      },
+      {
+        index: "info",
+        name: "信息",
+        icon: "Service"
+      },
+    ]
+  }
+  router.push('/' + routerList.value[0].index)
+})
 
 </script>
 
@@ -53,7 +81,7 @@ function logout() {
     <div class="body">
       <div class="left">
         <el-menu
-          :default-active="routerList[0].index"
+          :default-active="routerList[0]?.index"
           class="el-menu-vertical-demo"
           @select="handleSelect"
         >
