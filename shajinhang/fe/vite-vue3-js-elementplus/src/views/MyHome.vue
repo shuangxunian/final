@@ -1,7 +1,8 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+const id = ref('')
 
 const route = useRoute()
 const router = useRouter()
@@ -38,6 +39,13 @@ function logout() {
   router.push('/login')
 }
 
+
+onMounted(() => {
+  id.value = window.sessionStorage.getItem('id')
+  router.push('/' + routerList.value[0].index)
+})
+
+
 </script>
 
 <template>
@@ -53,7 +61,7 @@ function logout() {
     <div class="body">
       <div class="left">
         <el-menu
-          :default-active="routerList[0].index"
+          :default-active="routerList[0]?.index"
           class="el-menu-vertical-demo"
           @select="handleSelect"
         >

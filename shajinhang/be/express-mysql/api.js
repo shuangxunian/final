@@ -25,46 +25,21 @@ const state = {
   fetchingAnalysis: false,
   analysis: undefined,
 };
-
-const getId = () => {
-  const rawBVID = "BV1CK421v7NL";
+const getId = async (bv) => {
+  const rawBVID = bv;
   const regex = /BV[0-9A-Z]+/i;
   const matches = rawBVID.match(regex);
   const realBVID = matches ? matches[0].replace(/^BV/, "") : rawBVID;
-  console.log(realBVID)
-  const url = `https://api.bilibili.com/x/web-interface/view?bvid=${realBVID}`;
-  axios
-    .get(url)
-    .then((response) => {
-      const { data } = response;
-      state.AVId = data.data.aid;
-      state.title = data.data.title;
-      getComments();
-    })
-    .catch((error) => console.error(error));
+  let url = `https://api.bilibili.com/x/web-interface/view?bvid=${realBVID}`;
+  const response = await axios.get(url);
+  const { data } = response;
+  state.AVId = data.data.aid;
+  state.title = data.data.title;
+  const nextUrl = `https://api.bilibili.com/x/v2/reply?type=1&oid=${state.AVId}&sort=${state.mode}&pn=${state.currentPage}&ps=${state.perPage}&nohot=1`;
+  const nextResponse = await axios.get(nextUrl);
+  const { data: nextData } = nextResponse;
+  return nextData;
 };
 
-const getComments = () => {
-  const url = `https://api.bilibili.com/x/v2/reply?type=1&oid=${state.AVId}&sort=${state.mode}&pn=${state.currentPage}&ps=${state.perPage}&nohot=1`;
-  axios
-    .get(url)
-    .then((response) => {
-      const { data } = response;
-      console.log("data", data);
-      if (data.code === 0) {
-        state.comments = data.data.replies;
-        state.count = data.data.page.count;
-        state.fetching = false;
-        state.comments.forEach(item => {
-            console.log(item.content.message)
-        })
-        // console.log(state.comments[i].content)
-      }
-    })
-    .catch((error) => {
-      state.fetching = false;
-      console.error(error);
-    });
-};
+module.exports = getId
 
-getId();

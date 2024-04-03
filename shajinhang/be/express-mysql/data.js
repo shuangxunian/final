@@ -1,10 +1,34 @@
 const express = require('express')
 const DataBase = require('./mysql')
+const getId = require('./api')
 
-const user = express.Router()
+const data = express.Router()
 
-user.post('/allData', async (req, res) => {
-  let sql = 'select * from user_info'
+data.post('/get', async (req, res) => {
+  const { body } = req
+  const data = await getId(body.bv)
+  if (data.code === 0) {
+    let comments = data.data.replies;
+    let count = data.data.page.count;
+    let fetching = false;
+    res.send({
+      code: 2,
+      body: {
+        comments,
+        count,
+        fetching
+      }
+    })
+  } else {
+    res.send({
+      code: 4,
+      msg: '获取失败！'
+    })
+  }
+})
+
+data.post('/allData', async (req, res) => {
+  let sql = 'select * from data_list'
   const database = new DataBase()
   let info = await database.getSqlData(sql)
   res.send({
@@ -13,27 +37,30 @@ user.post('/allData', async (req, res) => {
   })
 })
 
-user.post('/login', async (req, res) => {
+data.post('/add', async (req, res) => {
   const { body } = req
-  let sql = `select * from user_info where id='${body.id}' and password='${body.password}'`
-  const addDatabase = new DataBase()
-  const info = await addDatabase.getSqlData(sql)
+  let sql = `select * from data_list where talk='${body.talk}'`
+  const database = new DataBase()
+  const info = await database.getSqlData(sql)
   if (info.length) {
     res.send({
-      code: 2,
-      body: info[0]
+      code: 4,
+      msg: '有完全一样文本存在！'
     })
   } else {
+    sql = `insert into data_list (id,talk,status) values ('${new Date().getTime()}','${body.talk}','${body.status}')`
+    const addDatabase = new DataBase()
+    await addDatabase.getSqlData(sql)
     res.send({
-      code: 4,
-      msg: '账号或密码有误！'
+      code: 2,
+      msg: ''
     })
   }
 })
 
-user.post('/del', async (req, res) => {
+data.post('/del', async (req, res) => {
   const { body } = req
-  let sql = `delete from user_info where userid='${body.userid}'`
+  let sql = `delete from data_list where id='${body.id}'`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({
@@ -41,9 +68,9 @@ user.post('/del', async (req, res) => {
   })
 })
 
-user.post('/fix', async (req, res) => {
+data.post('/fix', async (req, res) => {
   const { body } = req
-  let sql = `update user_info set password = '123456' where userid = '${body.userid}'`
+  let sql = `update data_list set talk='${body.talk}', status='${body.status}' where id='${body.id}'`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({
@@ -51,7 +78,7 @@ user.post('/fix', async (req, res) => {
   })
 })
 
-user.post('/fixPassword', async (req, res) => {
+data.post('/fixPassword', async (req, res) => {
   const { body } = req
   let sql = `select * from user_info where userid='${body.userid}' and password='${body.oldPwd}'`
   const findDatabase = new DataBase()
@@ -72,7 +99,7 @@ user.post('/fixPassword', async (req, res) => {
   }
 })
 
-user.post('/edit', async (req, res) => {
+data.post('/edit', async (req, res) => {
   const { body } = req
   let sql = `update user_info set username='${body.username}', roleType ='${body.roleType}' where userid = '${body.userid}'`
   console.log(sql)
@@ -83,28 +110,9 @@ user.post('/edit', async (req, res) => {
   })
 })
 
-user.post('/add', async (req, res) => {
-  const { body } = req
-  let sql = `select * from user_info where userid='${body.userid}'`
-  const database = new DataBase()
-  const info = await database.getSqlData(sql)
-  if (info.length) {
-    res.send({
-      code: 4,
-      msg: '此账户已存在！'
-    })
-  } else {
-    sql = `insert into user_info (userid,username,password,roleType) values ('${body.userid}','${body.username}','${body.password}','${body.roleType}')`
-    const addDatabase = new DataBase()
-    await addDatabase.getSqlData(sql)
-    res.send({
-      code: 2,
-      msg: ''
-    })
-  }
-})
 
-user.post('/addList', async (req, res) => {
+
+data.post('/addList', async (req, res) => {
   const { body } = req
   const list = body.list
   for (let i = 0; i < list.length; i++) {
@@ -118,4 +126,4 @@ user.post('/addList', async (req, res) => {
   })
 })
 
-module.exports = user
+module.exports = data

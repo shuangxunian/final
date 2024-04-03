@@ -1,28 +1,76 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
+import { ElMessage } from 'element-plus'
 
 const findBV = ref('BV1CK421v7NL')
-const talkList = ref([
-  '这把队友全在配合，女警报过阿里回城，老头传送保兵，盲僧最后给扣了好几个正在路上让提莫去拆，自己义无反顾的冲进人堆留人。关键是剩下的这4个人，都很清楚的认识到了唯一一种赢法，也都在配合。果然只要4个人都想赢，还是有一线生机的',
-  '看到派克玩家最后没有上线心里挺不爽的，但是想想他被抓到了还是很欣慰的，最后对面在4v5的情况下还输了让我今晚睡眠舒畅，虽然派克玩家收到了教训，但是对面也很难过呀，这波不亏',
-  '说实话这种比摆烂的好多了，起码是真的有事离开',
-])
-const tableData = ref([
-  {
-    talk: '这把队友全在配合，女警报过阿里回城，老头传送保兵，盲僧最后给扣了好几个正在路上让提莫去拆，自己义无反顾的冲进人堆留人。关键是剩下的这4个人，都很清楚的认识到了唯一一种赢法，也都在配合。果然只要4个人都想赢，还是有一线生机的',
-  },
-  {
-    talk: '看到派克玩家最后没有上线心里挺不爽的，但是想想他被抓到了还是很欣慰的，最后对面在4v5的情况下还输了让我今晚睡眠舒畅，虽然派克玩家收到了教训，但是对面也很难过呀，这波不亏',
-  },
-  {
-    talk: '说实话这种比摆烂的好多了，起码是真的有事离开',
-  },
-])
-// const talkList = ref([])
+const talkList = ref([])
+const tableData = ref([])
+const selectList = ref([])
+const getDataDialog = ref(false)
+const getTalkList = ref([])
+const textarea = ref('')
+const form = ref({
+  textarea: '',
+  status: '',
+})
+const formLabelWidth = '100px'
+const nowTextarea = ref(0)
+
+const getData = async () => {
+  const { data } = await axios.post('http://localhost:3000/data/get', {
+    bv: findBV.value
+  })
+  if(data.code === 2) {
+    getTalkList.value = data.body.comments
+    tableData.value = []
+    data.body.comments.forEach(item => {
+      tableData.value.push({
+        talk: item.content.message,
+        status: ''
+      })
+    })
+  }
+}
 
 const handleSelectionChange = (val) => {
-  console.log(val)
+  selectList.value = val
 }
+
+const getAllData = async () => {
+  // const { data } = await axios.post('http://localhost:3000/data/alldata', {})
+}
+const saveText = async () => {}
+const nextText = async () => {}
+const finishAdd = async () => {}
+const addDataList = async () => {
+  if (selectList.value.length === 0) {
+    return ElMessage({
+      message: '请选择要添加的数据',
+      type: 'warning'
+    })
+  }
+  let successNum = 0
+  for (let i = 0; i < selectList.value.length; i++) {
+    const { data } = await axios.post('http://localhost:3000/data/add', {
+      ...selectList.value[i]
+    })
+    if(data.code === 2) {
+      successNum++
+    }
+  }
+  ElMessage({
+    message: `成功添加${successNum}条数据`,
+    type: 'success'
+  })
+  selectList.value = []
+  tableData.value = []
+}
+
+onMounted(async() => {
+  await getAllData()
+  // await getData()
+})
 
 </script>
 
@@ -30,28 +78,64 @@ const handleSelectionChange = (val) => {
   <div class="get-data">
     <div class="header">
       <el-input v-model="findBV" style="width: 240px;margin-left: 10px;" placeholder="请输入想要爬取的BV号" />
-      <el-button style="margin-left: 10px" type="primary">爬取</el-button>
+      <el-button style="margin-left: 10px" type="primary" @click="getData">爬取</el-button>
     </div>
     <div class="body">
-      <div v-if="talkList.length === 0" class="no-data">
+      <div v-if="tableData.length === 0" class="no-data">
         请输入BV号
       </div>
       <div v-else>
         <el-table
           ref="multipleTableRef"
           :data="tableData"
-          style="width: calc(100% -20px);padding: 10px;"
           height="600"
           @selection-change="handleSelectionChange"
         >
           <el-table-column type="selection" width="55" />
-          <el-table-column prop="talk" label="评论"/>
+          <el-table-column prop="talk" label="评论" width="800"/>
+          <el-table-column prop="status" label="态度">
+            <template #default="scope">
+              <el-select v-model="scope.row.status" placeholder="请选择">
+                <el-option label="积极" value="1" />
+                <el-option label="消极" value="2" />
+                <el-option label="中性" value="0" />
+              </el-select>
+            </template>
+          </el-table-column>
         </el-table>
         <div class="bottom">
-          <el-button style="margin-left: 10px" type="primary">添加到数据库</el-button>
+          <el-button style="margin-left: 10px" type="primary" @click="addDataList">添加到数据库</el-button>
         </div>
       </div>
     </div>
+
+    <!-- <el-dialog v-model="getDataDialog" title="数据处理" width="500">
+      <p align="center">共有{{ getTalkList.length }}条，当前是第{{ nowTextarea + 1}}条</p>
+      <el-form :model="form">
+        <el-form-item label="文本" :label-width="formLabelWidth">
+          <el-input
+            v-model="form.textarea"
+            :autosize="{ minRows: 2, maxRows: 4 }"
+            type="textarea"
+            placeholder="请输入"
+          />
+        </el-form-item>
+        <el-form-item label="态度" :label-width="formLabelWidth">
+          <el-select v-model="form.status" placeholder="请选择">
+            <el-option label="积极" value="1" />
+            <el-option label="消极" value="2" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="finishAdd">取消</el-button>
+          <el-button type="danger" @click="nextText">删除并下一条</el-button>
+          <el-button type="primary" @click="saveText">保存并下一条</el-button>
+        </div>
+      </template>
+    </el-dialog> -->
+
   </div>
 </template>
 
