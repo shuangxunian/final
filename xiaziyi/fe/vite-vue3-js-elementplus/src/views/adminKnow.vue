@@ -1,119 +1,17 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, toRaw } from 'vue'
+import axios from 'axios'
+import { ElMessage } from 'element-plus'
 import G6 from '@antv/g6'
 
-const chartData = {
-  nodes: [
-    {
-      id: '0',
-      label: '企业的功能与定义',
-    },
-    {
-      id: '1',
-      label: '个人独资/合伙企业',
-    },
-    {
-      id: '2',
-      label: '公司制企业',
-    },
-    {
-      id: '3',
-      label: '企业财务管理的内容',
-    },
-    {
-      id: '4',
-      label: '利润最大化',
-    },
-    {
-      id: '5',
-      label: '股东财富最大化',
-    },
-    {
-      id: '6',
-      label: '企业价值最大化',
-    },
-    {
-      id: '7',
-      label: '相关者利益最大化',
-    },
-    {
-      id: '8',
-      label: '各种财务管理目标之间的关系',
-    },
-    {
-      id: '9',
-      label: '所有者和经营者利益冲突与协调',
-    },
-    {
-      id: '10',
-      label: '大股东与中小股东利益冲突与协调',
-    },
-    {
-      id: '11',
-      label: '所有者和债权人的利益冲突与协调',
-    },
-  ],
-  edges: [
-    {
-      source: '0',
-      target: '4',
-    },
-    {
-      source: '1',
-      target: '4',
-    },
-    {
-      source: '2',
-      target: '4',
-    },
-    {
-      source: '3',
-      target: '4',
-    },
-    {
-      source: '4',
-      target: '5',
-    },
-    {
-      source: '4',
-      target: '6',
-    },
-    {
-      source: '4',
-      target: '7',
-    },
-    {
-      source: '0',
-      target: '8',
-    },
-    {
-      source: '1',
-      target: '8',
-    },
-    {
-      source: '2',
-      target: '8',
-    },
-    {
-      source: '3',
-      target: '8',
-    },
-    {
-      source: '8',
-      target: '9',
-    },
-    {
-      source: '8',
-      target: '10',
-    },
-    {
-      source: '8',
-      target: '11',
-    },
-  ],
-}
+const chartData = ref({
+  nodes: [],
+  edges: [],
+})
 let graph = {}
 const animateCfg = { duration: 200, easing: 'easeCubic' }
+const tableData = ref([])
+const knowList = ref([])
 
 const addSize = () => {
   graph.zoom(1.2, undefined, true, animateCfg)
@@ -167,11 +65,38 @@ const getChart = function() {
       },
     },
   });
-  graph.data(chartData);
+  console.log(chartData.value)
+  graph.data(chartData.value);
   graph.render();
 }
 
-onMounted(() => {
+
+const getTableData = async () => {
+  const { data } = await axios.post('http://localhost:3000/know/allData',{})
+  if (data.code === 2) {
+    knowList.value = data.body
+    console.log(knowList.value)
+    knowList.value.forEach(item => {
+      chartData.value.nodes.push({
+        id: item.id,
+        label: item.name,
+      })
+      const arr = item.downstreamIDListString.split(',')
+      if(arr[0] !== '') {
+        arr.forEach(end => {
+          chartData.value.edges.push({
+            source: item.id,
+            target: end,
+          })
+        })
+      }
+
+    })
+  }
+}
+
+onMounted(async() => {
+  await getTableData()
   getChart()
 })
 

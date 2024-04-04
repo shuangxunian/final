@@ -1,24 +1,31 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const loginForm = ref({
-  userName: 'admin',
+  id: 'admin',
   password: '123456'
 })
 
 function resetLoginForm() {
-  loginForm.value.userName = 'admin'
+  loginForm.value.id = 'admin'
   loginForm.value.password = '123456'
 }
 
-function login () {
-  if (loginForm.value.userName === 'admin' && loginForm.value.password === '123456') {
-    window.sessionStorage.setItem('userName', loginForm.value.userName)
+async function login () {
+  const { data } = await axios.post('http://localhost:3000/user/login', loginForm.value)
+  if (data.code === 2) {
+    window.sessionStorage.setItem('id', data.body.id)
+    window.sessionStorage.setItem('roleType', data.body.roleType)
     router.push('/home')
+  } else {
+    ElMessage.error(data.msg)
   }
 }
+
 
 
 </script>
@@ -32,7 +39,7 @@ function login () {
       <el-form ref="loginFormRef" :model="loginForm" label-width="0px" class="login_form">
         <!-- 用户名 -->
         <el-form-item prop="phone">
-          <el-input v-model="loginForm.userName" placeholder="请输入用户名"></el-input>
+          <el-input v-model="loginForm.id" placeholder="请输入用户名"></el-input>
         </el-form-item>
         <!-- 密码 -->
         <el-form-item prop="password">

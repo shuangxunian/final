@@ -6,58 +6,60 @@ import { useRoute, useRouter } from 'vue-router'
 const route = useRoute()
 const router = useRouter()
 
-const routerList = ref([
-  {
-    index: "adminKnow",
-    name: "知识点知识图谱",
-    icon: "Menu"
-  },
-  {
-    index: "adminKnowList",
-    name: "知识点列表",
-    icon: "Menu"
-  },
-  {
-    index: "adminClass",
-    name: "课程",
-    icon: "Menu"
-  },
-  {
-    index: "adminQuestion",
-    name: "题库",
-    icon: "Menu"
-  },
-  {
-    index: "adminTest",
-    name: "试卷",
-    icon: "Menu"
-  },
-  {
-    index: "adminUser",
-    name: "用户列表（管理员视角）",
-    icon: "Menu"
-  },
-  {
-    index: "masterUser",
-    name: "用户列表（负责人视角）",
-    icon: "Menu"
-  },
-  {
-    index: "userClass",
-    name: "我的课程（成员视角）",
-    icon: "Menu"
-  },
-  {
-    index: "userTest",
-    name: "我的考试（成员视角）",
-    icon: "Menu"
-  },
-  {
-    index: "info",
-    name: "信息",
-    icon: "Service"
-  },
-])
+const routerList = ref([])
+// const routerList = ref([
+//   {
+//     index: "adminKnow",
+//     name: "知识点知识图谱",
+//     icon: "Menu"
+//   },
+//   {
+//     index: "adminKnowList",
+//     name: "知识点列表",
+//     icon: "Menu"
+//   },
+//   {
+//     index: "adminClass",
+//     name: "课程",
+//     icon: "Menu"
+//   },
+//   {
+//     index: "adminQuestion",
+//     name: "题库",
+//     icon: "Menu"
+//   },
+//   {
+//     index: "adminTest",
+//     name: "试卷",
+//     icon: "Menu"
+//   },
+//   {
+//     index: "adminUser",
+//     name: "用户列表（管理员视角）",
+//     icon: "Menu"
+//   },
+//   {
+//     index: "masterUser",
+//     name: "用户列表（负责人视角）",
+//     icon: "Menu"
+//   },
+//   {
+//     index: "userClass",
+//     name: "我的课程（成员视角）",
+//     icon: "Menu"
+//   },
+//   {
+//     index: "userTest",
+//     name: "我的考试（成员视角）",
+//     icon: "Menu"
+//   },
+//   {
+//     index: "info",
+//     name: "信息",
+//     icon: "Service"
+//   },
+// ])
+const roleType = ref('0')
 
 function handleSelect(key, keyPath) {
   router.push('/' + key)
@@ -69,6 +71,37 @@ function logout() {
 }
 
 onMounted(() => {
+  roleType.value = window.sessionStorage.getItem('roleType')
+  if (roleType.value === '0') {
+    routerList.value = [
+      {
+        index: "adminKnow",
+        name: "知识点知识图谱",
+        icon: "Menu"
+      },
+      {
+        index: "adminKnowList",
+        name: "知识点列表",
+        icon: "Menu"
+      },
+      {
+        index: "adminClass",
+        name: "课程",
+        icon: "Menu"
+      },
+      {
+        index: "adminQuestion",
+        name: "题库",
+        icon: "Menu"
+      },
+      {
+        index: "adminTest",
+        name: "试卷",
+        icon: "Menu"
+      },
+    ]
+    
+  }
   router.push('/' + routerList.value[0].index)
 })
 
@@ -87,7 +120,7 @@ onMounted(() => {
     <div class="body">
       <div class="left">
         <el-menu
-          :default-active="routerList[0].index"
+          :default-active="routerList[0]?.index"
           class="el-menu-vertical-demo"
           @select="handleSelect"
         >
