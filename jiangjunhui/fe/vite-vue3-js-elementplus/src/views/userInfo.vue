@@ -17,9 +17,10 @@ const tableData = ref([
     email: '1776056253@qq.com'
   },
 ])
+const userList = ref([])
 const addUserDialog = ref(false)
 const editUserDialog = ref(false)
-
+const input = ref('')
 const form = ref({
   id: '',
   name: '',
@@ -55,6 +56,18 @@ const fixUser = async () => {
   }
 }
 
+const getData = async () => {
+  if (input.value === '') {
+    tableData.value = userList.value
+  } else {
+    tableData.value = []
+    userList.value.forEach(item => {
+      if (item.name.includes(input.value) || item.email.includes(input.value)) {
+        tableData.value.push(item)
+      }
+    })
+  }
+}
 
 
 const clearForm = () => {
@@ -74,8 +87,9 @@ const editData = (row) => {
 const getUserList = async () => {
   const { data } = await axios.post('http://localhost:3000/user/allData', {})
   if (data.code === 2) {
+    userList.value = data.info
     tableData.value = data.info
-    // console.log(data.info)
+    console.log(data.info)
   }
 }
 
@@ -88,10 +102,17 @@ onMounted(async () => {
 <template>
   <div class="user-info">
     <div class="header">
-      <el-button style="margin-left: 10px;" @click="addUserDialog = true">添加单位</el-button>
+      <div class="input">
+        <el-input style="margin-top:20px" v-model="input" placeholder="请输入内容" />
+      </div>
+      <div class="btn">
+        <el-button style="margin-top:20px" type="primary" @click="getData">搜索</el-button>
+        <el-button style="margin-top:20px" type="primary" @click="addUserDialog = true">添加单位</el-button>
+      </div>
+      <!-- <el-button style="margin-left: 10px;" @click="addUserDialog = true">添加单位</el-button> -->
     </div>
     <div class="body">
-      <el-table :data="tableData" style="width: 100%" border max-height="600">
+      <el-table :data="tableData" style="width: 100%" border height="500">
         <el-table-column prop="name" label="单位名称" />
         <el-table-column prop="email" label="联系邮箱" />
         <el-table-column fixed="right" label="操作" width="200">
@@ -105,6 +126,10 @@ onMounted(async () => {
           </template>
         </el-table-column>
       </el-table>
+      <div class="img">
+        <img src="./../assets/image.png" style="height: 300px" alt=""/>
+        <img src="./../assets/img1.png" style="height: 300px" alt=""/>
+      </div>
     </div>
 
     <el-dialog v-model="addUserDialog" title="添加单位" width="500" @close="clearForm">
@@ -149,9 +174,26 @@ onMounted(async () => {
 
 <style lang="less" scoped>
 .user-info {
+  background-color: #fff;
+  height: 100%;
+  width: 100%;
   .header {
-    height: 50px;
-    // line-height: 50px;
+    height: 70px;
+    display: flex;
+    .input {
+      width: 300px;
+      margin-left: 20px;
+    }
+    .btn {
+      margin-left: 20px;
+    }
+  }
+  .body {
+    .img {
+      display: flex;
+      justify-content: space-around;
+      height: 300px;
+    }
   }
 }
 </style>

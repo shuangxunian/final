@@ -8,10 +8,12 @@ app.use(cors())
 
 const user = require('./user')
 const option = require('./option')
+const info = require('./info')
 app.use(bodyParser.json())
 
 app.use('/user', user)
 app.use('/option', option)
+app.use('/info', info)
 
 app.listen(3000)
 console.log('服务启动成功')

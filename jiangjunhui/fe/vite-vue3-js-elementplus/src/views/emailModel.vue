@@ -34,13 +34,18 @@ onMounted(async () => {
   <div class="email-model">
     <div class="header">
       <div class="my-input">
-        <p>请注意：`time`会解析成对应时间，`name`会解析成对应行动代号，`warplane`会解析成对应机型</p>
-        <el-input
-          v-model="textarea"
-          :autosize="{ minRows: 7, maxRows: 7 }"
-          type="textarea"
-          placeholder="请输入邮件模版"
-        />
+        <div class="input">
+          <el-input
+            v-model="textarea"
+            :autosize="{ minRows: 7, maxRows: 7 }"
+            type="textarea"
+            placeholder="请输入邮件模版"
+          />
+        </div>
+        <div class="myp">
+          <p>请注意：`time`会解析成对应时间，`name`会解析成对应行动代号，`warplane`会解析成对应机型</p>
+        </div>
+
       </div>
     </div>
     <div class="body">
@@ -51,22 +56,27 @@ onMounted(async () => {
 
 <style lang="less" scoped>
 .email-model {
+  background-color: #fff;
+  height: 100%;
+  width: 100%;
   .header {
-    display: flex;
-    height: 250px;
+    width: calc(100% - 20px);
+    padding: 10px;
+    height: 170px;
     .my-input {
-      width: 45%;
-      .el-col {
-        margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      .input {
+        width: 45%;
+      }
+      .myp {
+        width: 45%;
       }
     }
-    .my-btn {
-      width: 10%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
   }
-  .body {}
+  .body {
+    margin-left: 10px;
+  }
 }
 </style>

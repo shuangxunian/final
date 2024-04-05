@@ -170,6 +170,9 @@ onMounted(async () => {
 
 <style lang="less" scoped>
 .push-info {
+  background-color: #fff;
+  height: 100%;
+  width: 100%;
   .header {
     display: flex;
     height: 250px;
