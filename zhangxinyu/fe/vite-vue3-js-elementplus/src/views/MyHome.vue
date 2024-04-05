@@ -22,11 +22,11 @@ const routerList = ref([
     name: "数据列表",
     icon: "Menu"
   },
-  {
-    index: "info",
-    name: "信息",
-    icon: "Service"
-  },
+  // {
+  //   index: "info",
+  //   name: "信息",
+  //   icon: "Service"
+  // },
 ])
 
 function handleSelect(key, keyPath) {

@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
+import * as echarts from 'echarts'
 
 
 const tableData = ref([])
@@ -106,6 +107,142 @@ const getTime = (time) => {
 
 }
 
+const init = async() => {
+  init1()
+  init2()
+  init3()
+}
+
+const init1 = async() => {
+  // 操作记录
+  // 基于准备好的dom，初始化echarts实例
+  // console.log(tableData.value)
+  let Chart = echarts.init(document.getElementById("myEcharts1"));
+  let dataMap = {}
+  tableData.value.forEach(item => {
+    if (dataMap[item.option]) {
+      dataMap[item.option]++
+    } else {
+      dataMap[item.option] = 1
+    }
+  })
+  let xAxisData = []
+  let seriesData = []
+
+  for (let key in dataMap) {
+    xAxisData.push(key)
+    seriesData.push(dataMap[key])
+  }
+  // 绘制图表
+  let options = {
+    title: {
+      text: "操作记录",
+    },
+    tooltip: {},
+    xAxis: {
+      data: xAxisData,
+    },
+    yAxis: {},
+    series: [
+      {
+        name: "操作",
+        type: "bar",
+        data: seriesData,
+      },
+    ],
+  };
+
+  // 渲染图表
+  Chart.setOption(options);
+}
+
+const init2 = async() => {
+  // 基于准备好的dom，初始化echarts实例
+  // console.log(tableData.value)
+  let Chart = echarts.init(document.getElementById("myEcharts2"));
+  let dataMap = {}
+  tableData.value.forEach(item => {
+    let from = item.wherefrom ? item.wherefrom : 'web'
+    if (dataMap[from]) {
+      dataMap[from]++
+    } else {
+      dataMap[from] = 1
+    }
+  })
+  let xAxisData = []
+  let seriesData = []
+
+  for (let key in dataMap) {
+    xAxisData.push(key)
+    seriesData.push(dataMap[key])
+  }
+  // 绘制图表
+  let options = {
+    title: {
+      text: "访问来源",
+    },
+    tooltip: {},
+    xAxis: {
+      data: xAxisData,
+    },
+    yAxis: {},
+    series: [
+      {
+        name: "来源",
+        type: "bar",
+        data: seriesData,
+      },
+    ],
+  };
+
+  // 渲染图表
+  Chart.setOption(options);
+}
+
+const init3 = async() => {
+  // 基于准备好的dom，初始化echarts实例
+  let Chart = echarts.init(document.getElementById("myEcharts3"));
+  let dataMap = {}
+  tableData.value.forEach(item => {
+    if (dataMap[item.userid]) {
+      dataMap[item.userid]++
+    } else {
+      dataMap[item.userid] = 1
+    }
+  })
+  let xAxisData = []
+  let seriesData = []
+
+  for (let key in dataMap) {
+    xAxisData.push(key)
+    seriesData.push(dataMap[key])
+  }
+  // 绘制图表
+  let options = {
+    title: {
+      text: "成员访问记录",
+    },
+    tooltip: {},
+    xAxis: {
+      data: xAxisData,
+      axisLabel:{
+        rotate:-45,//倾斜度 -90 至 90 默认为0
+      }
+    },
+    yAxis: {},
+    series: [
+      {
+        name: "访问次数",
+        type: "bar",
+        data: seriesData,
+      },
+    ],
+  };
+
+  // 渲染图表
+  Chart.setOption(options);
+}
+
 const getOptionList = async() => {
   const { data } = await axios.post('http://localhost:3000/option/allData', {})
   if (data.code === 2) {
@@ -121,8 +258,8 @@ const getOptionList = async() => {
       })
     })
     // console.log(data.info)
+    await init()
   }
-
 }
 
 onMounted(async() => {
@@ -140,13 +277,19 @@ onMounted(async() => {
       </div>
     </div>
     <div class="body">
-      <el-table :data="tableData" border style="width: calc(100% - 20px);height: 600px;">
+      <el-table :data="tableData" border height="500">
         <el-table-column prop="userid" label="用户ID" width="180" />
         <el-table-column prop="username" label="用户昵称" width="180" />
         <el-table-column prop="optionDate" label="请求时间" width="180" />
         <el-table-column prop="option" label="请求操作" width="180" />
         <el-table-column prop="requireWord" label="访问的单词" />
       </el-table>
+
+      <div class="echart">
+        <div id="myEcharts1" :style="{ width: '400px', height: '300px' }"></div>
+        <div id="myEcharts2" :style="{ width: '400px', height: '300px' }"></div>
+        <div id="myEcharts3" :style="{ width: '400px', height: '300px' }"></div>
+      </div>
     </div>
     
     <el-dialog v-model="optionDialog" title="模拟访问" width="500" @close="clearForm">
@@ -216,8 +359,14 @@ onMounted(async() => {
   .body {
     width: 100%;
     // height: calc(100% - 70px);
-    padding: 0 10px;
-    padding-top: 10px;
+    // height: calc(100% - 70px);
+    margin-top: 10px;
+    .echart {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+      height: calc(100% - 500px);
+    }
   }
 }
 </style>

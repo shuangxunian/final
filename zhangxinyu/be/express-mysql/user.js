@@ -26,12 +26,12 @@ user.post('/add', async (req, res) => {
     })
   }
   const nowTime = new Date().getTime() + ''
-  sql = 'INSERT INTO `user_info` (`userid`, `username`, `password`, `optionTime`, `buildDate`) VALUES (?,?,?,?,?);'
-  data = [body.userid,body.username,body.password,0,nowTime]
+  sql = 'INSERT INTO `user_info` (`userid`, `username`, `password`, `optionTime`, `buildDate`, `birthday`) VALUES (?,?,?,?,?,?);'
+  data = [body.userid,body.username,body.password,0,nowTime,body.birthday]
   const addDatabase = new DataBase()
   await addDatabase.getSqlData(sql, data)
-  sql = 'INSERT INTO `option_list` (`id`, `userid`, `username`, `optionType`) VALUES (?,?,?,?,?);'
-  data = [nowTime,body.userid,body.username,'注册']
+  sql = 'INSERT INTO `option_list` (`id`, `userid`, `username`, `optionType`, `wherefrom`) VALUES (?,?,?,?,?);'
+  data = [nowTime,body.userid,body.username,'注册',body.wherefrom ? body.wherefrom : 'web']
   const addOptionDatabase = new DataBase()
   await addOptionDatabase.getSqlData(sql, data)
   res.send({
@@ -47,10 +47,10 @@ user.post('/del', async (req, res) => {
   let data = [body.userid]
   const addDatabase = new DataBase()
   await addDatabase.getSqlData(sql, data)
-  sql = 'INSERT INTO `option_list` (`id`, `userid`, `username`, `optionType`) VALUES (?,?,?,?,?);'
-  data = [new Date().getTime() + '',body.user,'admin',body.username,'删除']
-  const addOptionDatabase = new DataBase()
-  await addOptionDatabase.getSqlData(sql, data)
+  // sql = 'INSERT INTO `option_list` (`id`, `userid`, `username`, `optionType`) VALUES (?,?,?,?,?);'
+  // data = [new Date().getTime() + '',body.user,'admin',body.username,'删除']
+  // const addOptionDatabase = new DataBase()
+  // await addOptionDatabase.getSqlData(sql, data)
   res.send({
     code: 2,
     msg: ''
@@ -91,8 +91,8 @@ user.post('/login', async (req, res) => {
   const addDatabase = new DataBase()
   const info = await addDatabase.getSqlData(sql, data)
   if (info.length) {
-    sql = 'INSERT INTO `option_list` (`id`, `userid`, `username`, `optionType`) VALUES (?,?,?,?,?);'
-    data = [new Date().getTime() + '',body.userid,info[0].username,'登录']
+    sql = 'INSERT INTO `option_list` (`id`, `userid`, `username`, `optionType`,`wherefrom`) VALUES (?,?,?,?,?,?);'
+    data = [new Date().getTime() + '',body.userid,info[0].username,'登录',body.wherefrom ? body.wherefrom : 'web']
     const addOptionDatabase = new DataBase()
     await addOptionDatabase.getSqlData(sql, data)
     res.send({

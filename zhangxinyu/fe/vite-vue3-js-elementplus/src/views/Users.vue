@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
+import * as echarts from 'echarts'
 
 const testValue = ref(true)
 const tableData = ref([])
@@ -11,7 +12,8 @@ const addUserForm = ref({
   userid: '203401010101',
   username: '张三',
   password: '123456',
-  optionTime: 0
+  optionTime: 0,
+  birthday: ''
 })
 const editUserForm = ref({
   userid: '',
@@ -120,7 +122,8 @@ const clearForm = () => {
     userid: '',
     username: '',
     password: '123456',
-    optionTime: 0
+    optionTime: 0,
+    birthday: ''
   }
   loginForm.value = {
     userid: '',
@@ -144,6 +147,7 @@ const goAddUser = async () => {
   if (addUserForm.value.password === '') return ElMessage.error('请输入学生密码')
   const { data } = await axios.post('http://localhost:3000/user/add', {
     ...addUserForm.value,
+    wherefrom: 'web'
   })
   if (data.code === 2) {
     ElMessage({
@@ -164,10 +168,53 @@ const getTableData = async () => {
     tableData.value = data.info
   }
   loading.value = false
+  await init()
 }
 
-onMounted(() => {
-  getTableData()
+const init = () => {
+  // 基于准备好的dom，初始化echarts实例
+  let Chart = echarts.init(document.getElementById("myEcharts"));
+  let dataMap = {}
+  userList.value.forEach(item => {
+    let old = new Date().getFullYear() - (item.birthday).substring(0, 4)
+    if (dataMap[old]) {
+      dataMap[old]++
+    } else {
+      dataMap[old] = 1
+    }
+  })
+  let xAxisData = []
+  let seriesData = []
+
+  for (let key in dataMap) {
+    xAxisData.push(key)
+    seriesData.push(dataMap[key])
+  }
+  // 绘制图表
+  let options = {
+    title: {
+      text: "年龄分布",
+    },
+    tooltip: {},
+    xAxis: {
+      data: xAxisData,
+    },
+    yAxis: {},
+    series: [
+      {
+        name: "年龄",
+        type: "bar",
+        data: seriesData,
+      },
+    ],
+  };
+
+  // 渲染图表
+  Chart.setOption(options);
+}
+
+onMounted(async () => {
+  await getTableData()
 })
 
 </script>
@@ -184,10 +231,15 @@ onMounted(() => {
       </div>
     </div>
     <div class="body">
-      <el-table v-loading="loading" :data="tableData" border style="width: calc(100% - 20px);height: 600px;">
+      <el-table v-loading="loading" :data="tableData" border height="500">
         <el-table-column prop="userid" label="用户ID"/>
         <el-table-column prop="username" label="用户昵称"/>
         <el-table-column prop="optionTime" label="使用次数"/>
+        <el-table-column prop="birthday" label="出生年份">
+          <template #default="scope">
+            {{ Number((scope.row.birthday).substring(0, 4)) + 1 }}
+          </template>
+        </el-table-column>
         <el-table-column fixed="right" label="操作">
           <template #default="scoped">
             <el-button link type="primary" size="small" @click="editUser(scoped)">编辑</el-button>
@@ -199,6 +251,9 @@ onMounted(() => {
           </template>
         </el-table-column>
       </el-table>
+      <div class="echart">
+        <div id="myEcharts" :style="{ width: '900px', height: '300px' }"></div>
+      </div>
     </div>
 
     <el-dialog v-model="addUserDialog" title="添加学生" width="500" @close="clearForm">
@@ -212,6 +267,14 @@ onMounted(() => {
         <el-form-item label="密码" :label-width="formLabelWidth">
           <el-input v-model="addUserForm.password" autocomplete="off" />
         </el-form-item>
+        <el-form-item label="出生年份" :label-width="formLabelWidth">
+          <el-date-picker
+            v-model="addUserForm.birthday"
+            type="year"
+            placeholder="请选择出生年份"
+          />
+        </el-form-item>
+
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -249,6 +312,13 @@ onMounted(() => {
         <el-form-item label="密码" :label-width="formLabelWidth">
           <el-input v-model="editUserForm.password" disabled />
         </el-form-item>
+        <el-form-item label="出生年份" :label-width="formLabelWidth">
+          <el-date-picker
+            v-model="addUserForm.birthday"
+            type="year"
+            placeholder="请选择出生年份"
+          />
+        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -282,8 +352,11 @@ onMounted(() => {
   .body {
     width: 100%;
     height: calc(100% - 70px);
-    padding: 0 10px;
     margin-top: 10px;
+    .echart {
+      width: 100%;
+      height: calc(100% - 500px);
+    }
   }
 }
 </style>

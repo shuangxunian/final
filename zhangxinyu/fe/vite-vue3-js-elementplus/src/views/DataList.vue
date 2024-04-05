@@ -58,7 +58,7 @@ onMounted(async() => {
       </div>
     </div>
     <div class="body">
-      <el-table :data="tableData" border style="width: calc(100% - 20px);height: 600px;">
+      <el-table :data="tableData" border height="600">
         <el-table-column prop="china" label="中文词语" width="180" />
         <el-table-column prop="eng" label="英文单词" width="180" />
         <el-table-column prop="info" label="解释"/>
@@ -109,7 +109,7 @@ onMounted(async() => {
   .body {
     width: 100%;
     height: calc(100% - 70px);
-    padding: 0 10px;
+    // padding: 0 10px;
     margin-top: 10px;
   }
 }
