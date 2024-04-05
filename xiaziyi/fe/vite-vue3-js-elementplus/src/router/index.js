@@ -10,6 +10,7 @@ import adminClass from '../views/adminClass.vue'
 import adminQuestion from '../views/adminQuestion.vue'
 import adminUser from '../views/adminUser.vue'
 import masterUser from '../views/masterUser.vue'
+import testList from '../views/testList.vue'
 import userClass from '../views/userClass.vue'
 import userTest from '../views/userTest.vue'
 import Users from '../views/Users.vue'
@@ -34,6 +35,7 @@ const router = createRouter({
         { path: '/adminKnowList', component: adminKnowList },
         { path: '/adminTest', component: adminTest },
         { path: '/userClass', component: userClass },
+        { path: '/testList', component: testList },
         { path: '/userTest', component: userTest },
         { path: '/info', component: Info }
       ]

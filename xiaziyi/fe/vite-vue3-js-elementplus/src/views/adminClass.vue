@@ -7,6 +7,7 @@ const tableData = ref([])
 const knowList = ref([])
 const testList = ref([])
 const classList = ref([])
+const roleType = ref('')
 const addClassDialog = ref(false)
 const editClassDialog = ref(false)
 const addClassForm = ref({
@@ -94,6 +95,7 @@ const getKnowList = async () => {
 }
 
 onMounted(async() => {
+  roleType.value = window.sessionStorage.getItem('roleType')
   await getKnowList()
   await getClassList()
 })
@@ -103,7 +105,7 @@ onMounted(async() => {
 
 <template>
   <div class="admin-class">
-    <div class="header">
+    <div v-if="roleType !== '2'" class="header">
       <el-button type="primary" @click="addClassDialog = true">新建课程</el-button>
     </div>
     <div class="table">
@@ -118,7 +120,7 @@ onMounted(async() => {
           </template>
         </el-table-column>
         <!-- <el-table-column prop="test" label="关联考试" width="180"/> -->
-        <el-table-column fixed="right" label="操作" width="120">
+        <el-table-column  v-if="roleType !== '2'" fixed="right" label="操作" width="120">
           <template #default="scope">
             <el-button link type="primary" size="small" @click="editClass(scope.row)">编辑</el-button>
             <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scope.row)">

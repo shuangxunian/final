@@ -99,8 +99,68 @@ onMounted(() => {
         name: "试卷",
         icon: "Menu"
       },
+      {
+        index: "adminUser",
+        name: "用户列表",
+        icon: "Menu"
+      },
     ]
-    
+  } else if (roleType.value === '1') {
+    routerList.value = [
+      {
+        index: "adminKnow",
+        name: "知识点知识图谱",
+        icon: "Menu"
+      },
+      {
+        index: "adminKnowList",
+        name: "知识点列表",
+        icon: "Menu"
+      },
+      {
+        index: "adminClass",
+        name: "课程",
+        icon: "Menu"
+      },
+      {
+        index: "adminQuestion",
+        name: "题库",
+        icon: "Menu"
+      },
+      {
+        index: "adminTest",
+        name: "试卷",
+        icon: "Menu"
+      },
+      {
+        index: "masterUser",
+        name: "用户列表",
+        icon: "Menu"
+      },
+      {
+        index: "testList",
+        name: "考试列表",
+        icon: "Menu"
+      },
+    ]
+  } else {
+    routerList.value = [
+      {
+        index: "adminClass",
+        name: "全部课程",
+        icon: "Menu"
+      },
+      {
+        index: "userClass",
+        name: "我的课程",
+        icon: "Menu"
+      },
+      {
+        index: "userTest",
+        name: "我的考试",
+        icon: "Menu"
+      },
+    ]
   }
   router.push('/' + routerList.value[0].index)
 })

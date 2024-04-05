@@ -6,6 +6,7 @@ import { ElMessage } from 'element-plus'
 const tableData = ref([])
 const knowList = ref([])
 const testList = ref([])
+const questionList = ref([])
 const formLabelWidth = ref(100)
 const addTestDialog = ref(false)
 const watchQuestionDialog = ref(false)
@@ -27,7 +28,7 @@ const questionForm = ref({
   answerCText: "是法人",
   answerDText: "实行自主经营、自负盈亏、独立核算",
 })
-
+const editTestDialog = ref(false)
 
 const clearForm = () => {
   addTestForm.value = {
@@ -39,170 +40,148 @@ const clearForm = () => {
 }
 const editTest = async (row) => {
   addTestForm.value = row
-  addTestDialog.value = true
+  editTestDialog.value = true
   // console.log(row)
 }
-const makeSureDel = async (row) => {}
+
+const toEditTest = async () => {
+  const { data } = await axios.post('http://localhost:3000/test/edit', addTestForm.value)
+  if (data.code === 2) {
+    ElMessage.success('修改成功')
+    getTestList()
+    editTestDialog.value = false
+  }
+}
+
+const makeSureDel = async (row) => {
+  const { data } = await axios.post('http://localhost:3000/test/del',{id: row.id})
+  if (data.code === 2) {
+    ElMessage.success('删除成功')
+    getTestList()
+  }
+}
 const dontAddQuestion = async (row) => {
+  getTestList()
   addTestDialog.value = false
   clearForm()
 }
-const trueAddQuestion = async (row) => {}
-const addQuestionList = async (row) => {
-  addTestForm.value.questionList = [1,2,3,4]
+const trueAddQuestion = async () => {
+  // console.log(addTestForm.value)
+  const { data } = await axios.post('http://localhost:3000/test/add', addTestForm.value)
+  if (data.code === 2) {
+    ElMessage.success('添加成功')
+    addTestDialog.value = false
+    getTestList()
+    clearForm()
+  }
+}
+
+const addQuestionList = async () => {
+  if (addTestForm.value.name === '') return ElMessage.error('请输入考试名称')
+  if (addTestForm.value.knowList.length === 0) return ElMessage.error('请选择知识点')
+  if (addTestForm.value.num === 0) return ElMessage.error('请输入问题数量')
+  const { data } = await axios.post('http://localhost:3000/question/allData',{})
+  let nowQuesList = []
+  let num = Number(addTestForm.value.num)
+  if (data.code === 2) {
+    questionList.value = data.body
+    let nowLen = 0
+    while(1) {
+      for (let i = 0; i < addTestForm.value.knowList.length; i++) {
+        let knowID = addTestForm.value.knowList[i]
+        for (let j = 0; j < questionList.value.length; j++) {
+          if (questionList.value[j].knowID === knowID && !nowQuesList.includes(questionList.value[j].id)){
+            nowQuesList.push(questionList.value[j].id)
+            break
+          }
+        }
+        if (nowQuesList.length === num) {
+          break
+        }
+      }
+      if (nowQuesList.length === num) {
+        break
+      }
+      if (nowLen === nowQuesList.length) {
+        return ElMessage.error('题目数量不足')
+      } else {
+        nowLen = nowQuesList.length
+      }
+    }
+    addTestForm.value.questionList = nowQuesList
+  }
 }
 const watchQuestion = async (item) => {
-  console.log(item)
+  // console.log(questionList.value)
+  for (let i = 0; i < questionList.value.length; i++) {
+    console.log(questionList.value[i])
+    if (questionList.value[i].id === item) {
+      questionForm.value = questionList.value[i]
+      for (let j = 0; j < knowList.value.length; j++) {
+        if (knowList.value[j].id === questionList.value[i].knowID) {
+          questionForm.value.know = knowList.value[j].name
+        }
+      }
+      let num = 0, str = ''
+      let arr = questionList.value[i].selectList.split(',')
+      arr.forEach(ans => {
+        if (ans === '1') num++
+      })
+      str = arr[0] === '1' ? 'A,' : '' + arr[1] === '1' ? 'B,' : '' + arr[2] === '1' ? 'C,' : '' + arr[3] === '1' ? 'D' : ''
+      questionForm.value.type = num === 1 ? '单选' : '多选'
+      questionForm.value.answer = str
+      break
+    }
+  }
   watchQuestionDialog.value = true
 }
 const delQuestion = (item) => {
-  console.log(item)
+  addTestForm.value.questionList = addTestForm.value.questionList.filter(obj => obj !== item)
 }
 
 
 
 const getTestList = async () => {
-  testList.value = [
-    {
-      id: 0,
-      name: '第一次全知识点考试',
-      questionList: [1,2,3],
-      knowList: [0,1],
+  const { data } = await axios.post('http://localhost:3000/test/allData')
+  if (data.code === 2) {
+    testList.value = data.body
+    const knowMap = {}
+    for (let i = 0; i < knowList.value.length; i++) {
+      knowMap[knowList.value[i].id] = knowList.value[i].name
     }
-  ]
-  const knowMap = {}
-  for (let i = 0; i <knowList.value.length; i++) {
-    knowMap[knowList.value[i].id] = knowList.value[i].label
+    console.log(testList.value)
+    for (let i = 0; i < testList.value.length; i++) {
+      let knowArr = testList.value[i].knowStr.split(',')
+      let str = ''
+      knowArr.forEach(item => {
+        str += knowMap[item] + ','
+      })
+      testList.value[i].know = str
+      testList.value[i].questionList = testList.value[i].questionStr.split(',')
+
+    }
+    tableData.value = testList.value
   }
-  tableData.value = []
-  testList.value.forEach(item => {
-    let know = ''
-    item.knowList.forEach(key => {
-      know += knowMap[key] + ','
-    })
-    tableData.value.push({
-      ...item,
-      know
-    })
-  })
 }
 
 const getKnowList = async () => {
-  knowList.value = [
-    {
-      id: 0,
-      label: '企业的功能与定义',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [],
-      downstream: '',
-      downstreamIDList: [4,8],
-    },
-    {
-      id: 1,
-      label: '个人独资/合伙企业',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [],
-      downstream: '',
-      downstreamIDList: [4,8],
-    },
-    {
-      id: 2,
-      label: '公司制企业',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [],
-      downstream: '',
-      downstreamIDList: [4,8],
-    },
-    {
-      id: 3,
-      label: '企业财务管理的内容',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [],
-      downstream: '',
-      downstreamIDList: [4,8],
-    },
-    {
-      id: 4,
-      label: '利润最大化',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [0,1,2,3],
-      downstream: '',
-      downstreamIDList: [5,6,7],
-    },
-    {
-      id: 5,
-      label: '股东财富最大化',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [4],
-      downstream: '',
-      downstreamIDList: [],
-    },
-    {
-      id: 6,
-      label: '企业价值最大化',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [4],
-      downstream: '',
-      downstreamIDList: [],
-    },
-    {
-      id: 7,
-      label: '相关者利益最大化',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [4],
-      downstream: '',
-      downstreamIDList: [],
-    },
-    {
-      id: 8,
-      label: '各种财务管理目标之间的关系',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [0,1,2,3],
-      downstream: '',
-      downstreamIDList: [9,10,11],
-    },
-    {
-      id: 9,
-      label: '所有者和经营者利益冲突与协调',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [8],
-      downstream: '',
-      downstreamIDList: [],
-    },
-    {
-      id: 10,
-      label: '大股东与中小股东利益冲突与协调',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [8],
-      downstream: '',
-      downstreamIDList: [],
-    },
-    {
-      id: 11,
-      label: '所有者和债权人的利益冲突与协调',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [8],
-      downstream: '',
-      downstreamIDList: [],
-    },
-  ]
+  const { data } = await axios.post('http://localhost:3000/know/allData',{})
+  if (data.code === 2) {
+    knowList.value = data.body
+  }
+}
+
+const getQuestList = async () => {
+  const { data } = await axios.post('http://localhost:3000/question/allData',{})
+  if (data.code === 2) {
+    questionList.value = data.body
+  }
 }
 
 onMounted(async() => {
   await getKnowList()
   await getTestList()
+  await getQuestList()
 })
 
 
@@ -221,8 +200,8 @@ onMounted(async() => {
         <el-table-column prop="know" label="知识点" />
         <el-table-column label="所含题目" width="180">
           <template #default="scope">
-            <span  v-for="item in scope.row.questionList" :key="item">
-              <el-link @click="watchQuestion(item)">{{item}}</el-link>
+            <span  v-for="(item, index) in scope.row.questionList" :key="item">
+              <el-link @click="watchQuestion(item)">{{index + 1}}</el-link>
               <span>，</span>
             </span>
           </template>
@@ -247,17 +226,17 @@ onMounted(async() => {
         </el-form-item>
         <el-form-item label="所关联知识点" :label-width="formLabelWidth">
           <el-checkbox-group v-model="addTestForm.knowList">
-            <el-checkbox v-for="item in knowList" :label="item.label" :value="item.id" :key="item.id" />
+            <el-checkbox v-for="item in knowList" :label="item.name" :value="item.id" :key="item.id" />
           </el-checkbox-group>
         </el-form-item>
         <el-form-item v-if="addTestForm.questionList.length === 0" label="问题数量" :label-width="formLabelWidth">
           <el-input v-model="addTestForm.num" />
         </el-form-item>
         <el-form-item v-if="addTestForm.questionList.length !== 0" label="问题" :label-width="formLabelWidth">
-          <span v-for="item in addTestForm.questionList" :key="item">
+          <span v-for="(item, index) in addTestForm.questionList" :key="item">
             <!-- <el-link @click="watchQuestion(item)">{{item}}</el-link> -->
             <el-tag @click.stop="watchQuestion(item)" closable @close="delQuestion(item)">
-              问题{{ item }}
+              问题{{ index + 1 }}
             </el-tag>
             <span>，</span>
           </span>
@@ -268,6 +247,20 @@ onMounted(async() => {
           <el-button @click="dontAddQuestion">取消</el-button>
           <el-button v-if="addTestForm.questionList.length !== 0" type="primary" @click="trueAddQuestion">确定</el-button>
           <el-button v-else @click="addQuestionList">生成问题</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="editTestDialog" title="编辑考试" width="500"  @close="clearForm">
+      <el-form :model="addTestForm">
+        <el-form-item label="考试名称" :label-width="formLabelWidth">
+          <el-input v-model="addTestForm.name" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="dontAddQuestion">取消</el-button>
+          <el-button @click="toEditTest">确定</el-button>
         </div>
       </template>
     </el-dialog>

@@ -31,9 +31,30 @@ user.post('/login', async (req, res) => {
   }
 })
 
+user.post('/add', async (req, res) => {
+  const { body } = req
+  let sql = `select * from user_info where id='${body.id}'`
+  const database = new DataBase()
+  const info = await database.getSqlData(sql)
+  if (info.length) {
+    res.send({
+      code: 4,
+      msg: '此账户已存在！'
+    })
+  } else {
+    sql = `insert into user_info (id,name,password,roleType,master) values ('${body.id}','${body.name}','${body.password}','${body.roleType}','${body.master}')`
+    const addDatabase = new DataBase()
+    await addDatabase.getSqlData(sql)
+    res.send({
+      code: 2,
+      msg: ''
+    })
+  }
+})
+
 user.post('/del', async (req, res) => {
   const { body } = req
-  let sql = `delete from user_info where userid='${body.userid}'`
+  let sql = `delete from user_info where id='${body.id}'`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({
@@ -83,26 +104,6 @@ user.post('/edit', async (req, res) => {
   })
 })
 
-user.post('/add', async (req, res) => {
-  const { body } = req
-  let sql = `select * from user_info where userid='${body.userid}'`
-  const database = new DataBase()
-  const info = await database.getSqlData(sql)
-  if (info.length) {
-    res.send({
-      code: 4,
-      msg: '此账户已存在！'
-    })
-  } else {
-    sql = `insert into user_info (userid,username,password,roleType) values ('${body.userid}','${body.username}','${body.password}','${body.roleType}')`
-    const addDatabase = new DataBase()
-    await addDatabase.getSqlData(sql)
-    res.send({
-      code: 2,
-      msg: ''
-    })
-  }
-})
 
 user.post('/addList', async (req, res) => {
   const { body } = req

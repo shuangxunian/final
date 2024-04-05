@@ -5,6 +5,7 @@ import { ElMessage } from 'element-plus'
 
 const userList = ref([])
 const tableList = ref([])
+const userid = ref('')
 const formLabelWidth = ref(100)
 const addUserDialog = ref(false)
 const editUserDialog = ref(false)
@@ -12,11 +13,6 @@ const addUserForm = ref({
   id: '',
   name: '',
   password: '123456',
-  userRole: 1,
-  score: '',
-  standing: '管理员',
-  needTest: false,
-  master: '',
 })
 
 const clearForm = () => {
@@ -24,16 +20,25 @@ const clearForm = () => {
     id: '',
     name: '',
     password: '123456',
-    userRole: 1,
-    score: '',
-    standing: '管理员',
-    needTest: false,
-    master: ''
   }
 }
 
 const dontAddUser = () => {}
-const trueAddUser = () => {}
+const trueAddUser = async () => {
+  const{ data } = await axios.post('http://localhost:3000/user/add',{
+    ...addUserForm.value,
+    roleType: '2',
+    master: userid.value
+  })
+  if (data.code === 2) {
+    ElMessage({
+      message: '添加成功',
+      type: 'success',
+    })
+    await getUserList()
+    addUserDialog.value = false
+  }
+}
 const editUser = (row) => {
   addUserForm.value = row
   editUserDialog.value = true
@@ -44,51 +49,32 @@ const fixPassword = (row) => {}
 
 const getTableList = async () => {
   tableList.value = []
-  const userid = '1001'
+  const roleMap = {
+    '0': '管理员',
+    '1': '负责人',
+    '2': '成员',
+  }
   for (let i = 0; i < userList.value.length; i++) {
     const nowData = userList.value[i]
-    if (nowData.master === userid) {
+    nowData.standing = roleMap[userList.value[i].roleType]
+    if (nowData.master === userid.value) {
       tableList.value.push(nowData)
     }
   }
 }
 
 const getUserList = async () => {
-  userList.value = [
-    {
-      id: 'admin',
-      name: 'admin',
-      userRole: 0,
-      score: '',
-      standing: '管理员',
-      needTest: false,
-      master: '',
-    },
-    {
-      id: '1001',
-      name: '张三',
-      userRole: 1,
-      score: '',
-      standing: '负责人',
-      needTest: false,
-      master: '',
-    },
-    {
-      id: '2001',
-      name: '张四',
-      userRole: 2,
-      score: '',
-      standing: '成员',
-      needTest: false,
-      master: '1001',
-    },
-  ]
+  const { data } = await axios.post('http://localhost:3000/user/allData',{})
+  if (data.code === 2) {
+    console.log(data)
+    userList.value = data.body
+    getTableList()
+  }
 }
 
 onMounted(async () => {
-  await getUserList()
-  await getTableList()
-  
+  userid.value = window.sessionStorage.getItem('id')
+  await getUserList()  
 })
 
 </script>

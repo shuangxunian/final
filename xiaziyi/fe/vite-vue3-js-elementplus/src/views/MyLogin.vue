@@ -59,7 +59,7 @@ async function login () {
 .about {
   width: 100%;
   height: 100%;
-  background-image: linear-gradient(to top, #a18cd1 0%, #fbc2eb 100%);
+  background-color: #999;
   .login_box{
     width: 450px;
     height: 220px;
