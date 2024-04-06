@@ -1,21 +1,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import Papa from 'papaparse'
 
 const findData = ref('')
-const tableData = ref([
-  {
-    userID: '203401010501',
-    name: '曲祉欣',
-    status: '正常'
-  },
-  {
-    userID: '203401010506',
-    name: '关雨婷',
-    status: '正常'
-  },
-])
+const tableData = ref([])
 const form = ref({
   userID: '',
   name: '',
@@ -25,18 +15,63 @@ const dialogUploadVisible = ref(false)
 const uploadRef = ref(null)
 const fileList = ref([])
 const newUserList = ref([])
+const userList = ref([])
+const addUserDialog = ref(false)
+const editUserDialog = ref(false)
 
-function refreshFrom() {
+function clearForm() {
   form.value = {
-    userID: '',
+    id: '',
     name: '',
   }
 }
 
-function getList() {}
+function getList() {
+  if (findData.value === '') {
+    getUserList()
+    return
+  }
+  const list = userList.value.filter(item => item.id.includes(findData.value))
+  tableData.value = list
+}
 
-function addUser() {
-  dialogFormVisible.value = true
+async function addUser() {
+  if (form.value.id === '') return ElMessage.error('请输入学工号')
+  if (form.value.name === '') return ElMessage.error('请输入用户姓名')
+  if (form.value.roletype === '') return ElMessage.error('请选择用户身份')
+  const { data } = await axios.post('http://localhost:3000/user/add', {
+    ...form.value,
+    roletype: '2',
+  })
+  if (data.code === 2) {
+    addUserDialog.value = false
+    ElMessage.success('添加成功')
+    getUserList()
+  } else {
+    ElMessage.error(data.msg)
+  }
+}
+
+async function editUser() {
+  if (form.value.id === '') return ElMessage.error('请输入学工号')
+  if (form.value.name === '') return ElMessage.error('请输入用户姓名')
+  const { data } = await axios.post('http://localhost:3000/user/edit', form.value)
+  if (data.code === 2) {
+    editUserDialog.value = false
+    ElMessage.success('修改成功')
+    getUserList()
+  } else {
+    ElMessage.error(data.msg)
+  }
+}
+
+async function fixPassword() {
+  const { data } = await axios.post('http://localhost:3000/user/fixPassword', { id: form.value.id })
+  if (data.code === 2) {
+    ElMessage.success('重置成功')
+    getUserList()
+    editUserDialog.value = false
+  }
 }
 
 function doNotPush() {
@@ -63,8 +98,9 @@ function pushUserList() {
   dialogUploadVisible.value = false
 }
 
-function editData(scoped) {
-  console.log(scoped)
+function editData(row) {
+  form.value = row
+  editUserDialog.value = true
 }
 
 function delData(scoped) {
@@ -112,9 +148,20 @@ function fileChange(uploadFile, uploadFiles) {
 }
 
 async function getUserList() {
-  // const { data } = await axios.post('http://localhost:3000/user/alldata', {})
+  const { data } = await axios.post('http://localhost:3000/user/allData', {})
+  if (data.code === 2) {
+    userList.value = []
+    data.body.forEach(item => {
+      if (item.roletype === '2') {
+        userList.value.push({
+          ...item,
+          status: '正常'
+        })
+      }
+    })
+    tableData.value = userList.value
+  }
 }
-
 onMounted(async() => {
   await getUserList()
 })
@@ -129,26 +176,27 @@ onMounted(async() => {
         <el-button @click="getList">筛选</el-button>
       </div>
       <div class="right">
-        <el-button type="primary" @click="addUser">新建学生</el-button>
+        <el-button type="primary" @click="addUserDialog = true">新建学生</el-button>
       </div>
     </div>
     <div class="body">
       <el-table :data="tableData" border style="width: 100%" max-height="600">
-        <el-table-column prop="userID" label="学号" width="150" />
+        <el-table-column prop="id" label="学号"/>
         <el-table-column prop="name" label="学生姓名" width="300" />
         <el-table-column prop="status" label="学习状态" width="300" />
         <el-table-column fixed="right" label="操作" width="200">
           <template #default="scoped">
-            <el-button link type="primary" size="small" @click="editData(scoped)">编辑</el-button>
+            <el-button link type="primary" size="small" @click="editData(scoped.row)">编辑</el-button>
             <el-button link type="danger" size="small" @click="delData(scoped)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
     </div>
-    <el-dialog v-model="dialogFormVisible" title="添加用户" width="500">
+
+    <el-dialog v-model="addUserDialog" title="添加学生" width="500" @close="clearForm">
       <el-form :model="form">
         <el-form-item label="学号" label-width="100">
-          <el-input v-model="form.userID" placeholder="请填写学号"/>
+          <el-input v-model="form.id" placeholder="请填写学号"/>
         </el-form-item>
         <el-form-item label="学生姓名" label-width="100">
           <el-input v-model="form.name" placeholder="请填写学生姓名"/>
@@ -156,11 +204,30 @@ onMounted(async() => {
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button link type="primary" @click="dialogUploadVisible = true">一键导入</el-button>
-          <el-button @click="doNotPush">取消</el-button>
-          <el-button type="primary" @click="pushUser">
-            新建
-          </el-button>
+          <!-- <el-button link type="primary" @click="dialogUploadVisible = true">一键导入</el-button> -->
+          <el-button @click="addUserDialog = false">取消</el-button>
+          <el-button type="primary" @click="addUser">新建</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+
+    <el-dialog v-model="editUserDialog" title="编辑用户" width="500"  @close="clearForm">
+      <el-form :model="form">
+        <el-form-item label="学工号" label-width="100">
+          <el-input disabled v-model="form.id" />
+        </el-form-item>
+        <el-form-item label="用户姓名" label-width="100">
+          <el-input v-model="form.name" />
+        </el-form-item>
+        <el-form-item label="密码" label-width="100">
+          <el-button link type="primary" size="small" @click="fixPassword">重置密码</el-button>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="editUserDialog = false">取消</el-button>
+          <el-button type="primary" @click="editUser">确定</el-button>
         </div>
       </template>
     </el-dialog>

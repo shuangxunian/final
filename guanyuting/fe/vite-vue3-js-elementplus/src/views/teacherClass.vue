@@ -143,12 +143,12 @@ function refreshTestFrom() {}
 
 function doNotAddTest() {
   refreshTestFrom()
-  dialogAddTestVisible = false
+  dialogAddTestVisible.value = false
 }
 
 function addTest() {
   refreshTestFrom()
-  dialogAddTestVisible = false
+  dialogAddTestVisible.value = false
 }
 
 async function getStudentList() {

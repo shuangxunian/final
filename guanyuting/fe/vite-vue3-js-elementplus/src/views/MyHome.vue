@@ -3,16 +3,66 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 
+onMounted(async () => {
+  roletype.value = window.sessionStorage.getItem('roletype')
+  if (roletype.value === '0') {
+    routerList.value = [
+      {
+        index: "adminUsers",
+        name: "用户信息",
+        icon: "Menu"
+      },
+      {
+        index: "adminClass",
+        name: "课程信息",
+        icon: "Service"
+      },
+      {
+        index: "info",
+        name: "个人信息",
+        icon: "Service"
+      },
+    ]
+  } else if (roletype.value === '1') {
+    routerList.value = [
+      {
+        index: "teacherUsers",
+        name: "学生信息",
+        icon: "Menu"
+      },
+      {
+        index: "teacherClass",
+        name: "课程信息",
+        icon: "Menu"
+      },
+      {
+        index: "info",
+        name: "个人信息",
+        icon: "Service"
+      },
+    ]
+  } else {
+    routerList.value = [
+      {
+        index: "student",
+        name: "计算机网络",
+        icon: "Menu"
+      },
+      {
+        index: "info",
+        name: "个人信息",
+        icon: "Service"
+      },
+    ]
+  }
+  router.push('/' + routerList.value[0].index)
+})
+
 const route = useRoute()
 const router = useRouter()
 
-const routerList = ref([
-  {
-    index: "student",
-    name: "计算机网络",
-    icon: "Menu"
-  },
-])
+const routerList = ref([])
+const roletype = ref('0')
 
 // const routerList = ref([
 //   {
@@ -59,9 +109,6 @@ function logout() {
   router.push('/login')
 }
 
-onMounted(() => {
-  router.push('/' + routerList.value[0].index)
-})
 
 </script>
 
@@ -78,7 +125,7 @@ onMounted(() => {
     <div class="body">
       <div class="left">
         <el-menu
-          :default-active="routerList[0].index"
+          :default-active="routerList[0]?.index"
           class="el-menu-vertical-demo"
           @select="handleSelect"
         >

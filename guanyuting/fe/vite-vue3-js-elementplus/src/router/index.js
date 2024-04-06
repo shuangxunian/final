@@ -3,6 +3,7 @@ import MyLogin from '../views/MyLogin.vue'
 import MyHome from '../views/MyHome.vue'
 
 import Users from '../views/Users.vue'
+import info from '../views/info.vue'
 import adminClass from '../views/adminClass.vue'
 import adminUsers from '../views/adminUsers.vue'
 import teacherUsers from '../views/teacherUsers.vue'
@@ -24,6 +25,7 @@ const router = createRouter({
         { path: '/teacherUsers', component: teacherUsers },
         { path: '/teacherClass', component: teacherClass },
         { path: '/users', component: Users },
+        { path: '/info', component: info },
         { path: '/student', component: student }
       ]
     },
