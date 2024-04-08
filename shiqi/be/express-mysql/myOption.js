@@ -1,10 +1,10 @@
 const express = require('express')
 const DataBase = require('./mysql')
 
-const user = express.Router()
+const myOption = express.Router()
 
-user.post('/allData', async (req, res) => {
-  let sql = 'select * from `user_info`'
+myOption.post('/allData', async (req, res) => {
+  let sql = 'select * from `option_list`'
   const database = new DataBase()
   let info = await database.getSqlData(sql)
   res.send({
@@ -15,7 +15,7 @@ user.post('/allData', async (req, res) => {
 
 
 
-user.post('/add', async (req, res) => {
+myOption.post('/add', async (req, res) => {
   const { body } = req
   let sql = `select * from user_info where id='${body.id}'`
   const findDatabase = new DataBase()
@@ -62,15 +62,12 @@ user.post('/add', async (req, res) => {
   // }
 })
 
-user.post('/login', async (req, res) => {
+myOption.post('/login', async (req, res) => {
   const { body } = req
   let sql = `select * from user_info where id='${body.id}' and password='${body.password}'`
   const database = new DataBase()
   let info = await database.getSqlData(sql)
   if (info.length !== 0) {
-    sql = `insert into option_list (id, userid, optionType) values ('${new Date().getTime()}','${body.id}','登录')`
-    const optionDatabase = new DataBase()
-    await optionDatabase.getSqlData(sql)
     res.send({
       code: 2,
       msg: '登录成功！'
@@ -83,7 +80,7 @@ user.post('/login', async (req, res) => {
   }
 })
 
-user.post('/del', async (req, res) => {
+myOption.post('/del', async (req, res) => {
   const { body } = req
   let sql = `delete from user_info where id='${body.id}'`
   const database = new DataBase()
@@ -93,7 +90,7 @@ user.post('/del', async (req, res) => {
   })
 })
 
-user.post('/edit', async (req, res) => {
+myOption.post('/edit', async (req, res) => {
   const { body } = req
   let sql = `update user_info set name='${body.name}', imgUrl ='${body.imgUrl}' where id = '${body.id}'`
   console.log(sql)
@@ -104,4 +101,4 @@ user.post('/edit', async (req, res) => {
   })
 })
 
-module.exports = user
+module.exports = myOption

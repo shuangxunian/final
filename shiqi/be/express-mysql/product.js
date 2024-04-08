@@ -15,33 +15,40 @@ product.post('/allData', async (req, res) => {
 
 product.post('/add', async (req, res) => {
   const { body } = req
-  let sql = 'select * from `product_list` where `name`= ? and `belong`= ?'
-  let data = [body.name,body.belong]
+  let sql = `select * from product_list where name='${body.name}' and belong='${body.belong}'`
   const database = new DataBase()
-  let info = await database.getSqlData(sql, data)
+  let info = await database.getSqlData(sql)
   if (info.length !== 0) {
     res.send({
       code: 4,
       msg: '此厂家生成的此药已存在，请检查！'
     })
   } else {
-    sql = 'select * from `product_list`'
-    const getDatabase = new DataBase()
-    info = await getDatabase.getSqlData(sql)
-    if (info.length === 0) {
-      body.id = 0
-    } else {
-      body.id = info[info.length - 1].id + 1
-    }
-    sql = 'INSERT INTO `product_list` (`name`, `belong`, `haveNum`, `id`) VALUES (?,?,?,?);'
-    data = [body.name,body.belong,0,body.id]
+    const id = new Date().getTime()
+    sql = `insert into product_list (name,belong,haveNum,id) values ('${body.name}','${body.belong}',0,'${id}')`
     const setDatabase = new DataBase()
-    await setDatabase.getSqlData(sql, data)
+    await setDatabase.getSqlData(sql)
+    sql = `insert into option_list (id, userid, optionType,productid,productname,productbelong) values ('${new Date().getTime()}','${body.userid}','添加产品','${id}','${body.name}','${body.belong}')`
+    const addOptionDatabase = new DataBase()
+    await addOptionDatabase.getSqlData(sql)
     res.send({
       code: 2,
       msg: ''
     })
   }
+})
+
+product.post('/del', async (req, res) => {
+  const { body } = req
+  let sql = `delete from product_list where id='${body.id}'`
+  const database = new DataBase()
+  await database.getSqlData(sql)
+  sql = `insert into option_list (id, userid, optionType,productname,productbelong) values ('${new Date().getTime()}','${body.userid}','删除产品','${body.name}','${body.belong}')`
+  const addOptionDatabase = new DataBase()
+  await addOptionDatabase.getSqlData(sql)
+  res.send({
+    code: 2
+  })
 })
 
 module.exports = product

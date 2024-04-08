@@ -8,6 +8,8 @@ const foodList = ref([])
 const addRecipeDialog = ref(false)
 const selectFoodDialog = ref(false)
 const foodListDialog = ref(false)
+const editRecipeDialog = ref(false)
+
 
 const srcList = ref([])
 const checkList = ref([])
@@ -20,20 +22,54 @@ const form = ref({
   fat: '',
   sugar: ''
 })
-const foodForm = ref({})
+const foodForm = ref({
+  id: '',
+  name: '',
+  num: 0
+})
 const formLabelWidth = '140px'
 
+const closeSelectFoodDialog = () => {
+  foodForm.value = {
+    id: '',
+    name: '',
+    num: 0
+  }
+}
+
+const refreshForm = () => {
+  form.value = {
+    name: '',
+    needFood: [],
+  }
+}
 
 const lookBigImg = (scope) => {
   srcList.value = [tableData.value[scope.$index].img]
 }
 
 const addRecipe = async() => {
-  const { data } = await axios.post('http://localhost:3000/food/addData', form.value)
-  if (data.code === 2) {
-    ElMessage.success('添加成功')
-    await getRecList()
-  }
+  console.log(checkList.value.join(','))
+  // console.log(form.value)
+  // const { data } = await axios.post('http://localhost:3000/food/addData', form.value)
+  // if (data.code === 2) {
+  //   ElMessage.success('添加成功')
+  //   await getRecList()
+  // }
+}
+
+const editData = async(row) => {
+  form.value = row
+  // console.log(row)
+  checkList.value = row.ingredient.split(',')
+  console.log(checkList.value)
+  editRecipeDialog.value = true
+  // console.log(scope)
+  // const { data } = await axios.post('http://localhost:3000/food/addData', form.value)
+  // if (data.code === 2) {
+    // ElMessage.success('添加成功')
+    // await getRecList()
+  // }
 }
 
 const getRecList = async() => {
@@ -53,7 +89,7 @@ const getRecList = async() => {
           num: '250'
         }
       ],
-      ingredient: '葱，姜，料酒，盐',
+      ingredient: '葱,姜,料酒,盐',
       energy: '141',
       protein: '18.33',
       fat: '5.35',
@@ -64,6 +100,33 @@ const getRecList = async() => {
   // if (data.code === 2) {
   //   tableData.value = data.body
   // }
+}
+
+const addNeedFood = async() => {
+  for(let i = 0; i < foodList.value.length; i++) {
+    if (foodList.value[i].id === foodForm.value.id) {
+      form.value.needFood.push({
+        ...foodList.value[i],
+        num: foodForm.value.num
+      })
+    }
+  }
+  selectFoodDialog.value = false
+  // console.log(foodForm.value)
+  // const { data } = await axios.post('http://localhost:3000/food/addData', foodForm.value)
+}
+
+const handleClose = (tag) => {
+  form.value.needFood = form.value.needFood.filter(item => item.id !== tag.id)
+}
+
+const editFood = (tag) => {
+  foodForm.value = {
+    id: tag.id,
+    name: tag.name,
+    num: tag.num
+  }
+  selectFoodDialog.value = true
 }
 
 const getFoodList = async() => {
@@ -109,8 +172,12 @@ onMounted(async() => {
         </el-table-column>
         <el-table-column fixed="right" label="操作" width="200">
           <template #default="scoped">
-            <el-button link type="primary" size="small" @click="editData(scoped)">编辑</el-button>
-            <el-button link type="danger" size="small" @click="delData(scoped)">删除</el-button>
+            <el-button link type="primary" size="small" @click="editData(scoped.row)">编辑</el-button>
+            <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scoped.row)">
+              <template #reference>
+                <el-button link type="danger" size="small">删除</el-button>
+              </template>
+            </el-popconfirm>
           </template>
         </el-table-column>
       </el-table>
@@ -124,6 +191,12 @@ onMounted(async() => {
         </el-form-item>
         <el-form-item label="食材列表" :label-width="formLabelWidth">
           <el-button link @click="selectFoodDialog = true">选择食材</el-button>
+          <div>
+            <el-tag v-for="tag in form.needFood" :key="tag.id" closable type="primary" style="margin: 10px 10px 0 0;" @click="editFood(tag)" @close="handleClose(tag)">
+              {{ tag.name }}：{{ tag.num }}g
+            </el-tag>
+          </div>
+
         </el-form-item>
         <el-form-item label="配料列表" :label-width="formLabelWidth">
           <el-checkbox-group v-model="checkList">
@@ -161,22 +234,76 @@ onMounted(async() => {
       </template>
     </el-dialog>
 
-
-    <el-dialog v-model="selectFoodDialog" title="选择食材" width="500" >
-      <el-checkbox-group v-model="checkList">
-        <el-checkbox v-for="item in foodList" :key="item.id" :label="item.name" :value="item.id" />
-        <!-- <el-checkbox label="鸡蛋" value="鸡蛋" /> -->
-        <!-- <el-checkbox label="盐" value="盐" /> -->
-      </el-checkbox-group>
-      <!-- <el-form :model="foodForm">
+    <el-dialog v-model="editRecipeDialog" title="编辑食谱" width="500" @close="refreshForm">
+      <el-form :model="form">
         <el-form-item label="食谱名称" :label-width="formLabelWidth">
           <el-input v-model="form.name"/>
         </el-form-item>
-      </el-form> -->
+        <el-form-item label="食材列表" :label-width="formLabelWidth">
+          <el-button link @click="selectFoodDialog = true">选择食材</el-button>
+          <div>
+            <el-tag v-for="tag in form.needFood" :key="tag.id" closable type="primary" style="margin: 10px 10px 0 0;" @click="editFood(tag)" @close="handleClose(tag)">
+              {{ tag.name }}：{{ tag.num }}g
+            </el-tag>
+          </div>
+
+        </el-form-item>
+        <el-form-item label="配料列表" :label-width="formLabelWidth">
+          <el-checkbox-group v-model="checkList">
+            <el-checkbox label="盐" value="盐" />
+            <el-checkbox label="生抽" value="生抽" />
+            <el-checkbox label="白醋" value="白醋" />
+            <el-checkbox label="料酒" value="料酒" />
+            <el-checkbox label="白糖" value="白糖" />
+            <el-checkbox label="辣椒" value="辣椒" />
+            <el-checkbox label="花椒" value="花椒" />
+            <el-checkbox label="葱" value="葱" />
+            <el-checkbox label="姜" value="姜" />
+            <el-checkbox label="蒜" value="蒜" />
+            <el-checkbox label="香菜" value="香菜" />
+          </el-checkbox-group>
+        </el-form-item>
+        <el-form-item label="热量/kJ/100g" :label-width="formLabelWidth">
+          <el-input v-model="form.energy"/>
+        </el-form-item>
+        <el-form-item label="蛋白质/g/100g" :label-width="formLabelWidth">
+          <el-input v-model="form.protein"/>
+        </el-form-item>
+        <el-form-item label="脂肪/g/100g" :label-width="formLabelWidth">
+          <el-input v-model="form.fat"/>
+        </el-form-item>
+        <el-form-item label="碳水化合物/g/100g" :label-width="formLabelWidth">
+          <el-input v-model="form.sugar"/>
+        </el-form-item>
+      </el-form>
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="addRecipeDialog = false">取消</el-button>
           <el-button type="primary" @click="addRecipe">添加</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="selectFoodDialog" title="选择食材" width="500" @close="closeSelectFoodDialog">
+      <el-form :model="foodForm">
+        <el-form-item label="食材名称" :label-width="formLabelWidth">
+          <el-select v-model="foodForm.id" placeholder="请选择食材" >
+            <el-option
+              v-for="item in foodList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="食材重量" :label-width="formLabelWidth">
+          <el-input-number v-model="foodForm.num" />&nbsp;g
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="selectFoodDialog = false">取消</el-button>
+          <el-button type="primary" @click="addNeedFood">添加</el-button>
         </div>
       </template>
     </el-dialog>

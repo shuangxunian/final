@@ -18,10 +18,11 @@ const menus = ref([
   },{
     value: "user",
     name: "用户管理"
-  },{
-    value: "option",
-    name: "操作记录"
-  }
+  },
+  // {
+  //   value: "option",
+  //   name: "操作记录"
+  // }
 ])
 
 function handleSelect(key, keyPath) {

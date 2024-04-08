@@ -24,10 +24,6 @@ class Database
         if (error) {
           reject(error)
         } else {
-          console.log('---')
-          console.log(sql)
-          console.log(data)
-          console.log('---')
           resolve(result)
         }
       })

@@ -109,6 +109,7 @@ onMounted(() => {
       </div>
       <div class="right">
         <el-button type="primary" @click="dialogAddSell = true">新建出库单</el-button>
+        <el-button type="danger" @click="addProduct">紧急召回</el-button>
       </div>
     </div>
     <div class="body">

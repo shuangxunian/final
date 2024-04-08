@@ -11,29 +11,7 @@ const addForm = ref({
   belong: ''
 })
 const loading = ref(true)
-
-
-// {
-//   name: '健胃消食片',
-//   belong: '江中',
-//   haveNum: 0
-// },
-// {
-//   name: '健胃消食片',
-//   belong: '顺势',
-//   haveNum: 0
-// },
-// {
-//   name: '感冒灵颗粒',
-//   belong: '999',
-//   haveNum: 0
-// },
-// {
-//   name: '复方感冒灵颗粒',
-//   belong: '新感林',
-//   haveNum: 0
-// },
-
+const userid = ref('')
 
 const getList = function () {}
 
@@ -46,7 +24,10 @@ const refreshAddForm = function () {
 const addProduct = async function () {
   if (addForm.value.name === '') return ElMessage.error('请输入药品名称')
   if (addForm.value.belong === '') return ElMessage.error('请输入药品所属厂家')
-  const { data } = await axios.post('http://localhost:3000/product/add', addForm.value)
+  const { data } = await axios.post('http://localhost:3000/product/add', {
+    ...addForm.value,
+    userid: userid.value
+  })
   if (data.code === 4) return ElMessage.error(data.msg)
   ElMessage({
     message: '添加成功！',
@@ -73,11 +54,24 @@ const getTableData = async function () {
 const editClick = async function (scoped) {
   console.log(scoped.$index)
 }
-const delClick = async function (scoped) {
-  console.log(scoped.$index)
+// const delClick = async function (scoped) {
+//   console.log(scoped.$index)
+// }
+const makeSureDel = async function (row) {
+  if (row.haveNum !== 0) return ElMessage.error('当前库存不为0，无法删除！')
+  const { data } = await axios.post('http://localhost:3000/product/del', {
+    ...row,
+    userid: userid.value
+  })
+  if (data.code === 4) return ElMessage.error(data.msg)
+  ElMessage({
+    message: '删除成功！',
+    type: 'success',
+  })
+  getTableData()
 }
-
 onMounted(async() => {
+  userid.value = window.sessionStorage.getItem('id')
   getTableData()
 })
 
@@ -101,8 +95,12 @@ onMounted(async() => {
         <el-table-column prop="haveNum" label="当前库存" />
         <el-table-column fixed="right" label="操作" width="120">
           <template #default="scoped">
-            <el-link :underline="false" type="primary" @click="editClick(scoped)">编辑</el-link>
-            <el-link :underline="false" type="danger" @click="delClick(scoped)">编辑</el-link>
+            <el-link :underline="false" type="primary" @click="editClick(scoped.row)">编辑</el-link>
+            <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scoped.row)">
+              <template #reference>
+                <el-button link type="danger" >删除</el-button>
+              </template>
+            </el-popconfirm>
           </template>
         </el-table-column>
       </el-table>

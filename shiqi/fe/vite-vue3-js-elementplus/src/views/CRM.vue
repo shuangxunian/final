@@ -54,7 +54,19 @@ const addCRM = async function () {
 const getCRMList = async function () {
   const { data } = await axios.post('http://localhost:3000/crm/allData', {})
   if (data.code === 2) {
-    CRMList.value = data.info
+    CRMList.value = []
+    const productMap = {}
+    productList.value.forEach(item => {
+      productMap[item.id] = item
+    })
+    data.info.forEach(item => {
+      CRMList.value.push({
+        ...item,
+        name: productMap[item.productID].name,
+        belong: productMap[item.productID].belong
+      })
+    })
+    tableData.value = CRMList.value
   }
 }
 
@@ -69,34 +81,40 @@ const getProductList = async function () {
       })
     })
   }
-  tableData.value = []
-  CRMList.value.forEach(item => {
-    let name,belong
-    productList.value.forEach(obj => {
-      if (item.productID === obj.id) {
-        name = obj.name
-        belong = obj.belong
-      }
-    })
-    tableData.value.push({
-      ...item,
-      name,
-      belong
-    })
-  })
+  // tableData.value = []
+  // CRMList.value.forEach(item => {
+  //   let name,belong
+  //   productList.value.forEach(obj => {
+  //     if (item.productID === obj.id) {
+  //       name = obj.name
+  //       belong = obj.belong
+  //     }
+  //   })
+  //   tableData.value.push({
+  //     ...item,
+  //     name,
+  //     belong
+  //   })
+  // })
   loading.value = false
 }
 
 const getTableData = async function () {
-  await getCRMList()
   await getProductList()
+  await getCRMList()
 }
 
 const getList = async function () {}
 
 const handleClick = async function () {}
 
-onMounted(() => {
+const getDate = function (timestampStr) {
+  console.log(timestampStr)
+  const time = new Date(parseInt(timestampStr))
+  return time.toLocaleString()
+}
+
+onMounted(async() => {
   getTableData()
 })
 
@@ -115,12 +133,17 @@ onMounted(() => {
     </div>
     <div class="body">
       <el-table v-loading="loading" :data="tableData" border style="width: 100%" max-height="600">
+        <el-table-column prop="date" label="操作时间" width="200">
+          <template #default="scope">
+            {{ getDate(scope.row.id) }}
+          </template>
+        </el-table-column>
         <el-table-column prop="productLot" label="产品批号" width="100" />
         <el-table-column prop="name" label="药品名称" width="200" />
         <el-table-column prop="belong" label="所属厂家" width="200" />
         <el-table-column prop="buildDate" label="生产日期" width="200" />
         <el-table-column prop="endDate" label="截止日期" width="200" />
-        <el-table-column prop="optionNum" label="数量新增" />
+        <el-table-column prop="optionNum" label="数量新增" width="100"/>
       </el-table>
     </div>
     <el-dialog v-model="dialogAddCRM" title="新建入库单" width="500">

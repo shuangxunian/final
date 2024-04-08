@@ -6,18 +6,19 @@ import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const loginForm = ref({
-  userName: 'admin',
+  id: 'admin',
   password: '123456'
 })
 
 function resetLoginForm() {
-  loginForm.value.userName = 'admin'
+  loginForm.value.id = 'admin'
   loginForm.value.password = '123456'
 }
 
 async function login () {
   const { data } = await axios.post('http://localhost:3000/user/login', loginForm.value)
   if (data.code === 2) {
+    window.sessionStorage.setItem('id', loginForm.value.id)
     window.sessionStorage.setItem('userName', loginForm.value.userName)
     router.push('/home')
   } else {
@@ -37,7 +38,7 @@ async function login () {
       <el-form ref="loginFormRef" :model="loginForm" label-width="0px" class="login_form">
         <!-- 用户名 -->
         <el-form-item prop="phone">
-          <el-input v-model="loginForm.userName" placeholder="请输入用户名"></el-input>
+          <el-input v-model="loginForm.id" placeholder="请输入员工工号"></el-input>
         </el-form-item>
         <!-- 密码 -->
         <el-form-item prop="password">
