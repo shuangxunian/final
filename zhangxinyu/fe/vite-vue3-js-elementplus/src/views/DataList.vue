@@ -60,8 +60,25 @@ onMounted(async() => {
     <div class="body">
       <el-table :data="tableData" border height="600">
         <el-table-column prop="china" label="中文词语" width="180" />
+        <el-table-column prop="pinyin" label="识字规则" width="100" />
+        <el-table-column prop="wordsAndPhrases" label="组词造句" width="300" />
+        <el-table-column prop="showStrokesMp4" label="笔画视频" width="450">
+          <template #default="scope">
+            <el-link :href="scope.row.showStrokesMp4" target="_blank">{{ scope.row.showStrokesMp4 }}</el-link>
+          </template>
+        </el-table-column>
         <el-table-column prop="eng" label="英文单词" width="180" />
-        <el-table-column prop="info" label="解释"/>
+        <el-table-column prop="info" label="解释" width="400"/>
+        <el-table-column fixed="right" label="操作" width="180">
+          <template #default="scope">
+            <el-button link type="primary" size="small" @click="editData(scope.row)">编辑</el-button>
+            <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scope.row)">
+              <template #reference>
+                <el-button link type="danger" size="small">删除</el-button>
+              </template>
+            </el-popconfirm>
+          </template>
+        </el-table-column>
       </el-table>
     </div>
 
@@ -69,6 +86,15 @@ onMounted(async() => {
       <el-form :model="textForm">
         <el-form-item label="中文词语" :label-width="formLabelWidth">
           <el-input v-model="textForm.china"/>
+        </el-form-item>
+        <el-form-item label="识字规则" :label-width="formLabelWidth">
+          <el-input v-model="textForm.pinyin"/>
+        </el-form-item>
+        <el-form-item label="组词造句" :label-width="formLabelWidth">
+          <el-input v-model="textForm.wordsAndPhrases"/>
+        </el-form-item>
+        <el-form-item label="笔画视频" :label-width="formLabelWidth">
+          <el-input v-model="textForm.showStrokesMp4"/>
         </el-form-item>
         <el-form-item label="英文单词" :label-width="formLabelWidth">
           <el-input v-model="textForm.eng"/>

@@ -3,6 +3,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import MyLogin from '../views/MyLogin.vue'
 import MyHome from '../views/MyHome.vue'
 
+import charts from '../views/charts.vue'
+import charts1 from '../views/charts1.vue'
+import charts2 from '../views/charts2.vue'
 import Users from '../views/Users.vue'
 import Options from '../views/Options.vue'
 import DataList from '../views/DataList.vue'
@@ -19,6 +22,9 @@ const router = createRouter({
       children: [
         { path: '/home', redirect: '/users' },
         { path: '/users', component: Users },
+        { path: '/charts', component: charts },
+        { path: '/charts1', component: charts1 },
+        { path: '/charts2', component: charts2 },
         { path: '/options', component: Options },
         { path: '/dataList', component: DataList },
         { path: '/info', component: Info }

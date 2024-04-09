@@ -2,7 +2,6 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
-import * as echarts from 'echarts'
 
 const testValue = ref(true)
 const tableData = ref([])
@@ -168,50 +167,8 @@ const getTableData = async () => {
     tableData.value = data.info
   }
   loading.value = false
-  await init()
 }
 
-const init = () => {
-  // 基于准备好的dom，初始化echarts实例
-  let Chart = echarts.init(document.getElementById("myEcharts"));
-  let dataMap = {}
-  userList.value.forEach(item => {
-    let old = new Date().getFullYear() - (item.birthday).substring(0, 4)
-    if (dataMap[old]) {
-      dataMap[old]++
-    } else {
-      dataMap[old] = 1
-    }
-  })
-  let xAxisData = []
-  let seriesData = []
-
-  for (let key in dataMap) {
-    xAxisData.push(key)
-    seriesData.push(dataMap[key])
-  }
-  // 绘制图表
-  let options = {
-    title: {
-      text: "年龄分布",
-    },
-    tooltip: {},
-    xAxis: {
-      data: xAxisData,
-    },
-    yAxis: {},
-    series: [
-      {
-        name: "年龄",
-        type: "bar",
-        data: seriesData,
-      },
-    ],
-  };
-
-  // 渲染图表
-  Chart.setOption(options);
-}
 
 onMounted(async () => {
   await getTableData()
@@ -251,9 +208,6 @@ onMounted(async () => {
           </template>
         </el-table-column>
       </el-table>
-      <div class="echart">
-        <div id="myEcharts" :style="{ width: '900px', height: '300px' }"></div>
-      </div>
     </div>
 
     <el-dialog v-model="addUserDialog" title="添加学生" width="500" @close="clearForm">

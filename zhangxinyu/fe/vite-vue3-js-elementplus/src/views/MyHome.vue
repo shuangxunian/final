@@ -8,6 +8,21 @@ const router = useRouter()
 
 const routerList = ref([
   {
+    index: "charts",
+    name: "数据看板",
+    icon: "Menu"
+  },
+  {
+    index: "charts1",
+    name: "用户增长率",
+    icon: "Menu"
+  },
+  {
+    index: "charts2",
+    name: "区域分析",
+    icon: "Menu"
+  },
+  {
     index: "users",
     name: "用户列表",
     icon: "Menu"
