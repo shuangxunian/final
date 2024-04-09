@@ -25,6 +25,7 @@ sell.post('/add', async (req, res) => {
   let info = await database.getSqlData(sql, data)
   // 将截止日期按照从近到远排序
   const endDateList = []
+  console.log(info)
   if (info.length === 1) {
     endDateList.push(info[0])
   } else if (info.length > 1) {

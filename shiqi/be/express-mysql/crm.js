@@ -15,8 +15,8 @@ crm.post('/allData', async (req, res) => {
 
 crm.post('/add', async (req, res) => {
   const { body } = req
-  let sql = 'insert into `crm_list` (`productID`, `productLot`, `buildDate`, `endDate`, `optionNum`, `id`) VALUES (?,?,?,?,?,?)'
-  let data = [body.productID,body.productLot,body.buildDate,body.endDate,body.optionNum,new Date().getTime()]
+  let sql = 'insert into `crm_list` (`productID`, `productLot`, `buildDate`, `endDate`, `optionNum`, `id`,`nowNum`) VALUES (?,?,?,?,?,?,?)'
+  let data = [body.productID,body.productLot,body.buildDate,body.endDate,body.optionNum,new Date().getTime(),body.optionNum]
   const setDatabase = new DataBase()
   await setDatabase.getSqlData(sql, data)
   sql = `UPDATE product_list SET haveNum = haveNum + ${body.optionNum} WHERE id = ${body.productID}`
