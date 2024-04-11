@@ -1,5 +1,7 @@
 const express = require('express')
 const DataBase = require('./mysql')
+const axios = require("axios");
+const qs = require('qs')
 
 const user = express.Router()
 
@@ -12,6 +14,8 @@ user.post('/allData', async (req, res) => {
     info
   })
 })
+
+
 
 
 
@@ -63,18 +67,30 @@ user.post('/add', async (req, res) => {
 })
 
 user.post('/login', async (req, res) => {
+  console.log(process.env.APIKey)
   const { body } = req
   let sql = `select * from user_info where id='${body.id}' and password='${body.password}'`
   const database = new DataBase()
   let info = await database.getSqlData(sql)
   if (info.length !== 0) {
-    sql = `insert into option_list (id, userid, optionType) values ('${new Date().getTime()}','${body.id}','登录')`
-    const optionDatabase = new DataBase()
-    await optionDatabase.getSqlData(sql)
-    res.send({
-      code: 2,
-      msg: '登录成功！'
-    })
+    const { data } = await axios.post('https://api-cn.faceplusplus.com/facepp/v3/compare', qs.stringify({
+      api_key: process.env.APIKey,
+      api_secret: process.env.APISecret,
+      image_url1: info[0].imgUrl,
+      image_url2: body.imgUrl,
+    }))
+    if (data.confidence < 80) {
+      return res.send({
+        code: 4,
+        msg: '人脸识别失败，禁止登录！'
+      })
+    } else {
+      res.send({
+        code: 2,
+        body: info[0],
+        msg: '登录成功！'
+      })
+    }
   } else {
     res.send({
       code: 4,
@@ -103,5 +119,35 @@ user.post('/edit', async (req, res) => {
     code: 2
   })
 })
+
+user.post('/fixPassword', async (req, res) => {
+  const { body } = req
+  let sql = `select * from user_info where id='${body.id}' and password= '${body.oldPassword}'`
+  const database = new DataBase()
+  let info = await database.getSqlData(sql)
+  if(info.length !== 0) {
+    sql = `update user_info set password='${body.newPassword}' where id='${body.id}'`
+    const fixPwdDatabase = new DataBase()
+    let info = await fixPwdDatabase.getSqlData(sql)
+    res.send({
+      code: 2
+    })
+  } else {
+    res.send({
+      code: 4,
+      msg: '旧密码错误，请检查！'
+    })
+  }
+})
+user.post('/fixName', async (req, res) => {
+  const { body } = req
+  let sql = `update user_info set name='${body.name}' where id='${body.id}'`
+  const database = new DataBase()
+  await database.getSqlData(sql)
+  res.send({
+    code: 2
+  })
+})
+
 
 module.exports = user

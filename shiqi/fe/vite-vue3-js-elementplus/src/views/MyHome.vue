@@ -1,29 +1,12 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 
 const route = useRoute()
 const router = useRouter()
-const menus = ref([
-  {
-    value: "product",
-    name: "产品"
-  },{
-    value: "crm",
-    name: "入库"
-  },{
-    value: "sell",
-    name: "卖出"
-  },{
-    value: "user",
-    name: "用户管理"
-  },
-  // {
-  //   value: "option",
-  //   name: "操作记录"
-  // }
-])
+const userid = ref('')
+const menus = ref([])
 
 function handleSelect(key, keyPath) {
   router.push('/' + key)
@@ -33,6 +16,53 @@ function logout() {
   window.sessionStorage.clear()
   router.push('/login')
 }
+
+onMounted(() => {
+  userid.value = window.sessionStorage.getItem('id')
+  console.log()
+  if (userid.value === 'admin') {
+    menus.value = [
+      {
+        value: "product",
+        name: "产品"
+      },{
+        value: "crm",
+        name: "入库"
+      },{
+        value: "sell",
+        name: "卖出"
+      },{
+        value: "user",
+        name: "用户管理"
+      },
+      {
+        value: "option",
+        name: "操作记录"
+      },
+      {
+        value: "info",
+        name: "个人信息"
+      }
+    ]
+  } else {
+    menus.value = [
+      {
+        value: "product",
+        name: "产品"
+      },{
+        value: "crm",
+        name: "入库"
+      },{
+        value: "sell",
+        name: "卖出"
+      },{
+        value: "info",
+        name: "个人信息"
+      }
+    ]
+
+  }
+})
 
 </script>
 
@@ -49,7 +79,7 @@ function logout() {
     <div class="body">
       <div class="left">
         <el-menu
-          :default-active="menus[0].value"
+          :default-active="menus[0]?.value"
           class="el-menu-vertical-demo"
           @select="handleSelect"
         >

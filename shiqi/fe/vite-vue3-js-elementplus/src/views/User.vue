@@ -169,6 +169,7 @@ onMounted(() => {
     </div>
     <div class="body">
       <el-table :data="tableData" border style="width: 100%" max-height="600">
+        <el-table-column prop="id" label="用户工号" width="120" />
         <el-table-column prop="name" label="用户昵称" width="300" />
         <el-table-column prop="optionTime" label="操作次数" />
         <el-table-column label="个人头像">

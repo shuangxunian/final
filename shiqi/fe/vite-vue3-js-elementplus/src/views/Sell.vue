@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
+const userid = ref('')
 const findData = ref('')
 const tableData = ref([])
 const productList = ref([])
@@ -17,6 +18,13 @@ const addForm = ref ({
 })
 const loading = ref(true)
 
+// const recall = async function () {
+//   const { data } = await axios.post('http://localhost:3000/sell/recall', {})
+//   if (data.code === 4) return ElMessage.error(data.msg)
+//   ElMessage({
+    
+//   })
+// }
 
 const getList = function () {}
 
@@ -38,11 +46,21 @@ const addSell = async function () {
   if (addForm.value.patientName === '') return ElMessage.error('请输入病人姓名')
   if (addForm.value.phone === '') return ElMessage.error('请输入病人手机号')
   if (addForm.value.optionNum === 0) return ElMessage.error('请输入出库数量')
+  let product = {}
   for (let i = 0; i < productList.value.length; i++) {
-    if (addForm.value.productID === productList.value[i].id) break
+    if (addForm.value.productID === productList.value[i].id) {
+      product = productList.value[i]
+      break
+    }
     if (i === productList.value.length - 1) return ElMessage.error('此药品数据库不存在，请核实')
   }
-  const { data } = await axios.post('http://localhost:3000/sell/add', addForm.value)
+  const { data } = await axios.post('http://localhost:3000/sell/add', {
+    ...addForm.value,
+    productid: product.id,
+    productname: product.name,
+    productbelong: product.belong,
+    userID: userid.value
+  })
   if (data.code === 4) return ElMessage.error(data.msg)
   ElMessage({
     message: '添加成功！',
@@ -68,6 +86,7 @@ const getProductList = async function () {
   sellList.value.forEach(item => {
     let name,belong
     productList.value.forEach(obj => {
+      console.log(obj.id, item)
       if (item.productID === obj.id) {
         name = obj.name
         belong = obj.belong
@@ -95,6 +114,7 @@ const getTableData = async function () {
 }
 
 onMounted(() => {
+  userid.value = window.sessionStorage.getItem('id')
   getTableData()
 })
 
@@ -109,7 +129,6 @@ onMounted(() => {
       </div>
       <div class="right">
         <el-button type="primary" @click="dialogAddSell = true">新建出库单</el-button>
-        <el-button type="danger" @click="addProduct">紧急召回</el-button>
       </div>
     </div>
     <div class="body">
@@ -153,6 +172,7 @@ onMounted(() => {
         </div>
       </template>
     </el-dialog>
+
   </div>
 </template>
 

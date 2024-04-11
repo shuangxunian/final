@@ -4,18 +4,7 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
 const findData = ref('')
-const tableData = ref([
-  {
-    username: 'zhangsan',
-    date: '2024-3-2 12:06:00',
-    option: '入库',
-    optionid: '11001',
-    productLot: "20231201AA",
-    name: '健胃消食片',
-    belong: '江中',
-    optionNum: 10
-  },
-])
+const tableData = ref([])
 const productList = ref([])
 const userList = ref([])
 const optionList = ref([])
@@ -46,7 +35,7 @@ const getOptionList = async function () {
       productMap[item.id] = item
     })
     data.info.forEach(item => {
-      console.log(item.productid)
+      console.log(item)
       optionList.value.push({
         optionid: item.id,
         username: userMap[item.userid].name,
@@ -80,9 +69,9 @@ onMounted(async() => {
         <el-input v-model="findData" style="width: 240px" placeholder="请输入内容" />
         <el-button @click="getList">筛选</el-button>
       </div>
-      <div class="right">
+      <!-- <div class="right">
         <el-button type="danger" @click="addProduct">紧急召回</el-button>
-      </div>
+      </div> -->
     </div>
     <div class="body">
       <el-table :data="tableData" border style="width: 100%" max-height="600">

@@ -3,11 +3,14 @@ import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
+const userid = ref('')
 const findData = ref('')
 const tableData = ref([])
 const productList = ref([])
 const CRMList = ref([])
 const dialogAddCRM = ref(false)
+const recallDialog = ref(false)
+const recallFormId = ref('')
 const addForm = ref({
   productID: null,
   productLot: '',
@@ -37,11 +40,21 @@ const addCRM = async function () {
   if (addForm.value.buildDate === '') return ElMessage.error('请选择生产日期')
   if (addForm.value.endDate === '') return ElMessage.error('请选择截止日期')
   if (addForm.value.optionNum === 0) return ElMessage.error('请选择入库数量')
+  let product = {}
   for (let i = 0; i < productList.value.length; i++) {
-    if (addForm.value.productID === productList.value[i].id) break
+    if (addForm.value.productID === productList.value[i].id) {
+      product = productList.value[i]
+      break
+    }
     if (i === productList.value.length - 1) return ElMessage.error('此药品数据库不存在，请核实')
   }
-  const { data } = await axios.post('http://localhost:3000/crm/add', addForm.value)
+  const { data } = await axios.post('http://localhost:3000/crm/add', {
+    ...addForm.value,
+    productbelong: product.belong,
+    productid: product.id,
+    productname: product.name,
+    userid: userid.value
+  })
   if (data.code === 4) return ElMessage.error(data.msg)
   ElMessage({
     message: '添加成功！',
@@ -99,6 +112,38 @@ const getProductList = async function () {
   loading.value = false
 }
 
+const getCSV = async() => {
+  const { data } = await axios.post('http://localhost:3000/sell/allData', {})
+  const userList = [
+    ['姓名', '电话']
+  ]
+  data.info.forEach(item => {
+    console.log(item)
+    if (item.productLot === recallFormId.value) {
+      userList.push([
+        item.patientName,
+        item.phone
+      ])
+    }
+  })
+  // 构造数据字符，换行需要用\r\n
+  let CsvString = userList.map(data => data.join(',')).join('\r\n');
+  // 加上 CSV 文件头标识
+  CsvString = 'data:application/vnd.ms-excel;charset=utf-8,\uFEFF' + encodeURIComponent(CsvString);
+  // 通过创建a标签下载
+  const link = document.createElement('a');
+  link.href = CsvString;
+  // 对下载的文件命名
+  link.download = `紧急召回联系人.csv`;
+  // 模拟点击下载
+  link.click();
+  // 移除a标签
+  link.remove();
+  await axios.post('http://localhost:3000/sell/del', {
+    id: recallFormId.value
+  })
+}
+
 const getTableData = async function () {
   await getProductList()
   await getCRMList()
@@ -115,6 +160,7 @@ const getDate = function (timestampStr) {
 }
 
 onMounted(async() => {
+  userid.value = window.sessionStorage.getItem('id')
   getTableData()
 })
 
@@ -129,6 +175,7 @@ onMounted(async() => {
       </div>
       <div class="right">
         <el-button type="primary" @click="dialogAddCRM = true">新建入库单</el-button>
+        <el-button type="danger" @click="recallDialog = true">紧急召回</el-button>
       </div>
     </div>
     <div class="body">
@@ -189,6 +236,24 @@ onMounted(async() => {
           <el-button type="primary" @click="addCRM">
             确定
           </el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="recallDialog" title="紧急召回" width="500">
+      <el-form>
+        <el-form-item label="问题批次">
+          <el-select v-model="recallFormId" placeholder="请选择产品批号">
+            <el-option v-for="item in CRMList" :key="item.productLot" :label="item.productLot" :value="item.productLot" />
+            <!-- <el-option label="Zone No.1" value="shanghai" />
+            <el-option label="Zone No.2" value="beijing" /> -->
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="recallDialog = false">取消</el-button>
+          <el-button type="primary" @click="getCSV">召回</el-button>
         </div>
       </template>
     </el-dialog>

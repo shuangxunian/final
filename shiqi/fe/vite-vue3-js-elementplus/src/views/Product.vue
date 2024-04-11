@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
+const isSelf = ref(false)
 const findData = ref('')
 const dialogAddProduct = ref(false)
 const tableData = ref([])
@@ -19,6 +20,19 @@ const refreshAddForm = function () {
   addForm.value.id = ''
   addForm.value.name = ''
   addForm.value.belong = ''
+}
+
+const toAddProduct = async function () {
+  const { data } = await axios.post('http://localhost:3000/date/today', {})
+  if(data.info.length) {
+    
+  } else {
+    dialogAddProduct.value = true
+  }
+  // console.log(data)
+
+  // if(isSelf)
+  // dialogAddProduct.value = true
 }
 
 const addProduct = async function () {
@@ -71,6 +85,7 @@ const makeSureDel = async function (row) {
   getTableData()
 }
 onMounted(async() => {
+  isSelf.value = window.sessionStorage.getItem('isSelf') === 'true'
   userid.value = window.sessionStorage.getItem('id')
   getTableData()
 })
@@ -85,7 +100,7 @@ onMounted(async() => {
         <el-button @click="getList">筛选</el-button>
       </div>
       <div class="right">
-        <el-button type="primary" @click="dialogAddProduct = true">添加产品</el-button>
+        <el-button type="primary" @click="dialogAddProduct.value = true">添加产品</el-button>
       </div>
     </div>
     <div class="body">

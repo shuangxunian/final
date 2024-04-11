@@ -22,6 +22,9 @@ crm.post('/add', async (req, res) => {
   sql = `UPDATE product_list SET haveNum = haveNum + ${body.optionNum} WHERE id = ${body.productID}`
   const updateDatabase = new DataBase()
   await updateDatabase.getSqlData(sql)
+  sql = `insert into option_list (id, userid, optionType,productname,productbelong,productLot,optionNum) values ('${new Date().getTime()}','${body.userid}','入库','${body.productname}','${body.productbelong}','${body.productLot}','${body.optionNum}')`
+  const addOptionDatabase = new DataBase()
+  await addOptionDatabase.getSqlData(sql)
   res.send({
     code: 2,
     msg: ''
