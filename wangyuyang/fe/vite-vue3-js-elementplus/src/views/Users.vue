@@ -11,6 +11,7 @@ const nowOp = ref(0)
 const nowSelect = ref(0)
 
 const form = ref({
+  id: '',
   username: '',
   password: '123456',
 })
@@ -44,22 +45,19 @@ async function getUserList () {
 }
 
 async function addUser () {
-  if (form.value.username !== '') {
-    const { data } = await axios.post('/user/add', form.value)
-    if (data.code === 4) {
-      ElMessage.error('此账号已注册，请直接登陆！')
-    } else {
-      ElMessage({
-        message: '注册成功，请告知用户',
-        type: 'success',
-      })
-      form.value.username = ''
-      dialogFormVisible.value = false
-      getUserList()
-    }
-
+  if (form.value.id === '') return ElMessage.error('手机号不能为空')
+  if (form.value.username === '') return ElMessage.error('姓名不能为空')
+  const { data } = await axios.post('/user/add', form.value)
+  if (data.code === 4) {
+    ElMessage.error('此账号已注册，请直接登陆！')
   } else {
-    ElMessage.error('用户名不能为空')
+    ElMessage({
+      message: '注册成功，请告知用户',
+      type: 'success',
+    })
+    form.value.username = ''
+    dialogFormVisible.value = false
+    getUserList()
   }
 }
 
@@ -107,6 +105,7 @@ onMounted(() => {
     <div class="body">
       <div class="table">
         <el-table :data="tableData" style="width: 100%" height="600">
+          <el-table-column prop="id" label="手机号" width="180" />
           <el-table-column prop="username" label="用户名" width="180" />
           <el-table-column prop="birthDay" label="生日" width="180" />
           <el-table-column prop="blacklist" label="黑名单" />
@@ -123,8 +122,11 @@ onMounted(() => {
     </div>
     <el-dialog v-model="dialogFormVisible" title="新建用户" width="500">
       <el-form :model="form" label-width="100px" label-position="left">
-        <el-form-item label="用户名">
-          <el-input v-model="form.username"/>
+        <el-form-item label="手机号">
+          <el-input v-model="form.id" placeholder="请输入手机号"/>
+        </el-form-item>
+        <el-form-item label="姓名">
+          <el-input v-model="form.username" placeholder="请输入姓名"/>
         </el-form-item>
         <el-form-item label="密码">
           <el-input disabled v-model="form.password"/>

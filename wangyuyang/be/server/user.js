@@ -15,8 +15,8 @@ user.post('/allData', async (req, res) => {
 
 user.post('/login', async (req, res) => {
   const { body } = req
-  let sql = 'select * from `user_info` where `username`= ? and `password`= ?'
-  let data = [body.username, body.password]
+  let sql = 'select * from `user_info` where `id`= ? and `password`= ?'
+  let data = [body.id, body.password]
   const database = new DataBase()
   let info = await database.getSqlData(sql, data)
   if (info.length !== 0) {
@@ -32,8 +32,8 @@ user.post('/login', async (req, res) => {
 
 user.post('/add', async (req, res) => {
   const { body } = req
-  let sql = 'select * from `user_info` where `username`= ?'
-  let data = [body.username]
+  let sql = 'select * from `user_info` where `id`= ?'
+  let data = [body.id]
   const database = new DataBase()
   let info = await database.getSqlData(sql, data)
   if (info.length !== 0) {
@@ -42,8 +42,8 @@ user.post('/add', async (req, res) => {
       msg: '此账号已注册，请直接登陆！'
     })
   } else {
-    sql = 'INSERT INTO `user_info` (`username`, `password`) VALUES (?,?);'
-    data = [body.username,body.password]
+    sql = 'INSERT INTO `user_info` (`id`,`username`, `password`) VALUES (?,?,?);'
+    data = [body.id,body.username,body.password]
     const addUserBase = new DataBase()
     info = await addUserBase.getSqlData(sql, data)
     res.send({
