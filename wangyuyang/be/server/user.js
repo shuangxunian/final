@@ -1,4 +1,5 @@
 const express = require('express')
+const MpUploadOssHelper = require("./uploadOssHelper.js");
 const DataBase = require('./mysql')
 
 const user = express.Router()
@@ -22,6 +23,7 @@ user.post('/login', async (req, res) => {
   if (info.length !== 0) {
     res.send({
       code: 2,
+      body: info[0]
     })
   } else {
     res.send({
@@ -42,13 +44,14 @@ user.post('/add', async (req, res) => {
       msg: '此账号已注册，请直接登陆！'
     })
   } else {
-    sql = 'INSERT INTO `user_info` (`id`,`username`, `password`) VALUES (?,?,?);'
-    data = [body.id,body.username,body.password]
+    sql = 'INSERT INTO `user_info` (`id`,`username`, `password`, `birthDay`) VALUES (?,?,?,?);'
+    data = [body.id,body.username,body.password,body.birthDay || '']
     const addUserBase = new DataBase()
     info = await addUserBase.getSqlData(sql, data)
     res.send({
       code: 2,
-      msg: '注册成功！'
+      body
+      // msg: '注册成功！'
     })
   }
 })
@@ -73,6 +76,36 @@ user.post('/fixpwd', async (req, res) => {
   res.send({
     code: 2,
     msg: '重置成功！'
+  })
+})
+
+user.post('/getPostObjectParams', async (req, res) => {
+  const mpHelper = new MpUploadOssHelper({
+    // 从环境变量中获取访问凭证。运行本代码示例之前，请确保已设置环境变量OSS_ACCESS_KEY_ID和OSS_ACCESS_KEY_SECRET。
+    accessKeyId: process.env.OSS_ACCESS_KEY_ID,
+    accessKeySecret: process.env.OSS_ACCESS_KEY_SECRET,
+    // 限制参数的生效时间，单位为小时，默认值为1。
+    timeout: 1,
+    // 限制上传文件大小，单位为MB，默认值为10。
+    maxSize: 10,
+  });
+
+  // 生成参数。
+  const params = mpHelper.createUploadParams();
+
+  console.log(params)
+
+  res.json(params);
+})
+
+user.post('/info', async (req, res) => {
+  const { body } = req
+  let sql = `select * from user_info where id= '${body.id}'`
+  const database = new DataBase()
+  let info = await database.getSqlData(sql)
+  res.send({
+    code: 2,
+    body: info[0]
   })
 })
 

@@ -15,6 +15,8 @@ function handleSelect(key, keyPath) {
     router.push('/users')
   } else if (key === '2') {
     router.push('/info')
+  } else if (key === '3') {
+    router.push('/black')
   }
 }
 
@@ -49,6 +51,10 @@ function logout() {
           <el-menu-item index="2">
             <el-icon><Menu /></el-icon>
             <span>化妆品管理</span>
+          </el-menu-item>
+          <el-menu-item index="3">
+            <el-icon><Menu /></el-icon>
+            <span>黑名单列表</span>
           </el-menu-item>
         </el-menu>
       </div>

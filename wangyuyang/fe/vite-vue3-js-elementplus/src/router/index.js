@@ -5,6 +5,7 @@ import MyHome from '../views/MyHome.vue'
 
 import Users from '../views/Users.vue'
 import Info from '../views/Info.vue'
+import black from '../views/black.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,6 +18,7 @@ const router = createRouter({
       children: [
         { path: '/', redirect: '/users' },
         { path: '/users', component: Users },
+        { path: '/black', component: black },
         { path: '/info', component: Info }
       ]
     },

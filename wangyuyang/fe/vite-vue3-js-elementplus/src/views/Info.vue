@@ -45,6 +45,16 @@ const options = ref([
   },
 ])
 
+function refreshForm() {
+  form.value.productName = ''
+  form.value.brand = ''
+  form.value.kind = ''
+  form.value.isOil = ''
+  form.value.isAllergy = ''
+  form.value.isPigmentation = ''
+  form.value.isWrinkle = ''
+}
+
 async function getAllProductList () {
   const { data } = await axios.post('/product/allData')
   tableData.value = data.body
@@ -166,7 +176,7 @@ onMounted(() => {
     <div class="body">
       <div class="table">
         <el-table :data="tableData" style="width: 100%" height="600">
-          <el-table-column prop="productName" label="产品名称" width="200" />
+          <el-table-column prop="productName" label="产品名称"/>
           <el-table-column prop="brand" label="所属品牌" width="100" />
           <el-table-column prop="kind" label="所属种类" width="100" />
           <el-table-column prop="isOil" label="适合干皮油皮" width="120" />
@@ -185,7 +195,7 @@ onMounted(() => {
         </el-table>
       </div>
     </div>
-    <el-dialog v-model="dialogFormVisible" title="新建化妆品" width="500">
+    <el-dialog v-model="dialogFormVisible" title="新建化妆品" width="500" @close="refreshForm">
       <el-form :model="form" label-width="150px" label-position="top">
         <el-form-item label="产品名称">
           <el-input placeholder="请输入产品名称" v-model="form.productName"/>
@@ -243,7 +253,8 @@ onMounted(() => {
         </div>
       </template>
     </el-dialog>
-    <el-dialog v-model="dialogEditVisible" title="修改化妆品" width="500">
+
+    <el-dialog v-model="dialogEditVisible" title="修改化妆品" width="500" @close="refreshForm">
       <el-form :model="form" label-width="150px" label-position="top">
         <el-form-item label="产品名称">
           <el-input v-model="form.productName"/>
