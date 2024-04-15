@@ -1,40 +1,79 @@
+1. 桌子 - table
+   句子：我在桌子上放了一本书。
+   解释：用于放置物品的平面家具。
 
-// 1. 中文词语: 好
-//    英文单词: good
-//    英文词语解释: having the qualities required for a particular role or task; of a high standard
+2. 钥匙 - key
+   句子：我找不到我的钥匙了。
+   解释：用于开启锁的金属工具。
 
-// 2. 中文词语: 高兴
-//    英文单词: happy
-//    英文词语解释: feeling or showing pleasure or contentment
+3. 窗户 - window
+   句子：请把窗户打开，让新鲜空气进来。
+   解释：建筑物上的透明玻璃或其他材料制成的开口，用于采光和通风。
 
-// 3. 中文词语: 学习
-//    英文单词: study
-//    英文词语解释: the devotion of time and attention to acquiring knowledge
+4. 鲜花 - flowers
+   句子：她收到了一束漂亮的鲜花。
+   解释：开着的花朵或花球。
 
-// 4. 中文词语: 美丽
-//    英文单词: beautiful
-//    英文词语解释: pleasing the senses or mind aesthetically
+5. 音乐 - music
+   句子：音乐可以让人心情愉悦。
+   解释：通过声音的有节奏的艺术形式。
 
-// 5. 中文词语: 家庭
-//    英文单词: family
-//    英文词语解释: a group consisting of parents and children living together in a household
+6. 咖啡 - coffee
+   句子：早上喝一杯咖啡可以提神。
+   解释：用研磨的咖啡豆冲泡而成的饮料。
 
-// 6. 中文词语: 食物
-//    英文单词: food
-//    英文词语解释: any nutritious substance that people or animals eat or drink or that plants absorb in order to maintain life and growth
+7. 理由 - reason
+   句子：他没有给出任何理由就离开了。
+   解释：作为解释或证明某事的根据。
 
-// 7. 中文词语: 爱
-//    英文单词: love
-//    英文词语解释: an intense feeling of deep affection
+8. 电话 - telephone
+   句子：我给他打了个电话，但没人接听。
+   解释：用来进行远程通信的设备。
 
-// 8. 中文词语: 希望
-//    英文单词: hope
-//    英文词语解释: a feeling of expectation and desire for a certain thing to happen
+9. 礼物 - gift
+   句子：她收到了一份特别的生日礼物。
+   解释：作为表示爱意、感激或庆祝的物品。
 
-// 9. 中文词语: 健康
-//    英文单词: health
-//    英文词语解释: the state of being free from illness or injury
+10. 书籍 - books
+    句子：我喜欢在图书馆里看书籍。
+    解释：印刷或手写的文本，通常装订成册。
 
-// 10. 中文词语: 时间
-//     英文单词: time
-//     英文词语解释: the indefinite continued progress of existence and events in the past, present, and future
+11. 笔记本 - notebook
+    句子：我用笔记本记录了会议的重要内容。
+    解释：用来记事或写作的本子。
+
+12. 钱包 - wallet
+    句子：我把钱包忘在家里了。
+    解释：用来存放货币、信用卡等的小袋。
+
+13. 照片 - photo
+    句子：这张照片让我回忆起了童年的时光。
+    解释：用相机拍摄的图像。
+
+14. 朋友 - friend
+    句子：朋友是人生中重要的支持者和伴侣。
+    解释：与个人关系亲密的人。
+
+15. 爱情 - love
+    句子：爱情是世界上最美好的事物之一。
+    解释：强烈的情感，通常与亲密关系相关。
+
+16. 健康 - health
+    句子：要保持健康，需要均衡饮食和适量运动。
+    解释：身体和心理状态良好的状态。
+
+17. 学习 - study
+    句子：努力学习是取得成功的关键。
+    解释：通过阅读、实践或教导来获取知识。
+
+18. 时间 - time
+    句子：时间就是金钱。
+    解释：过去、现在或将来的连续进展。
+
+19. 梦想 - dream
+    句子：追逐梦想是每个人的权利。
+    解释：心灵中的愿望或目标。
+
+20. 快乐 - happiness
+    句子：追求快乐是人类的共同愿望。
+    解释：情感上的愉悦和满足。

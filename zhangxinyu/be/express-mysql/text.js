@@ -15,10 +15,36 @@ text.post('/allData', async (req, res) => {
 
 text.post('/add', async (req, res) => {
   const { body } = req
-  let sql = 'INSERT INTO `text_list` (`id`, `china`, `eng`, `info`) VALUES (?,?,?,?);'
-  let data = [new Date().getTime() + '',body.china,body.eng,body.info]
+  let sql = 'INSERT INTO `text_list` (`id`, `china`, `eng`, `info`, `pinyin`, `wordsAndPhrases`) VALUES (?,?,?,?,?,?);'
+  let data = [new Date().getTime() + '',body.china,body.eng,body.info,body.pinyin,body.wordsAndPhrases]
   const addTextDatabase = new DataBase()
   await addTextDatabase.getSqlData(sql, data)
+  res.send({
+    code: 2,
+    body
+  })
+})
+
+
+text.post('/edit', async (req, res) => {
+  const { body } = req
+  let sql = 'UPDATE `text_list` SET `china` = ?, `eng` = ?, `info` = ?, `pinyin` = ?, `wordsAndPhrases` = ? WHERE `id` = ?;'
+  let data = [body.china,body.eng,body.info,body.pinyin,body.wordsAndPhrases,body.id]
+  const textDatabase = new DataBase()
+  await textDatabase.getSqlData(sql, data)
+  res.send({
+    code: 2,
+    body
+  })
+})
+
+
+text.post('/del', async (req, res) => {
+  const { body } = req
+  let sql = 'DELETE FROM `text_list` WHERE `id` = ?;'
+  let data = [body.id]
+  const textDatabase = new DataBase()
+  await textDatabase.getSqlData(sql, data)
   res.send({
     code: 2,
     body

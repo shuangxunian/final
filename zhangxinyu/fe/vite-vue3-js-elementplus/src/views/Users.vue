@@ -8,11 +8,13 @@ const tableData = ref([])
 const userList = ref([])
 const loading = ref(true)
 const addUserForm = ref({
-  userid: '203401010101',
-  username: '张三',
-  password: '123456',
+  userid: '',
+  username: '',
+  password: '',
   optionTime: 0,
-  birthday: ''
+  birthday: '',
+  belong: 'app',
+  location: ''
 })
 const editUserForm = ref({
   userid: '',
@@ -140,13 +142,30 @@ const dontAddUser = () => {
   clearForm()
 }
 
+const timestampToDate = (timestamp) => {
+  const date = new Date(Number(timestamp));
+  const year = date.getFullYear();
+  // const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  // const day = date.getDate().toString().padStart(2, '0');
+  // return `${year}-${month}-${day}`;
+  return `${year}`;
+}
+
 const goAddUser = async () => {
   if (addUserForm.value.userid === '') return ElMessage.error('请输入学号')
   if (addUserForm.value.username === '') return ElMessage.error('请输入学生名')
   if (addUserForm.value.password === '') return ElMessage.error('请输入学生密码')
+  if (addUserForm.value.birthday === '') return ElMessage.error('请输入学生出生年份')
+  if (addUserForm.value.belong === '') return ElMessage.error('请选择所属平台')
+  if (addUserForm.value.location === '') return ElMessage.error('请输入学生所在地')
   const { data } = await axios.post('http://localhost:3000/user/add', {
-    ...addUserForm.value,
-    wherefrom: 'web'
+    userid: addUserForm.value.userid,
+    username: addUserForm.value.username,
+    password: addUserForm.value.password,
+    optionTime: addUserForm.value.optionTime,
+    birthday: timestampToDate(addUserForm.value.birthday),
+    belong: addUserForm.value.belong,
+    location: addUserForm.value.location,
   })
   if (data.code === 2) {
     ElMessage({
@@ -194,7 +213,7 @@ onMounted(async () => {
         <el-table-column prop="optionTime" label="使用次数"/>
         <el-table-column prop="birthday" label="出生年份">
           <template #default="scope">
-            {{ Number((scope.row.birthday).substring(0, 4)) + 1 }}
+            {{ Number((scope.row.birthday).substring(0, 4))}}
           </template>
         </el-table-column>
         <el-table-column fixed="right" label="操作">
@@ -229,6 +248,16 @@ onMounted(async () => {
           />
         </el-form-item>
 
+        <el-form-item label="所属平台" :label-width="formLabelWidth">
+          <el-select v-model="addUserForm.belong" placeholder="请选择">
+            <el-option label="app" value="app" />
+            <el-option label="web" value="web" />
+            <el-option label="小程序" value="小程序" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="所在地" :label-width="formLabelWidth">
+          <el-input v-model="addUserForm.location" autocomplete="off" />
+        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">

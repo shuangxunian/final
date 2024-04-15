@@ -12,14 +12,62 @@ const init = async() => {
   await init1()
 }
 
+const timestampToDate = (timestamp) => {
+  const date = new Date(Number(timestamp));
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 const init1 = () => {
   // 基于准备好的dom，初始化echarts实例
   let Chart = echarts.init(document.getElementById("myEcharts5"));
+  const belongMap = {}
+  userList.value.forEach(item => {
+    const dateString = timestampToDate(item.buildDate)
+    // console.log(item)
+    if (!belongMap[dateString]) {
+      belongMap[dateString] = {
+        web: 0,
+        app: 0,
+        小程序: 0
+      }
+      belongMap[dateString][item.belong]++
+    } else {
+      belongMap[dateString][item.belong]++
+    }
+  })
+  const belongList = Object.keys(belongMap)
+  const webList = []
+  const appList = []
+  const wxList = []
+  belongList.forEach(item => {
+    webList.push(belongMap[item].web)
+    appList.push(belongMap[item].app)
+    wxList.push(belongMap[item]['小程序'])
+  })
+  // const belongData = Object.values(belongMap)
+  // console.log(wxList)
+  
+  // console.log(belongMap)
+  // console.log(userList.value)
+  // const belongMap = {}
+  // userList.value.forEach(item => {
+  //   if (!belongMap[item.belong]) {
+  //     belongMap[item.belong] = 1
+  //   } else {
+  //     belongMap[item.belong]++
+  //   }
+  // })
+  // const belongList = Object.keys(belongMap)
+  // const belongData = Object.values(belongMap)
+  // console.log(belongList, belongData)
 
   // 绘制图表
   let options = {
     title: {
-      text: '用户增长率'
+      text: '用户增长量'
     },
     tooltip: {
       trigger: 'axis'
@@ -32,32 +80,33 @@ const init1 = () => {
     xAxis: {
       type: 'category',
       boundaryGap: false,
-      data: ['2024-04-03', '2024-04-04', '2024-04-05', '2024-04-06', '2024-04-07', '2024-04-08', '2024-04-09'],
+      data: belongList,
       axisLabel:{
         rotate:-45,//倾斜度 -90 至 90 默认为0
       }
     },
     yAxis: {
-      type: 'value'
+      type: 'value',
+      name: '总增长数'
     },
     series: [
       {
         name: 'web',
         type: 'line',
         stack: 'Total',
-        data: [120, 132, 101, 134, 90, 230, 210]
+        data: webList
       },
       {
         name: 'app',
         type: 'line',
         stack: 'Total',
-        data: [220, 182, 191, 234, 290, 330, 310]
+        data: appList
       },
       {
         name: '小程序',
         type: 'line',
         stack: 'Total',
-        data: [150, 232, 201, 154, 190, 330, 410]
+        data: wxList
       }
     ]
   };
@@ -66,7 +115,15 @@ const init1 = () => {
   Chart.setOption(options);
 }
 
+const getUserList = async () => {
+  const { data } = await axios.post('http://localhost:3000/user/allData', {})
+  if (data.code === 2) {
+    userList.value = data.info
+  }
+}
+
 onMounted(async () => {
+  await getUserList()
   await init()
 })
 

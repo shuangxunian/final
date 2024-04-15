@@ -7,14 +7,20 @@ const tableData = ref([])
 const formLabelWidth = ref(120)
 const textList = ref(false)
 const textDialog = ref(false)
+const editTextDialog = ref(false)
+
 const textForm = ref({
   china: '',
+  pinyin: '',
+  wordsAndPhrases: '',
   eng: '',
   info: '',
 })
 const clearForm = () => {
   textForm.value = {
     china: '',
+    pinyin: '',
+    wordsAndPhrases: '',
     eng: '',
     info: '',
   }
@@ -22,6 +28,8 @@ const clearForm = () => {
 
 const goAddText = async () => {
   if (textForm.value.china === '') return ElMessage.error('请输入中文词语')
+  if (textForm.value.pinyin === '') return ElMessage.error('请输入英文单词')
+  if (textForm.value.wordsAndPhrases === '') return ElMessage.error('请输入英文单词')
   if (textForm.value.eng === '') return ElMessage.error('请输入英文单词')
   if (textForm.value.info === '') return ElMessage.error('请输入英文词语解释')
   const { data } = await axios.post('http://localhost:3000/text/add', {
@@ -41,6 +49,45 @@ const getTextList = async () => {
   const { data } = await axios.post('http://localhost:3000/text/allData', {})
   if (data.code === 2) {
     tableData.value = data.info
+  }
+}
+
+const makeSureDel = async (row) => {
+  const { data } = await axios.post('http://localhost:3000/text/del', {
+    id: row.id
+  })
+  if (data.code === 2) {
+    ElMessage({
+      message: '删除成功！',
+      type: 'success',
+    })
+    getTextList()
+  }
+}
+
+const editData = (row) => {
+  textForm.value = {
+    ...row
+  }
+  editTextDialog.value = true
+}
+
+const goEditText = async () => {
+  if (textForm.value.china === '') return ElMessage.error('请输入中文词语')
+  if (textForm.value.pinyin === '') return ElMessage.error('请输入英文单词')
+  if (textForm.value.wordsAndPhrases === '') return ElMessage.error('请输入英文单词')
+  if (textForm.value.eng === '') return ElMessage.error('请输入英文单词')
+  if (textForm.value.info === '') return ElMessage.error('请输入英文词语解释')
+  const { data } = await axios.post('http://localhost:3000/text/edit', {
+    ...textForm.value
+  })
+  if (data.code === 2) {
+    ElMessage({
+      message: '修改成功！',
+      type: 'success',
+    })
+    editTextDialog.value = false
+    getTextList()
   }
 }
 
@@ -107,6 +154,35 @@ onMounted(async() => {
         <div class="dialog-footer">
           <el-button @click="textForm = false">取消</el-button>
           <el-button type="primary" @click="goAddText">确认</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="editTextDialog" title="词语编辑" width="500" @close="clearForm">
+      <el-form :model="textForm">
+        <el-form-item label="中文词语" :label-width="formLabelWidth">
+          <el-input v-model="textForm.china"/>
+        </el-form-item>
+        <el-form-item label="识字规则" :label-width="formLabelWidth">
+          <el-input v-model="textForm.pinyin"/>
+        </el-form-item>
+        <el-form-item label="组词造句" :label-width="formLabelWidth">
+          <el-input v-model="textForm.wordsAndPhrases"/>
+        </el-form-item>
+        <el-form-item label="笔画视频" :label-width="formLabelWidth">
+          <el-input v-model="textForm.showStrokesMp4"/>
+        </el-form-item>
+        <el-form-item label="英文单词" :label-width="formLabelWidth">
+          <el-input v-model="textForm.eng"/>
+        </el-form-item>
+        <el-form-item label="英文词语解释" :label-width="formLabelWidth">
+          <el-input v-model="textForm.info"/>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="editTextDialog = false">取消</el-button>
+          <el-button type="primary" @click="goEditText">确认</el-button>
         </div>
       </template>
     </el-dialog>

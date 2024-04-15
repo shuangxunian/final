@@ -26,8 +26,8 @@ user.post('/add', async (req, res) => {
     })
   }
   const nowTime = new Date().getTime() + ''
-  sql = 'INSERT INTO `user_info` (`userid`, `username`, `password`, `optionTime`, `buildDate`, `birthday`) VALUES (?,?,?,?,?,?);'
-  data = [body.userid,body.username,body.password,0,nowTime,body.birthday]
+  sql = 'INSERT INTO `user_info` (`userid`, `username`, `password`, `optionTime`, `buildDate`, `birthday`, `belong`, `location`) VALUES (?,?,?,?,?,?,?,?);'
+  data = [body.userid,body.username,body.password,0,nowTime,body.birthday,body.belong,body.location]
   const addDatabase = new DataBase()
   await addDatabase.getSqlData(sql, data)
   sql = 'INSERT INTO `option_list` (`id`, `userid`, `username`, `optionType`, `wherefrom`) VALUES (?,?,?,?,?);'
