@@ -13,9 +13,20 @@ user.post('/allData', async (req, res) => {
   })
 })
 
+user.post('/detail', async (req, res) => {
+  const { body } = req
+  let sql = `select * from ppt_list where courseid=${body.courseid}`
+  const database = new DataBase()
+  let info = await database.getSqlData(sql)
+  res.send({
+    code: 2,
+    body: info
+  })
+})
+
 user.post('/del', async (req, res) => {
   const { body } = req
-  let sql = `delete from user_info where userid='${body.userid}'`
+  let sql = `delete from ppt_list where id='${body.id}'`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({
@@ -56,8 +67,7 @@ user.post('/fixPassword', async (req, res) => {
 
 user.post('/edit', async (req, res) => {
   const { body } = req
-  let sql = `update user_info set username='${body.username}', roleType ='${body.roleType}' where userid = '${body.userid}'`
-  console.log(sql)
+  let sql = `update ppt_list set name='${body.name}',docUrl='${body.docUrl}',mp4Url='${body.mp4Url}',courseid='${body.courseid}',know='${body.know}' where id='${body.id}'`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({
@@ -68,7 +78,7 @@ user.post('/edit', async (req, res) => {
 user.post('/add', async (req, res) => {
   const { body } = req
   // '${new Date().getTime()}',
-  let sql = `insert into ppt_list (id,name,docUrl,courseid,know) values ('${new Date().getTime()}','${body.name}','${body.docUrl}','${body.courseid}','${body.know}')`
+  let sql = `insert into ppt_list (id,name,docUrl,mp4Url,courseid,know) values ('${new Date().getTime()}','${body.name}','${body.docUrl}','${body.mp4Url}','${body.courseid}','${body.know}')`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({

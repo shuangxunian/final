@@ -6,12 +6,14 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const loginForm = ref({
-  userid: '203401010101',
+  // userid: 'admin',
+  userid: '203401010102',
   password: '123456'
 })
 
 function resetLoginForm() {
-  loginForm.value.userid = '203401010101'
+  // loginForm.value.userid = 'admin'
+  loginForm.value.userid = '203401010102'
   loginForm.value.password = '123456'
 }
 
@@ -59,7 +61,9 @@ async function login () {
 .about {
   width: 100%;
   height: 100%;
-  background-image: linear-gradient(to top, #a18cd1 0%, #fbc2eb 100%);
+  background-image: url(../assets/350.jpeg);
+  background-size: 100% 100%;
+  // background-image: linear-gradient(to top, #a18cd1 0%, #fbc2eb 100%);
   .login_box{
     width: 450px;
     height: 220px;

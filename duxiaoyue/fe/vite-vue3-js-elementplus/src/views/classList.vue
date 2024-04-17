@@ -6,6 +6,7 @@ import { useRouter } from 'vue-router'
 import Papa from 'papaparse'
 
 const tableData = ref([])
+const userList = ref([])
 const courseList = ref([])
 const pptList = ref([])
 const findString = ref('')
@@ -15,16 +16,22 @@ const fileList = ref([])
 const formLabelWidth= ref(100)
 const addCourseDialog = ref(false)
 const addPPTDialog = ref(false)
+const editPPTDialog = ref(false)
+
+const detailPPTDialog = ref(false)
+const detailPPTList = ref([])
+const nowSelectRow = ({})
 const form = ref({
   className: '',
   statusType: '1',
 })
 const pptForm = ref({
-  name: 'PN结理解',
-  docUrl: 'https://ldwd4y8oeh.feishu.cn/docx/DWstdkeRMooDKJxS0XAcR9ChnIe?from=from_copylink',
+  name: '',
+  docUrl: '',
+  mp4Url: '',
   courseid: '',
   coursename: '',
-  know: 'PN结',
+  know: '',
 })
 
 const refreshForm = function() {
@@ -41,8 +48,12 @@ const refreshForm = function() {
   }
 }
 
-const handleSuccess = function(index, scope) {
-  console.log(index, scope)
+const handleEdit = function(row) {
+  pptForm.value = {
+    ...row
+  }
+  editPPTDialog.value = true
+  // console.log(index, scope)
 }
 
 const refreshPwd = function(index, scope) {
@@ -55,9 +66,20 @@ const handleDelete = function(index, scope) {
 
 const makeSureUpload = function() {}
 
-const addPPT = function(row) {
-  pptForm.value.courseid = row.id
-  pptForm.value.coursename = row.className
+const getDetail = async function(row) {
+  const { data } = await axios.post('http://localhost:3000/ppt/detail', {
+    courseid: row.id
+  })
+  if (data.code === 2) {
+    detailPPTDialog.value = true
+    nowSelectRow.value = row
+    detailPPTList.value = data.body
+  }
+}
+
+const addPPT = function(row = {}) {
+  pptForm.value.courseid = row.id || nowSelectRow.value.id
+  pptForm.value.coursename = row.className || nowSelectRow.value.className
   addPPTDialog.value = true
 }
 
@@ -74,6 +96,24 @@ const toAddPPT = async function() {
     })
     addPPTDialog.value = false
     await getPPTList()
+    if(detailPPTDialog.value) getDetail(nowSelectRow.value)
+  }
+}
+
+const toEditPPT = async function() {
+  if (form.value.name === '') return ElMessage.error('请输入项目名')
+  if (form.value.docUrl === '') return ElMessage.error('请输入课程链接')
+  if (form.value.know === '') return ElMessage.error('请输入知识点')
+
+  const { data } = await axios.post('http://localhost:3000/ppt/edit', pptForm.value)
+  if (data.code === 2) {
+    ElMessage({
+      message: '修改成功！',
+      type: 'success',
+    })
+    editPPTDialog.value = false
+    await getPPTList()
+    if(detailPPTDialog.value) getDetail(nowSelectRow.value)
   }
 }
 
@@ -85,6 +125,18 @@ const makeSureDel = async function(row) {
       type: 'success',
     })
     await getCourseList()
+  }
+}
+
+const makeSureDelDetail = async function(row) {
+  const { data } = await axios.post('http://localhost:3000/ppt/del', row)
+  if (data.code === 2) {
+    ElMessage({
+      message: '删除成功！',
+      type: 'success',
+    })
+    await getDetail(nowSelectRow.value)
+    // await getCourseList()
   }
 }
 
@@ -119,11 +171,11 @@ const getPPTList = async function() {
     })
   }
   for(let i = 0;i < tableData.value.length; i++) {
-    let knowList = ''
+    const knowSet = new Set()
     tableData.value[i].product.forEach(item => {
-      knowList+=item.know + ','
+      knowSet.add(item.know)
     })
-    tableData.value[i].know = knowList
+    tableData.value[i].know = Array.from(knowSet).join(',')
   }
 }
 
@@ -133,15 +185,21 @@ const getCourseList = async function() {
   if (data.code === 2) {
     courseList.value = []
     tableData.value = []
+    // console.log(userList.value)
+    const userMap = {}
+    userList.value.forEach(item => {
+      userMap[item.userid] = item.username
+    })
     data.body.forEach(item => {
-      if (item.teacherid === userid.value) {
-        let status = item.statusType === '1' ? '审核中' : '正常'
-        tableData.value.push({
-          ...item,
-          status,
-          product: []
-        })
-      }
+      // console.log(item)
+      let status = item.statusType === '1' ? '审核中' : '正常'
+      let belongUser = userMap[item.teacherid]
+      tableData.value.push({
+        ...item,
+        status,
+        belongUser,
+        product: []
+      })
     })
     courseList.value = tableData.value
     await getPPTList()
@@ -153,8 +211,15 @@ const gotoFind = function() {
 }
 
 
+const getUserList = async function() {
+  const { data } = await axios.post('http://localhost:3000/user/alldata',{})
+  if (data.code === 2) {
+    userList.value = data.body
+  }
+}
 onMounted(async () => {
   userid.value = window.sessionStorage.getItem('userid')
+  await getUserList()
   await getCourseList()
 })
 
@@ -173,44 +238,25 @@ onMounted(async () => {
           </div>
         </div>
         <div class="right">
-          <el-button type="primary" @click="addCourseDialog = true">新建课程</el-button>
+          <el-button type="primary" @click="addCourseDialog = true">新建项目案例</el-button>
         </div>
       </div>
       <div class="table">
         <el-table :data="tableData" style="width: 100%" border max-height="600">
-          <el-table-column type="expand">
-            <template #default="props">
-              <div>
-                <el-table :data="props.row.product" :border="true">
-                  <el-table-column prop="name" label="项目名称" />
-                  <el-table-column prop="know" label="知识点" />
-                  <el-table-column prop="docUrl" label="关联内容链接">
-                    <template #default="scope">
-                      <el-link type="primary" :href="scope.row.docUrl" target="_blank">文档访问</el-link>
-                    </template>
-                  </el-table-column>
-                  <el-table-column fixed="right" label="操作" width="200">
-                    <template #default="scope">
-                      <el-button link type="primary" size="small" @click="handleSuccess(scope.$index, scope)">编辑</el-button>
-                      <el-button link type="primary" size="small" @click="handleDelete(scope.$index, scope)">删除</el-button>
-                    </template>
-                  </el-table-column>
-                </el-table>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column prop="className" label="课程名称" />
+          <el-table-column prop="className" label="项目案例名称" />
+          <el-table-column prop="belongUser" label="负责人" />
           <el-table-column prop="know" label="知识点" />
           <el-table-column prop="status" label="状态" />
-          <el-table-column prop="status" label="是否可见">
+          <!-- <el-table-column prop="status" label="是否可见">
             <template #default="scope">
               <el-switch :disabled="scope.row.statusType === '1'" v-model="scope.row.switchShow" active-text="可见" inactive-text="不可见" />
             </template>
-          </el-table-column>
-          <el-table-column fixed="right" label="操作" width="200">
+          </el-table-column> -->
+          <el-table-column fixed="right" label="操作" width="240">
             <template #default="scope">
-              <el-button link type="primary" size="small" @click="addPPT(scope.row)">添加项目</el-button>
-              <el-button link type="primary" size="small" @click="handleSuccess(scope.$index, scope)">新建</el-button>
+              <el-button link type="primary" size="small" @click="getDetail(scope.row)">查看详情</el-button>
+              <!-- <el-button link type="primary" size="small" @click="addPPT(scope.row)">添加项目</el-button> -->
+              <el-button link type="primary" size="small" @click="addPPT(scope.row)">新建关联课程</el-button>
               <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scope.row)">
                 <template #reference>
                   <el-button link type="danger" size="small">删除</el-button>
@@ -223,9 +269,9 @@ onMounted(async () => {
       </div>
     </div>
 
-    <el-dialog v-model="addCourseDialog" title="新建课程" width="500" @close="refreshForm">
+    <el-dialog v-model="addCourseDialog" title="新建项目案例" width="500" @close="refreshForm">
       <el-form :model="form">
-        <el-form-item label="课程名" :label-width="formLabelWidth">
+        <el-form-item label="项目案例名称" :label-width="formLabelWidth">
           <el-input v-model="form.className"/>
         </el-form-item>
       </el-form>
@@ -237,13 +283,16 @@ onMounted(async () => {
       </template>
     </el-dialog>
 
-    <el-dialog v-model="addPPTDialog" title="新建项目" width="500" @close="refreshForm">
+    <el-dialog v-model="addPPTDialog" title="新建课程" width="500" @close="refreshForm">
       <el-form :model="pptForm">
-        <el-form-item label="项目名" :label-width="formLabelWidth">
+        <el-form-item label="课程名" :label-width="formLabelWidth">
           <el-input v-model="pptForm.name"/>
         </el-form-item>
         <el-form-item label="课件链接" :label-width="formLabelWidth">
           <el-input v-model="pptForm.docUrl"/>
+        </el-form-item>
+        <el-form-item label="视频链接" :label-width="formLabelWidth">
+          <el-input v-model="pptForm.mp4Url"/>
         </el-form-item>
         <el-form-item label="关联课程名称" :label-width="formLabelWidth">
           <el-input disabled v-model="pptForm.coursename"/>
@@ -258,6 +307,63 @@ onMounted(async () => {
           <el-button type="primary" @click="toAddPPT">添加</el-button>
         </div>
       </template>
+    </el-dialog>
+
+    <el-dialog v-model="editPPTDialog" title="编辑课程" width="500" @close="refreshForm">
+      <el-form :model="pptForm">
+        <el-form-item label="课程名" :label-width="formLabelWidth">
+          <el-input v-model="pptForm.name"/>
+        </el-form-item>
+        <el-form-item label="课件链接" :label-width="formLabelWidth">
+          <el-input v-model="pptForm.docUrl"/>
+        </el-form-item>
+        <el-form-item label="视频链接" :label-width="formLabelWidth">
+          <el-input v-model="pptForm.mp4Url"/>
+        </el-form-item>
+        <el-form-item label="关联课程名称" :label-width="formLabelWidth">
+          <el-input disabled v-model="pptForm.coursename"/>
+        </el-form-item>
+        <el-form-item label="知识点" :label-width="formLabelWidth">
+          <el-input v-model="pptForm.know"/>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="editPPTDialog = false">取消</el-button>
+          <el-button type="primary" @click="toEditPPT">修改</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="detailPPTDialog" title="案例详情" fullscreen @close="refreshForm">
+      <div class="detail-header">
+        <el-button type="primary" @click="addPPT">添加课程</el-button>
+      </div>
+      <el-table :data="detailPPTList" :border="true">
+        <el-table-column prop="name" label="课程名称" />
+        <el-table-column prop="know" label="知识点" />
+        <el-table-column prop="docUrl" label="关联内容链接" width="160">
+          <template #default="scope">
+            <el-link type="primary" :href="scope.row.docUrl" target="_blank">文档访问</el-link>
+          </template>
+        </el-table-column>
+        <el-table-column prop="mp4Url" label="关联视频">
+          <template #default="scope">
+            <el-link v-if="scope.row.mp4Url !== ''" type="primary" :href="scope.row.mp4Url" target="_blank">点此观看视频</el-link>
+          </template>
+        </el-table-column>
+        <el-table-column fixed="right" label="操作" width="200">
+          <template #default="scope">
+            <el-button link type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>
+            <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDelDetail(scope.row)">
+              <template #reference>
+                <el-button link type="danger" size="small">删除</el-button>
+              </template>
+            </el-popconfirm>
+            <!-- <el-button link type="primary" size="small" @click="handleDelete(scope.row)">删除</el-button> -->
+          </template>
+        </el-table-column>
+      </el-table>
     </el-dialog>
   </div>
 </template>
@@ -288,6 +394,9 @@ onMounted(async () => {
     .table {
       margin: 0 10px;
     }
+  }
+  .detail-header {
+    height: 60px;
   }
 }
 </style>

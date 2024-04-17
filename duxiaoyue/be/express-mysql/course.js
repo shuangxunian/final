@@ -25,9 +25,10 @@ course.post('/del', async (req, res) => {
   })
 })
 
-course.post('/fix', async (req, res) => {
+course.post('/edit', async (req, res) => {
   const { body } = req
-  let sql = `update user_info set password = '123456' where userid = '${body.userid}'`
+  let sql = `update course_list set className='${body.className}',teacherid='${body.teacherid}' where id='${body.id}'`
+  console.log(sql)
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({
@@ -35,31 +36,9 @@ course.post('/fix', async (req, res) => {
   })
 })
 
-course.post('/fixPassword', async (req, res) => {
+course.post('/accept', async (req, res) => {
   const { body } = req
-  let sql = `select * from user_info where userid='${body.userid}' and password='${body.oldPwd}'`
-  const findDatabase = new DataBase()
-  const info = await findDatabase.getSqlData(sql)
-  if (info.length) {
-    sql = `update user_info set password = '${body.newPwd1}' where userid = '${body.userid}'`
-    const fixDatabase = new DataBase()
-    await fixDatabase.getSqlData(sql)
-    res.send({
-      code: 2,
-      msg: '密码修改成功！'
-    })
-  } else {
-    res.send({
-      code: 4,
-      msg: '旧密码不正确！'
-    })
-  }
-})
-
-course.post('/edit', async (req, res) => {
-  const { body } = req
-  let sql = `update user_info set username='${body.username}', roleType ='${body.roleType}' where userid = '${body.userid}'`
-  console.log(sql)
+  let sql = `update course_list set statusType='2' where id='${body.id}'`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({
@@ -69,7 +48,7 @@ course.post('/edit', async (req, res) => {
 
 course.post('/add', async (req, res) => {
   const { body } = req
-  let sql = `insert into course_list (id,className,statusType,teacherid,switchShow) values ('${new Date().getTime()}','${body.className}','${body.statusType}','${body.teacherid}','false')`
+  let sql = `insert into course_list (id,className,statusType,teacherid) values ('${new Date().getTime()}','${body.className}','${body.statusType}','${body.teacherid}')`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({

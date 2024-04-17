@@ -10,57 +10,6 @@ const router = useRouter()
 const routerList = ref([])
 const roleType = ref(0)
 
-// const routerList = ref([
-//   {
-//     index: "allClass",
-//     name: "全部课程",
-//     icon: "Menu"
-//   },
-//   {
-//     index: "myClass",
-//     name: "我的课程",
-//     icon: "Menu"
-//   },
-//   {
-//     index: "info",
-//     name: "个人信息",
-//     icon: "Service"
-//   },
-// ])
-// const routerList = ref([
-//   {
-//     index: "studentUsers",
-//     name: "学生列表",
-//     icon: "Menu"
-//   },
-//   {
-//     index: "classList",
-//     name: "课程列表",
-//     icon: "Menu"
-//   },
-//   {
-//     index: "info",
-//     name: "个人信息",
-//     icon: "Service"
-//   },
-// ])
-// const routerList = ref([
-//   {
-//     index: "adminUsers",
-//     name: "用户列表",
-//     icon: "Menu"
-//   },
-//   {
-//     index: "adminClass",
-//     name: "课程审核列表",
-//     icon: "Menu"
-//   },
-//   {
-//     index: "info",
-//     name: "个人信息",
-//     icon: "Service"
-//   },
-// ])
 
 function handleSelect(key, keyPath) {
   router.push('/' + key)
@@ -82,7 +31,7 @@ onMounted(() => {
       },
       {
         index: "adminClass",
-        name: "课程审核列表",
+        name: "项目案例列表",
         icon: "Menu"
       },
       {
@@ -100,7 +49,7 @@ onMounted(() => {
       },
       {
         index: "classList",
-        name: "课程列表",
+        name: "项目案例列表",
         icon: "Menu"
       },
       {
