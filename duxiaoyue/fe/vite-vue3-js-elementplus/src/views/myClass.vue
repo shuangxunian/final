@@ -10,6 +10,7 @@ const userList = ref([])
 const courseList = ref([])
 const pptList = ref([])
 const selectClassList = ref([])
+const selectClassObjList = ref([])
 const findString = ref('')
 const nowSelectType = ref('0')
 const userid = ref('')
@@ -18,6 +19,8 @@ const formLabelWidth= ref(100)
 const addCourseDialog = ref(false)
 const addPPTDialog = ref(false)
 const editPPTDialog = ref(false)
+const finishStudyDialog = ref(false)
+const classCourse = ref(0)
 
 const detailPPTDialog = ref(false)
 const detailPPTList = ref([])
@@ -74,6 +77,8 @@ const getDetail = async function(row) {
   if (data.code === 2) {
     detailPPTDialog.value = true
     nowSelectRow.value = row
+    nowSelectRow.value.myselfClassCourse = selectClassObjList.value.find(item => item.classid === row.id).myselfClassCourse
+    console.log(nowSelectRow.value.myselfClassCourse)
     detailPPTList.value = data.body
   }
 }
@@ -92,6 +97,7 @@ const starClass = async function(row, flag) {
       type: 'success',
     })
     await getSelectClassList()
+    await getCourseList()
   }
 }
 
@@ -100,6 +106,25 @@ const addPPT = function(row = {}) {
   pptForm.value.courseid = row.id || nowSelectRow.value.id
   pptForm.value.coursename = row.className || nowSelectRow.value.className
   addPPTDialog.value = true
+}
+
+const finishStudy = async function () {
+  if (classCourse.value === 0) return ElMessage.error('请填写评分')
+  const { data } = await axios.post('http://localhost:3000/selectClass/setCourse', {
+    userid: userid.value,
+    classid: nowSelectRow.value.id,
+    classCourse: classCourse.value
+  })
+  if (data.code === 2) {
+    ElMessage({
+      message: '提交成功！',
+      type: 'success',
+    })
+    finishStudyDialog.value = false
+    nowSelectRow.value.myselfClassCourse = 1
+    await getSelectClassList()
+    await getCourseList()
+  }
 }
 
 const toAddPPT = async function() {
@@ -210,7 +235,7 @@ const getCourseList = async function() {
     })
     data.body.forEach(item => {
       let belongUser = userMap[item.teacherid]
-      if ((item.statusType === '1' && item.teacherid === userid.value)||(item.statusType === '2')) {
+      if (item.statusType === '2' && selectClassList.value.includes(item.id)) {
         let status = item.statusType === '1' ? '审核中' : '正常'
         tableData.value.push({
           ...item,
@@ -254,6 +279,7 @@ const getSelectClassList = async function() {
     data.body.forEach(item => {
       selectClassList.value.push(item.classid)
     })
+    selectClassObjList.value = data.body
     // console.log(data.body)
     // selectClassList.value = data.body
   }
@@ -281,9 +307,9 @@ onMounted(async () => {
             <el-button type="primary" @click="gotoFind">筛选</el-button>
           </div>
         </div>
-        <div class="right">
+        <!-- <div class="right">
           <el-button type="primary" @click="addCourseDialog = true">新建项目案例</el-button>
-        </div>
+        </div> -->
       </div>
       <div class="table">
         <el-table :data="tableData" style="width: 100%" border max-height="600">
@@ -291,6 +317,8 @@ onMounted(async () => {
           <el-table-column prop="belongUser" label="负责人" />
           <el-table-column prop="know" label="知识点" />
           <el-table-column prop="status" label="状态" />
+          <el-table-column prop="studyNum" label="收藏人数" />
+          <el-table-column prop="classCourse" label="评分" />
           <!-- <el-table-column prop="status" label="是否可见">
             <template #default="scope">
               <el-switch :disabled="scope.row.statusType === '1'" v-model="scope.row.switchShow" active-text="可见" inactive-text="不可见" />
@@ -298,7 +326,7 @@ onMounted(async () => {
           </el-table-column> -->
           <el-table-column fixed="right" label="操作" width="280">
             <template #default="scope">
-              <el-button link type="primary" size="small" @click="getDetail(scope.row)">查看详情</el-button>
+              <el-button link type="primary" size="small" @click="getDetail(scope.row)">开始学习</el-button>
               <el-button v-if="selectClassList.includes(scope.row.id)" link type="primary" size="small" @click="starClass(scope.row, false)">取消收藏</el-button>
               <el-button v-else link type="primary" size="small" @click="starClass(scope.row, true)">收藏</el-button>
               <el-button v-if="scope.row.teacherid === userid" link type="primary" size="small" @click="addPPT(scope.row)">新建关联课程</el-button>
@@ -381,7 +409,8 @@ onMounted(async () => {
 
     <el-dialog v-model="detailPPTDialog" title="案例详情" fullscreen @close="refreshForm">
       <div class="detail-header">
-        <el-button type="primary" @click="addPPT">添加课程</el-button>
+        <el-button v-if="nowSelectRow.value.myselfClassCourse === 0" type="primary" @click="finishStudyDialog = true">标记已学完</el-button>
+        <!-- <el-button type="primary" @click="addPPT">添加课程</el-button> -->
       </div>
       <el-table :data="detailPPTList" :border="true">
         <el-table-column prop="name" label="课程名称" />
@@ -408,6 +437,21 @@ onMounted(async () => {
           </template>
         </el-table-column>
       </el-table>
+    </el-dialog>
+
+    <el-dialog v-model="finishStudyDialog" title="新建项目案例" width="500" @close="refreshForm">
+      <el-form >
+        <el-form-item label="课程评价分" :label-width="formLabelWidth">
+          <el-rate v-model="classCourse" />
+          <!-- <el-input v-model="classCourse"/> -->
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="finishStudyDialog = false">取消</el-button>
+          <el-button type="primary" @click="finishStudy">结束</el-button>
+        </div>
+      </template>
     </el-dialog>
   </div>
 </template>

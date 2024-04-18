@@ -207,7 +207,21 @@ const getCourseList = async function() {
 }
 
 const gotoFind = function() {
-  console.log(nowSelectType.value)
+  if (findString.value === '') {
+    getClassList()
+    return
+  }
+  tableData.value = []
+  courseList.value.forEach(item => {
+    // console.log(item)
+    if (
+      item.className.indexOf(findString.value) !== -1 ||
+      item.belongUser.indexOf(findString.value) !== -1 ||
+      item.status.indexOf(findString.value) !== -1
+    ) {
+      tableData.value.push(item)
+    }
+  })
 }
 
 

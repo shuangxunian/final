@@ -30,7 +30,17 @@ const handleDelete = function(index, scope) {
 }
 
 const gotoFind = function() {
-  console.log(nowSelectType.value)
+  tableData.value = []
+  if (findString.value === '') {
+    tableData.value = userList.value
+  } else {
+    userList.value.forEach(item => {
+      if (item.userid.includes(findString.value) || item.username.includes(findString.value)) {
+        tableData.value.push(item)
+      }
+    })
+  }
+  // console.log(nowSelectType.value)
 }
 
 const addUser = async function() {

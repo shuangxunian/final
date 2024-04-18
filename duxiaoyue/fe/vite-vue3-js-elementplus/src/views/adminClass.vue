@@ -53,7 +53,20 @@ const handleDelete = function(index, scope) {
 }
 
 const gotoFind = function() {
-  console.log(findString.value)
+  if (findString.value === '') {
+    getClassList()
+    return
+  }
+  tableData.value = []
+  courseList.value.forEach(item => {
+    if (
+      item.className.indexOf(findString.value) !== -1 ||
+      item.teacherName.indexOf(findString.value) !== -1 ||
+      item.status.indexOf(findString.value) !== -1
+    ) {
+      tableData.value.push(item)
+    }
+  })
 }
 
 const makeSureDel = async function(row) {
@@ -107,13 +120,13 @@ const toEditClass = async function() {
 const getUserList = async function() {
   const { data } = await axios.post('http://localhost:3000/user/alldata',{})
   if (data.code === 2) {
-    userList.value = []
-    data.body.forEach(item => {
-      if (item.roleType ===  '1') {
-        userList.value.push(item)
-      }
-    })
-    console.log(userList.value)
+    userList.value = data.body
+    // data.body.forEach(item => {
+    //   if (item.roleType ===  '1') {
+    //     userList.value.push(item)
+    //   }
+    // })
+    // console.log(userList.value)
   }
 }
 
@@ -138,6 +151,20 @@ const getClassList = async function() {
   }
 }
 
+const sortTableSave = function() {
+  const newData = tableData.value.sort((a, b) => {
+    return b.studyNum - a.studyNum
+  })
+  tableData.value = newData
+}
+
+const sortTableCourse = function() {
+  const newData = tableData.value.sort((a, b) => {
+    return b.classCourse - a.classCourse
+  })
+  tableData.value = newData
+}
+
 onMounted(async() => {
   await getUserList()
   await getClassList()
@@ -156,6 +183,8 @@ onMounted(async() => {
           </div>
           <div class="find-button">
             <el-button type="primary" @click="gotoFind">筛选</el-button>
+            <el-button type="primary" @click="sortTableSave">收藏最多</el-button>
+            <el-button type="primary" @click="sortTableCourse">评分最高</el-button>
           </div>
         </div>
         <div class="right">
@@ -166,6 +195,8 @@ onMounted(async() => {
         <el-table :data="tableData" style="width: 100%" border max-height="600">
           <el-table-column prop="className" label="项目案例名称" />
           <el-table-column prop="belongTeacher" label="所属教师" />
+          <el-table-column prop="studyNum" label="收藏人数" />
+          <el-table-column prop="classCourse" label="评分" />
           <el-table-column prop="status" label="状态" />
           <el-table-column fixed="right" label="操作" width="160">
             <template #default="scope">

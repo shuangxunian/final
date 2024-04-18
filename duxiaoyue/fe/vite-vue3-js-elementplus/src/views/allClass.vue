@@ -234,7 +234,20 @@ const getCourseList = async function() {
 }
 
 const gotoFind = function() {
-  console.log(nowSelectType.value)
+  if (findString.value === '') {
+    getCourseList()
+    return
+  }
+  tableData.value = []
+  courseList.value.forEach(item => {
+    if (
+      item.className.indexOf(findString.value) !== -1 ||
+      item.belongUser.indexOf(findString.value) !== -1 ||
+      item.status.indexOf(findString.value) !== -1
+    ) {
+      tableData.value.push(item)
+    }
+  })
 }
 
 
@@ -259,6 +272,20 @@ const getSelectClassList = async function() {
   }
 }
 
+const sortTableSave = function() {
+  const newData = tableData.value.sort((a, b) => {
+    return b.studyNum - a.studyNum
+  })
+  tableData.value = newData
+}
+
+const sortTableCourse = function() {
+  const newData = tableData.value.sort((a, b) => {
+    return b.classCourse - a.classCourse
+  })
+  tableData.value = newData
+}
+
 onMounted(async () => {
   userid.value = window.sessionStorage.getItem('userid')
   console.log(userid.value)
@@ -279,6 +306,8 @@ onMounted(async () => {
           </div>
           <div class="find-button">
             <el-button type="primary" @click="gotoFind">筛选</el-button>
+            <el-button type="primary" @click="sortTableSave">收藏最多</el-button>
+            <el-button type="primary" @click="sortTableCourse">评分最高</el-button>
           </div>
         </div>
         <div class="right">
@@ -299,8 +328,8 @@ onMounted(async () => {
           <el-table-column fixed="right" label="操作" width="280">
             <template #default="scope">
               <el-button link type="primary" size="small" @click="getDetail(scope.row)">查看详情</el-button>
-              <el-button v-if="selectClassList.includes(scope.row.id)" link type="primary" size="small" @click="starClass(scope.row, false)">取消收藏</el-button>
-              <el-button v-else link type="primary" size="small" @click="starClass(scope.row, true)">收藏</el-button>
+              <el-button v-if="selectClassList.includes(scope.row.id) && scope.row.teacherid !== userid" link type="primary" size="small" @click="starClass(scope.row, false)">取消收藏</el-button>
+              <el-button v-else-if="!selectClassList.includes(scope.row.id) && scope.row.teacherid !== userid" link type="primary" size="small" @click="starClass(scope.row, true)">收藏</el-button>
               <el-button v-if="scope.row.teacherid === userid" link type="primary" size="small" @click="addPPT(scope.row)">新建关联课程</el-button>
               <el-popconfirm v-if="scope.row.teacherid === userid" confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scope.row)">
                 <template #reference>
