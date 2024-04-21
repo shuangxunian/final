@@ -1,5 +1,6 @@
 const express = require('express')
 const DataBase = require('./mysql')
+const axios = require("axios");
 
 const talk = express.Router()
 
@@ -20,6 +21,38 @@ talk.post('/del', async (req, res) => {
   await database.getSqlData(sql)
   res.send({
     code: 2
+  })
+})
+
+talk.post('/begin', async (req, res) => {
+  const { body } = req
+  const { modelList, trainList } = body
+  for (let i = 0; i < trainList.length; i++) {
+    let maxObj = {
+      similarity: 0,
+      id: '',
+      AIResult: ''
+    }
+    for (let j = 0; j < modelList.length; j++) {
+      const data = await axios.post('http://127.0.0.1:5000/airesult', {
+        body: [trainList[i].talk,modelList[j].talk]
+      })
+      console.log(data.data[0])
+      if (data.data[0].similarity > maxObj.similarity && data.data[0].similarity > 0.7) {
+        maxObj.similarity = data.data[0].similarity
+        maxObj.id = trainList[i].id
+        maxObj.AIResult = modelList[j].UserResult
+        console.log(maxObj)
+      }
+    }
+    if (maxObj.similarity > 0.7) {
+      let sql = `update data_list set AIResult='${maxObj.AIResult}' where id='${maxObj.id}'`
+      const database = new DataBase()
+      await database.getSqlData(sql)
+    }
+  }
+  res.send({
+    code: 2,
   })
 })
 

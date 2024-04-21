@@ -11,6 +11,7 @@ const trainList = ref([])
 const addTalkDialog = ref(false)
 const editTalkDialog = ref(false)
 const trainDialog = ref(false)
+const btnLoading = ref(false)
 
 const formLabelWidth = ref(100)
 const form = ref({
@@ -68,6 +69,7 @@ const getTalkList = async () => {
     titleList.value.forEach(item => {
       titleMap[item.id] = item.title
     })
+    console.log(titleMap)
     talkList.value = data.info
     tableData.value = []
     data.info.forEach(item => {
@@ -129,7 +131,17 @@ const toModel = async (row) => {
   }
 }
 
-const AIToUser = async (row) => {}
+const AIToUser = async (row) => {
+  const obj = {
+    ...row
+  }
+  obj.UserResult=obj.AIResult
+  const { data } = await axios.post('http://localhost:3000/talk/edit', obj)
+  if (data.code === 2) {
+    ElMessage.success('同步成功')
+    await getTalkList()
+  }
+}
 
 const editData = async (row) => {
   form.value = {
@@ -147,14 +159,31 @@ const beginTrain = async () => {
 }
 
 const toTrain = async () => {
-  // const { data } = await axios.post('http://localhost:3000/train/begin', {
-  //   list: trainList.value
-  // })
-  // if (data.code === 2) {
-  //   ElMessage.success('训练成功')
-  //   trainDialog.value = false
-  //   await getTalkList()
+  btnLoading.value = true
+  const modelList = []
+  tableData.value.forEach(item => {
+    if (item.isModel === 1) modelList.push(item)
+  })
+  // const sendArr = []
+  // for (let i = 0; i < modelList.length; i++) {
+  //   for (let j = 0; j < trainList.value.length; j++) {
+  //     sendArr.push([
+  //       modelList[i].talk,
+  //       trainList.value[j].talk,
+  //     ])
+  //   }
   // }
+
+  const { data } = await axios.post('http://localhost:3000/talk/begin', {
+    modelList,
+    trainList: trainList.value
+  })
+  if (data.code === 2) {
+    ElMessage.success('训练成功')
+    trainDialog.value = false
+    btnLoading.value = false
+    await getTalkList()
+  }
 }
 
 onMounted(async () => {
@@ -199,7 +228,7 @@ onMounted(async () => {
         </el-table-column>
         <el-table-column fixed="right" label="操作" width="260">
           <template #default="scoped">
-            <el-button link type="primary" size="small" :disabled="!(scoped.row.AIResult !== '' && scoped.row.UserResult === '')" @click="AIToUser(scoped)">同步结果</el-button>
+            <el-button link type="primary" size="small" :disabled="!(scoped.row.AIResult !== '' && scoped.row.UserResult === '')" @click="AIToUser(scoped.row)">同步结果</el-button>
             <el-button v-if="scoped.row.isModel === 0" :disabled="scoped.row.AIResult === '' && scoped.row.UserResult === ''" link type="primary" size="small" @click="toModel(scoped.row)">设为模板</el-button>
             <el-button v-else link type="primary" size="small" @click="toModel(scoped.row)">取消模板</el-button>
             <el-button link type="primary" size="small" @click="editData(scoped.row)">编辑</el-button>
@@ -267,14 +296,14 @@ onMounted(async () => {
       </template>
     </el-dialog>
 
-    <el-dialog v-model="trainDialog" title="编辑评论" width="500">
-      <el-table :data="trainList" style="width: 100%">
+    <el-dialog v-model="trainDialog" title="开始训练" width="500">
+      <el-table v-loading="btnLoading" :data="trainList" style="width: 100%">
         <el-table-column prop="talk" label="评论" />
       </el-table>
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="editTalkDialog = false">取消</el-button>
-          <el-button type="primary" @click="toTrain">训练</el-button>
+          <el-button :disabled="btnLoading" type="primary" @click="toTrain">训练</el-button>
         </div>
       </template>
     </el-dialog>
