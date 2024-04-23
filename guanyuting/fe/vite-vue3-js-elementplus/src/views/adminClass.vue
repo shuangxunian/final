@@ -4,6 +4,11 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
 const findData = ref('')
+const form = ref({
+  name: '',
+  teacherid: '',
+  num: 0
+})
 const tableData = ref([])
 const dialogFormVisible = ref(false)
 const userList = ref([])

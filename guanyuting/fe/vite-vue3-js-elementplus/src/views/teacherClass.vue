@@ -1,17 +1,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import axios from 'axios'
 
 const findData = ref('')
-const tableData = ref([
-  {
-    id: 0,
-    name: '计算机科学',
-    homeworkNum: 5,
-    testNum: 5,
-    num: 20
-  },
-])
+const tableData = ref([])
+const classList = ref([])
 const form = ref({
   name: '',
   teacher: '',
@@ -61,6 +55,7 @@ const talkingList = ref([
   },
 ])
 const talkText = ref('')
+const userid = ref('')
 
 
 function refreshFrom() {
@@ -180,10 +175,19 @@ async function getUserList() {
 }
 
 async function getClassList() {
-  // const { data } = await axios.post('http://localhost:3000/user/alldata', {})
+  const { data } = await axios.post('http://localhost:3000/class/allData', {})
+  if (data.code === 2) {
+    data.body.forEach(item => {
+      if (item.teacherid === userid.value) {
+        classList.value.push(item)
+      }
+    })
+    tableData.value = classList.value
+  }
 }
 
 onMounted(async() => {
+  userid.value = sessionStorage.getItem('id')
   await getUserList()
   await getClassList()
 })
