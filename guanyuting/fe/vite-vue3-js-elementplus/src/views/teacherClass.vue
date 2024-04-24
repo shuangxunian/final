@@ -87,8 +87,8 @@ async function pushUser() {
 }
 
 function editData(scoped) {
-  nowSelectClass.value = scoped.row
-  classDetailDialogVisible.value = true
+  // nowSelectClass.value = scoped.row
+  // classDetailDialogVisible.value = true
   // console.log(scoped.row)
 }
 
@@ -161,6 +161,30 @@ async function getStudentList() {
   ]
 }
 
+function showDetail(row) {
+  nowSelectClass.value = row
+  console.log(nowSelectClass.value)
+  classDetailDialogVisible.value = true
+}
+
+async function makeSureDel(row) {
+  const { data } = await axios.post('http://localhost:3000/class/del', { id: row.id })
+  if (data.code === 2) {
+    ElMessage.success('删除成功')
+    getClassList()
+  }
+}
+
+function editClassName() {
+  const { data } = axios.post('http://localhost:3000/class/edit', {
+    ...nowSelectClass.value
+  })
+  if (data.code === 2) {
+    ElMessage.success('修改成功')
+    getClassList()
+  }
+}
+
 function tabClick(tab, event) {
   // console.log(tab, event)
   // console.log(tab.props.name)
@@ -177,6 +201,7 @@ async function getUserList() {
 async function getClassList() {
   const { data } = await axios.post('http://localhost:3000/class/allData', {})
   if (data.code === 2) {
+    classList.value = []
     data.body.forEach(item => {
       if (item.teacherid === userid.value) {
         classList.value.push(item)
@@ -212,9 +237,14 @@ onMounted(async() => {
         <el-table-column prop="testNum" label="考试次数"/>
         <el-table-column prop="num" label="选课人数"/>
         <el-table-column fixed="right" label="操作" width="200">
-          <template #default="scoped">
-            <el-button link type="primary" size="small" @click="editData(scoped)">详情</el-button>
-            <el-button link type="danger" size="small" @click="delData(scoped)">删除</el-button>
+          <template #default="scope">
+            <el-button link type="primary" size="small" @click="showDetail(scope.row)">详情</el-button>
+            <!-- <el-button link type="danger" size="small" @click="delData(scoped)">删除</el-button> -->
+            <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scope.row)">
+              <template #reference>
+                <el-button link type="danger" size="small">删除</el-button>
+              </template>
+            </el-popconfirm>
           </template>
         </el-table-column>
       </el-table>
@@ -253,11 +283,11 @@ onMounted(async() => {
                 <el-row>
                   <el-col :span="6">课程名：</el-col>
                   <el-col :span="12" :offset="6">
-                    <el-input v-model="className" placeholder="请输入课程名" />
+                    <el-input v-model="nowSelectClass.name" placeholder="请输入课程名" />
                   </el-col>
                 </el-row>
                 <div class="options">
-                  <el-button>修改</el-button>
+                  <el-button @click="editClassName">修改</el-button>
                 </div>
               </div>
             </el-tab-pane>
