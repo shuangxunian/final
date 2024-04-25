@@ -15,27 +15,28 @@ const testForm = ref({
   name: '',
   type: "1",
   checkQuestionList: [
-    {
-      key: 0,
-      question: '',
-      check1: '',
-      check2: '',
-      check3: '',
-      check4: '',
-      answer: ''
-    }
+    // {
+    //   key: 0,
+    //   question: '',
+    //   check1: '',
+    //   check2: '',
+    //   check3: '',
+    //   check4: '',
+    //   answer: ''
+    // }
   ],
   textQuestionList: [
-    {
-      key: 1,
-      question: '',
-    }
+    // {
+    //   key: 1,
+    //   question: '',
+    // }
   ],
 
 })
 const dialogFormVisible = ref(false)
 const classDetailDialogVisible = ref(false)
 const dialogAddTestVisible = ref(false)
+const dialogAddStudentVisible = ref(false)
 const testFindData = ref('')
 const nowSelectClass = ref({})
 const activeName = ref('0')
@@ -44,6 +45,7 @@ const testList = ref([])
 const studentFindData = ref([])
 const studentListHeader = ref([])
 const studentList = ref([])
+const userList = ref([])
 const talkingList = ref([
   {
     user: '张三',
@@ -56,6 +58,10 @@ const talkingList = ref([
 ])
 const talkText = ref('')
 const userid = ref('')
+const addStudentForm = ref({
+  studentid: '',
+  classid: ''
+})
 
 
 function refreshFrom() {
@@ -66,9 +72,16 @@ function refreshFrom() {
   }
 }
 
+function endAddStudent() {
+  addStudentForm.value = {
+    studentid: '',
+    classid: ''
+  }
+}
+
 function getList() {}
 
-function addUser() {
+function addClass() {
   dialogFormVisible.value = true
 }
 
@@ -134,31 +147,72 @@ function removeText(item) {
   }
 }
 
-function refreshTestFrom() {}
+function refreshTestFrom() {
+  testForm.value = {
+    name: '',
+    type: "1",
+    checkQuestionList: [
+      // {
+      //   key: 0,
+      //   question: '',
+      //   check1: '',
+      //   check2: '',
+      //   check3: '',
+      //   check4: '',
+      //   answer: ''
+      // }
+    ],
+    textQuestionList: [
+      // {
+      //   key: 1,
+      //   question: '',
+      // }
+    ],
+  }
+}
 
 function doNotAddTest() {
   refreshTestFrom()
   dialogAddTestVisible.value = false
 }
 
-function addTest() {
-  refreshTestFrom()
-  dialogAddTestVisible.value = false
+async function getTestList() {
+  const { data } = await axios.post('http://localhost:3000/test/allData', {
+    classid: nowSelectClass.value.id
+  })
+  if (data.code === 2) {
+    console.log(data.body)
+    testList.value = data.body
+  }
+}
+
+async function addTest() {
+  if (testForm.value.name === '') return ElMessage.error('请输入考试/作业名称')
+  if (testForm.value.checkQuestionList.length === 0 && testForm.value.textQuestionList.length === 0) return ElMessage.error('请保证至少存在一道题')
+  const { data } = await axios.post('http://localhost:3000/test/add', {
+    ...testForm.value,
+    classid: nowSelectClass.value.id
+  })
+  if (data.code === 2) {
+    ElMessage.success('添加成功')
+    getTestList()
+    dialogAddTestVisible.value = false
+  }
 }
 
 async function getStudentList() {
-  studentListHeader.value = [
-    {
-      prop: 'name',
-      label: '学生姓名'
-    },{
-      prop: 'work1',
-      label: '作业1'
-    },{
-      prop: 'test1',
-      label: '考试1'
-    },
-  ]
+  // studentListHeader.value = [
+  //   {
+  //     prop: 'name',
+  //     label: '学生姓名'
+  //   },{
+  //     prop: 'work1',
+  //     label: '作业1'
+  //   },{
+  //     prop: 'test1',
+  //     label: '考试1'
+  //   },
+  // ]
 }
 
 function showDetail(row) {
@@ -175,27 +229,66 @@ async function makeSureDel(row) {
   }
 }
 
-function editClassName() {
-  const { data } = axios.post('http://localhost:3000/class/edit', {
+async function editClassName() {
+  const { data } = await axios.post('http://localhost:3000/class/edit', {
     ...nowSelectClass.value
   })
   if (data.code === 2) {
     ElMessage.success('修改成功')
-    getClassList()
+    // getClassList()
+  }
+}
+
+async function addJoinClass() {
+  const { data } = await axios.post('http://localhost:3000/select_class/add', {
+    classid: nowSelectClass.value.id,
+    studentid: addStudentForm.value.studentid
+  })
+  if (data.code === 2) {
+    // ElMessage.success('添加成功')
+    // getClassList()
+    // endAddStudent()
   }
 }
 
 function tabClick(tab, event) {
   // console.log(tab, event)
   // console.log(tab.props.name)
-  const name = tab.props.name
-  if (name === '3') {
-    getStudentList()
+  // const name = tab.props.name
+  // if (name === '3') {
+  //   getStudentList()
+  // }
+  if (tab.props.name === '1') {
+    getTestList()
   }
 }
 
 async function getUserList() {
-  // const { data } = await axios.post('http://localhost:3000/user/alldata', {})
+  const { data } = await axios.post('http://localhost:3000/user/alldata', {})
+  if (data.code === 2) {
+    studentList.value = []
+    userList.value = data.body
+    data.body.forEach(item => {
+      if (item.roletype === '2') {
+        studentList.value.push(item)
+      }
+    })
+    // console.log(data.body)
+    // console.log(studentList.value)
+    // studentListHeader.value = [
+    //   {
+    //     prop: 'name',
+    //     label: '学生姓名'
+    //   },{
+    //     prop: 'work1',
+    //     label: '作业1'
+    //   },{
+    //     prop: 'test1',
+    //     label: '考试1'
+    //   },
+    // ]
+    // console.log(data.body)
+  }
 }
 
 async function getClassList() {
@@ -227,7 +320,7 @@ onMounted(async() => {
         <el-button @click="getList">筛选</el-button>
       </div>
       <div class="right">
-        <el-button type="primary" @click="addUser">新建用户</el-button>
+        <el-button type="primary" @click="addClass">新建课程</el-button>
       </div>
     </div>
     <div class="body">
@@ -301,6 +394,12 @@ onMounted(async() => {
                   <el-table :data="testList" style="width: 100%">
                     <el-table-column prop="name" label="考试/作业名称" />
                     <el-table-column prop="finishNum" label="完成人数" />
+                    <el-table-column label="类别">
+                      <template #default="scope">
+                        <span v-if="scope.row.type === '1'">作业</span>
+                        <span v-else>考试</span>
+                      </template>
+                    </el-table-column>
                     <el-table-column fixed="right" label="操作">
                       <template #default="scoped">
                         <el-button link type="primary" size="small" @click="editData(scoped)">题目详情</el-button>
@@ -316,7 +415,7 @@ onMounted(async() => {
               <div class="student-list">
                 <div class="header">
                   <el-input v-model="studentFindData" style="width: 240px" placeholder="搜索" />
-                  <el-button type="primary" @click="dialogAddTestVisible = true">添加学生</el-button>
+                  <el-button type="primary" @click="dialogAddStudentVisible = true">添加学生</el-button>
                 </div>
                 <div class="body">
                   <el-table :data="studentList" style="width: 100%">
@@ -356,7 +455,8 @@ onMounted(async() => {
         </div>
       </div>
     </el-dialog>
-    <el-dialog v-model="dialogAddTestVisible" title="新建考试/作业" width="600" height="900">
+
+    <el-dialog v-model="dialogAddTestVisible" title="新建考试/作业" width="600" height="900" @close="refreshTestFrom">
       <div class="add-question-form">
         <el-form :model="form">
           <el-form-item label="类别" label-width="62">
@@ -412,7 +512,30 @@ onMounted(async() => {
           <el-button @click="addNewText">添加简答题</el-button>
           <el-button @click="doNotAddTest">取消新建</el-button>
           <el-button type="primary" @click="addTest">
-            确定添加
+            确定新建
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="dialogAddStudentVisible" title="添加学生" width="500" @close="endAddStudent">
+      <el-form :model="addStudentForm">
+        <el-form-item label="学生" :label-width="formLabelWidth">
+          <el-select v-model="addStudentForm.studentid" placeholder="请选择学生">
+            <el-option
+              v-for="item in studentList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="dialogAddStudentVisible = false">取消</el-button>
+          <el-button type="primary" @click="addJoinClass">
+            添加选课学生
           </el-button>
         </div>
       </template>
