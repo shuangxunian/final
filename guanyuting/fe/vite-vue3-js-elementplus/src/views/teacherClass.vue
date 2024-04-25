@@ -36,6 +36,7 @@ const testForm = ref({
 const dialogFormVisible = ref(false)
 const classDetailDialogVisible = ref(false)
 const dialogAddTestVisible = ref(false)
+const dialogEditTestVisible = ref(false)
 const dialogAddStudentVisible = ref(false)
 const testFindData = ref('')
 const nowSelectClass = ref({})
@@ -46,16 +47,7 @@ const studentFindData = ref([])
 const studentListHeader = ref([])
 const studentList = ref([])
 const userList = ref([])
-const talkingList = ref([
-  {
-    user: '张三',
-    text: '为啥这题选a啊'
-  },
-  {
-    user: '王老师',
-    text: '因为1+1=2'
-  },
-])
+const talkingList = ref([])
 const talkText = ref('')
 const userid = ref('')
 const addStudentForm = ref({
@@ -134,7 +126,7 @@ function addNewText() {
 
 function removeCheck(item) {
   const index = testForm.value.checkQuestionList.indexOf(item)
-  console.log(item, index)
+  // console.log(item, index)
   if (index !== -1) {
     testForm.value.checkQuestionList.splice(index, 1)
   }
@@ -215,10 +207,57 @@ async function getStudentList() {
   // ]
 }
 
-function showDetail(row) {
+function getDate(timestamp) {
+  const date = new Date(Number(timestamp))
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+async function getTalkingList() {
+  const { data } = await axios.post('http://localhost:3000/talking/allData', {
+    classid: nowSelectClass.value.id
+  })
+  if (data.code === 2) {
+    talkingList.value = data.body
+    const nameMap = {}
+    userList.value.forEach(item => {
+      nameMap[item.id] = item.name
+    })
+    console.log(talkingList.value)
+    talkingList.value.forEach(item => {
+      item.name = nameMap[item.userid]
+    })
+    console.log(talkingList.value)
+  }
+
+}
+
+async function addTalking() {
+  const { data } = await axios.post('http://localhost:3000/talking/add', {
+    userid: userid.value,
+    classid: nowSelectClass.value.id,
+    text: talkText.value
+  })
+  if (data.code === 2) {
+
+    await getTalkingList()
+  }
+
+}
+
+
+
+
+async function showDetail(row) {
+  // talkingList
   nowSelectClass.value = row
-  console.log(nowSelectClass.value)
   classDetailDialogVisible.value = true
+  await getTalkingList()
 }
 
 async function makeSureDel(row) {
@@ -235,9 +274,31 @@ async function editClassName() {
   })
   if (data.code === 2) {
     ElMessage.success('修改成功')
-    // getClassList()
   }
 }
+
+async function selectClassStudent() {
+  const { data } = await axios.post('http://localhost:3000/select_class/allData', {
+    classid: nowSelectClass.value.id,
+  })
+  if (data.code === 2) {
+    console.log(testList.value)
+    studentListHeader.value = [
+      {
+        prop: 'name',
+        label: '学生姓名'
+      }
+    ]
+    testList.value.forEach(item => {
+      studentListHeader.value.push({
+        prop: item.id,
+        label: item.name
+      })
+    })
+    // await getClassList()
+  }
+}
+
 
 async function addJoinClass() {
   const { data } = await axios.post('http://localhost:3000/select_class/add', {
@@ -245,23 +306,26 @@ async function addJoinClass() {
     studentid: addStudentForm.value.studentid
   })
   if (data.code === 2) {
-    // ElMessage.success('添加成功')
-    // getClassList()
-    // endAddStudent()
+    ElMessage.success('添加成功')
+    selectClassStudent()
+    dialogAddStudentVisible.value = false
   }
 }
 
-function tabClick(tab, event) {
-  // console.log(tab, event)
-  // console.log(tab.props.name)
-  // const name = tab.props.name
-  // if (name === '3') {
-  //   getStudentList()
-  // }
-  if (tab.props.name === '1') {
-    getTestList()
+async function tabClick(tab, event) {
+  await getTestList()
+  if (tab.props.name === '3') {
+    selectClassStudent()
   }
 }
+
+async function showTestDetail(row) {
+  testForm.value = row
+  dialogEditTestVisible.value = true
+  console.log(row)
+}
+
+async function delTestDetail(row) {}
 
 async function getUserList() {
   const { data } = await axios.post('http://localhost:3000/user/alldata', {})
@@ -387,7 +451,7 @@ onMounted(async() => {
             <el-tab-pane label="考试/作业列表" name="1">
               <div class="class-test">
                 <div class="header">
-                  <el-input v-model="testFindData" style="width: 240px" placeholder="搜索" />
+                  <!-- <el-input v-model="testFindData" style="width: 240px" placeholder="搜索" /> -->
                   <el-button type="primary" @click="dialogAddTestVisible = true">新建考试/作业</el-button>
                 </div>
                 <div class="body">
@@ -402,8 +466,8 @@ onMounted(async() => {
                     </el-table-column>
                     <el-table-column fixed="right" label="操作">
                       <template #default="scoped">
-                        <el-button link type="primary" size="small" @click="editData(scoped)">题目详情</el-button>
-                        <el-button link type="danger" size="small" @click="delData(scoped)">删除</el-button>
+                        <el-button link type="primary" size="small" @click="showTestDetail(scoped.row)">题目详情</el-button>
+                        <el-button link type="danger" size="small" @click="delTestDetail(scoped)">删除</el-button>
                       </template>
                     </el-table-column>
                   </el-table>
@@ -414,7 +478,7 @@ onMounted(async() => {
             <el-tab-pane label="选课学生列表" name="3">
               <div class="student-list">
                 <div class="header">
-                  <el-input v-model="studentFindData" style="width: 240px" placeholder="搜索" />
+                  <!-- <el-input v-model="studentFindData" style="width: 240px" placeholder="搜索" /> -->
                   <el-button type="primary" @click="dialogAddStudentVisible = true">添加学生</el-button>
                 </div>
                 <div class="body">
@@ -438,11 +502,19 @@ onMounted(async() => {
           </el-tabs>
         </div>
         <div class="right">
-          <div class="talk-list">
+          <div v-if="talkingList.length" class="talk-list">
             <div class="talk-item" v-for="(item, index) in talkingList" :key="index">
-              <p>{{ item.user }}:</p>
-              <p>{{ item.text}}</p>
+              <div class="talk-header">
+                <div class="talk-name">{{ item.name }}:</div>
+                <div class="talk-time">{{ getDate(item.id) }}</div>
+              </div>
+              <div class="talk-body">
+                <div class="text">{{ item.text }}</div>
+              </div>
             </div>
+          </div>
+          <div v-else class="talk-list">
+            暂无讨论！
           </div>
           <div class="my-input">
             <el-input
@@ -450,15 +522,77 @@ onMounted(async() => {
               type="textarea"
               placeholder="请输入评论"
             />
-            <el-button class="btn" type="primary">提交</el-button>
+            <el-button class="btn" type="primary" @click="addTalking">提交</el-button>
           </div>
         </div>
       </div>
     </el-dialog>
 
-    <el-dialog v-model="dialogAddTestVisible" title="新建考试/作业" width="600" height="900" @close="refreshTestFrom">
+    <el-dialog v-model="dialogAddTestVisible" title="新建考试/作业" width="600" height="700" @close="refreshTestFrom">
       <div class="add-question-form">
-        <el-form :model="form">
+        <el-form :model="testForm">
+          <el-form-item label="类别" label-width="62">
+            <el-radio-group v-model="testForm.type" class="ml-4">
+              <el-radio value="1" size="large">作业</el-radio>
+              <el-radio value="2" size="large">考试</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="名称" label-width="62">
+            <el-input v-model="testForm.name" />
+          </el-form-item>
+          <el-form-item
+            v-for="(domain, index) in testForm.checkQuestionList"
+            :key="domain.key"
+            :label="'单选题' + index"
+            :prop="'domains.' + index + '.value'"
+          >
+            <el-input v-model="domain.question" placeholder="请输入选择题题目" />
+            <el-row>
+              <el-col :span="10">
+                <el-input v-model="domain.check1" placeholder="请输入选项1的题面" />
+              </el-col>
+              <el-col :span="10" :offset="2">
+                <el-input v-model="domain.check2" placeholder="请输入选项2的题面" />
+              </el-col>
+              <el-col :span="10">
+                <el-input v-model="domain.check3" placeholder="请输入选项3的题面" />
+              </el-col>
+              <el-col :span="10" :offset="2">
+                <el-input v-model="domain.check4" placeholder="请输入选项4的题面" />
+              </el-col>
+            </el-row>
+            <el-button class="mt-2" @click.prevent="removeCheck(domain)"
+              >删除</el-button
+            >
+          </el-form-item>
+          <el-form-item
+            v-for="(domain, index) in testForm.textQuestionList"
+            :key="domain.key"
+            :label="'简答题' + index"
+            :prop="'domains.' + index + '.value'"
+          >
+            <el-input v-model="domain.value" />
+            <el-button class="mt-2" @click.prevent="removeText(domain)"
+              >删除</el-button
+            >
+          </el-form-item>
+        </el-form>
+      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="addNewCheck">添加单选题</el-button>
+          <el-button @click="addNewText">添加简答题</el-button>
+          <el-button @click="doNotAddTest">取消新建</el-button>
+          <el-button type="primary" @click="addTest">
+            确定新建
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="dialogEditTestVisible" title="编辑考试/作业" width="600" height="700" @close="refreshTestFrom">
+      <div class="add-question-form">
+        <el-form :model="testForm">
           <el-form-item label="类别" label-width="62">
             <el-radio-group v-model="testForm.type" class="ml-4">
               <el-radio value="1" size="large">作业</el-radio>
@@ -615,6 +749,25 @@ onMounted(async() => {
         .talk-item {
           border:1px solid #ccc;
           margin-top: 10px;
+          padding: 8px;
+          .talk-header {
+            display: flex;
+            justify-content: space-between;
+            .talk-name {
+              font-size: 16px;
+              font-weight: 600;
+            }
+            .talk-time {
+              font-size: 14px;
+              color: #999;
+            }
+          }
+          .talk-body {
+            margin-top: 10px;
+          }
+          .talk-body {
+
+          }
         }
       }
       .my-input {
@@ -626,7 +779,7 @@ onMounted(async() => {
     }
   }
   .add-question-form {
-    height: 700px;
+    height: 600px;
     overflow: auto;
   }
 }

@@ -5,14 +5,9 @@ const select_class = express.Router()
 
 select_class.post('/allData', async (req, res) => {
   const { body } = req
-  let sql = `select * from test_list where classid='${body.classid}'`
+  let sql = `select * from select_class_list where classid='${body.classid}'`
   const database = new DataBase()
   let info = await database.getSqlData(sql)
-  info = info.map(item => {
-    item.checkQuestion = JSON.parse(item.checkQuestion)
-    item.textQuestion = JSON.parse(item.textQuestion)
-    return item
-  })
   res.send({
     code: 2,
     body: info
@@ -21,30 +16,13 @@ select_class.post('/allData', async (req, res) => {
 
 select_class.post('/add', async (req, res) => {
   const { body } = req
-  let sql = `insert into test_list (id,type,name,classid,checkQuestion,textQuestion,finishNum) values ('${new Date().getTime()}','${body.type}','${body.name}','${body.classid}','${JSON.stringify(body.checkQuestionList)}','${JSON.stringify(body.textQuestionList)}','0')`
+  let sql = `insert into select_class_list (id,classid,studentid) values ('${new Date().getTime()}','${body.classid}','${body.studentid}')`
   const database = new DataBase()
   const info = await database.getSqlData(sql)
   res.send({
     code: 2,
     msg: ''
   })
-  // let sql = `select * from class_list where name='${body.name}' and teacherid='${body.teacherid}'`
-  // const database = new DataBase()
-  // const info = await database.getSqlData(sql)
-  // if (info.length) {
-  //   res.send({
-  //     code: 4,
-  //     msg: '此老师已存在此课程！'
-  //   })
-  // } else {
-  //   sql = `insert into class_list (id,name,teacherid,num) values ('${new Date().getTime()}','${body.name}','${body.teacherid}','0')`
-  //   const addDatabase = new DataBase()
-  //   await addDatabase.getSqlData(sql)
-  //   res.send({
-  //     code: 2,
-  //     msg: ''
-  //   })
-  // }
 })
 
 select_class.post('/del', async (req, res) => {
