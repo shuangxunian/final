@@ -14,11 +14,26 @@ select_class.post('/allData', async (req, res) => {
   })
 })
 
+select_class.post('/mySelect', async (req, res) => {
+  const { body } = req
+  let sql = `select * from select_class_list where studentid='${body.studentid}'`
+  const database = new DataBase()
+  let info = await database.getSqlData(sql)
+  res.send({
+    code: 2,
+    body: info
+  })
+})
+
+
 select_class.post('/add', async (req, res) => {
   const { body } = req
   let sql = `insert into select_class_list (id,classid,studentid) values ('${new Date().getTime()}','${body.classid}','${body.studentid}')`
   const database = new DataBase()
-  const info = await database.getSqlData(sql)
+  await database.getSqlData(sql)
+  sql = `update class_list set num=num+1 where id = '${body.classid}'`
+  const updateDatabase = new DataBase()
+  await updateDatabase.getSqlData(sql)
   res.send({
     code: 2,
     msg: ''
@@ -27,9 +42,13 @@ select_class.post('/add', async (req, res) => {
 
 select_class.post('/del', async (req, res) => {
   const { body } = req
-  let sql = `delete from class_list where id='${body.id}'`
+  let sql = `delete from select_class_list where classid='${body.classid}' and studentid='${body.studentid}'`
+  console.log(sql)
   const database = new DataBase()
   await database.getSqlData(sql)
+  sql = `update class_list set num=num-1 where id = '${body.classid}'`
+  const updateDatabase = new DataBase()
+  await updateDatabase.getSqlData(sql)
   res.send({
     code: 2
   })

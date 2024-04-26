@@ -28,23 +28,17 @@ test.post('/add', async (req, res) => {
     code: 2,
     msg: ''
   })
-  // let sql = `select * from class_list where name='${body.name}' and teacherid='${body.teacherid}'`
-  // const database = new DataBase()
-  // const info = await database.getSqlData(sql)
-  // if (info.length) {
-  //   res.send({
-  //     code: 4,
-  //     msg: '此老师已存在此课程！'
-  //   })
-  // } else {
-  //   sql = `insert into class_list (id,name,teacherid,num) values ('${new Date().getTime()}','${body.name}','${body.teacherid}','0')`
-  //   const addDatabase = new DataBase()
-  //   await addDatabase.getSqlData(sql)
-  //   res.send({
-  //     code: 2,
-  //     msg: ''
-  //   })
-  // }
+})
+
+test.post('/edit', async (req, res) => {
+  const { body } = req
+  let sql = `update test_list set type='${body.type}',name='${body.name}',classid='${body.classid}',checkQuestion='${JSON.stringify(body.checkQuestionList)}',textQuestion='${JSON.stringify(body.textQuestionList)}',finishNum='${body.finishNum}' where id = '${body.id}'`
+  const database = new DataBase()
+  const info = await database.getSqlData(sql)
+  res.send({
+    code: 2,
+    msg: ''
+  })
 })
 
 test.post('/del', async (req, res) => {

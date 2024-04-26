@@ -1,9 +1,48 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
 
+const userid = ref('')
+const classMap=ref({})
+
+async function getClassList() {
+  const { data } = await axios.post('http://localhost:3000/class/allData', {})
+  if (data.code === 2) {
+    classMap.value = {}
+    data.body.forEach(item => {
+      classMap.value[item.id] = item.name
+    })
+  }
+}
+
+const getStudentList = async () => {
+  await getClassList()
+  const { data } = await axios.post('http://localhost:3000/select_class/mySelect', {
+    studentid: userid.value
+  })
+  if (data.code === 2) {
+    routerList.value = []
+
+    data.body.forEach(item => {
+      routerList.value.push({
+        index: "student",
+        name: classMap.value[item.classid],
+        icon: "Menu"
+      })
+    })
+
+    routerList.value.push({
+      index: "info",
+      name: "个人信息",
+      icon: "Service"
+    })
+
+  }
+}
 
 onMounted(async () => {
+  userid.value = sessionStorage.getItem('id')
   roletype.value = window.sessionStorage.getItem('roletype')
   if (roletype.value === '0') {
     routerList.value = [
@@ -42,18 +81,7 @@ onMounted(async () => {
       },
     ]
   } else {
-    routerList.value = [
-      {
-        index: "student",
-        name: "计算机网络",
-        icon: "Menu"
-      },
-      {
-        index: "info",
-        name: "个人信息",
-        icon: "Service"
-      },
-    ]
+    await getStudentList()
   }
   router.push('/' + routerList.value[0].index)
 })

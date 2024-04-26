@@ -46,6 +46,7 @@ const testList = ref([])
 const studentFindData = ref([])
 const studentListHeader = ref([])
 const studentList = ref([])
+const selectStudentList = ref([])
 const userList = ref([])
 const talkingList = ref([])
 const talkText = ref('')
@@ -94,16 +95,16 @@ async function pushUser() {
 function editData(scoped) {
   // nowSelectClass.value = scoped.row
   // classDetailDialogVisible.value = true
-  // console.log(scoped.row)
 }
 
 function delData(scoped) {
-  console.log(scoped)
 }
 
 // id 试卷/作业 课程id 问题
 function showHomework(scoped) {}
-function showTest(scoped) {}
+function showStudentTest(row) {
+
+}
 function showStudent(scoped) {}
 
 function addNewCheck() {
@@ -126,7 +127,6 @@ function addNewText() {
 
 function removeCheck(item) {
   const index = testForm.value.checkQuestionList.indexOf(item)
-  // console.log(item, index)
   if (index !== -1) {
     testForm.value.checkQuestionList.splice(index, 1)
   }
@@ -173,7 +173,6 @@ async function getTestList() {
     classid: nowSelectClass.value.id
   })
   if (data.code === 2) {
-    console.log(data.body)
     testList.value = data.body
   }
 }
@@ -191,6 +190,22 @@ async function addTest() {
     dialogAddTestVisible.value = false
   }
 }
+
+async function editTest() {
+  // console.log(testForm.value)
+  if (testForm.value.name === '') return ElMessage.error('请输入考试/作业名称')
+  if (testForm.value.checkQuestionList.length === 0 && testForm.value.textQuestionList.length === 0) return ElMessage.error('请保证至少存在一道题')
+  const { data } = await axios.post('http://localhost:3000/test/edit', {
+    ...testForm.value,
+    classid: nowSelectClass.value.id
+  })
+  if (data.code === 2) {
+    ElMessage.success('修改成功')
+    getTestList()
+    dialogEditTestVisible.value = false
+  }
+}
+
 
 async function getStudentList() {
   // studentListHeader.value = [
@@ -228,11 +243,9 @@ async function getTalkingList() {
     userList.value.forEach(item => {
       nameMap[item.id] = item.name
     })
-    console.log(talkingList.value)
     talkingList.value.forEach(item => {
       item.name = nameMap[item.userid]
     })
-    console.log(talkingList.value)
   }
 
 }
@@ -244,7 +257,7 @@ async function addTalking() {
     text: talkText.value
   })
   if (data.code === 2) {
-
+    talkText.value = ''
     await getTalkingList()
   }
 
@@ -282,20 +295,35 @@ async function selectClassStudent() {
     classid: nowSelectClass.value.id,
   })
   if (data.code === 2) {
-    console.log(testList.value)
-    studentListHeader.value = [
-      {
-        prop: 'name',
-        label: '学生姓名'
-      }
-    ]
+    studentListHeader.value = []
+    //   {
+    //     prop: 'name',
+    //     label: '学生姓名'
+    //   }
+    // ]
     testList.value.forEach(item => {
       studentListHeader.value.push({
         prop: item.id,
         label: item.name
       })
     })
-    // await getClassList()
+    console.log(data.body)
+    selectStudentList.value = []
+    data.body.forEach(item => {
+      const obj = {
+        ...item
+        // id: item.id
+      }
+      let name = '已删除'
+      for (let i = 0; i < studentList.value.length; i++) {
+        if (studentList.value[i].id === item.studentid) {
+          name = studentList.value[i].name
+          break
+        }
+      }
+      obj.name = name
+      selectStudentList.value.push(obj)
+    })
   }
 }
 
@@ -312,6 +340,20 @@ async function addJoinClass() {
   }
 }
 
+async function makeSureDelSelect(row) {
+  console.log(row)
+  const { data } = await axios.post('http://localhost:3000/select_class/del', {
+    classid: nowSelectClass.value.id,
+    studentid: row.studentid
+  })
+  if (data.code === 2) {
+    ElMessage.success('删除成功')
+    selectClassStudent()
+  }
+
+}
+
+
 async function tabClick(tab, event) {
   await getTestList()
   if (tab.props.name === '3') {
@@ -322,7 +364,6 @@ async function tabClick(tab, event) {
 async function showTestDetail(row) {
   testForm.value = row
   dialogEditTestVisible.value = true
-  console.log(row)
 }
 
 async function delTestDetail(row) {}
@@ -337,21 +378,6 @@ async function getUserList() {
         studentList.value.push(item)
       }
     })
-    // console.log(data.body)
-    // console.log(studentList.value)
-    // studentListHeader.value = [
-    //   {
-    //     prop: 'name',
-    //     label: '学生姓名'
-    //   },{
-    //     prop: 'work1',
-    //     label: '作业1'
-    //   },{
-    //     prop: 'test1',
-    //     label: '考试1'
-    //   },
-    // ]
-    // console.log(data.body)
   }
 }
 
@@ -467,7 +493,12 @@ onMounted(async() => {
                     <el-table-column fixed="right" label="操作">
                       <template #default="scoped">
                         <el-button link type="primary" size="small" @click="showTestDetail(scoped.row)">题目详情</el-button>
-                        <el-button link type="danger" size="small" @click="delTestDetail(scoped)">删除</el-button>
+                        <!-- <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDelTest(scoped.row)">
+                          <template #reference>
+                            <el-button link type="danger" size="small">删除</el-button>
+                          </template>
+                        </el-popconfirm> -->
+                        <!-- <el-button link type="danger" size="small" @click="delTestDetail(scoped)">删除</el-button> -->
                       </template>
                     </el-table-column>
                   </el-table>
@@ -482,17 +513,30 @@ onMounted(async() => {
                   <el-button type="primary" @click="dialogAddStudentVisible = true">添加学生</el-button>
                 </div>
                 <div class="body">
-                  <el-table :data="studentList" style="width: 100%">
+                  <el-table :data="selectStudentList" style="width: 100%">
+                    <el-table-column prop="name" label="学生姓名"/>
+                    <el-table-column prop="studyStatus" label="学习状态"/>
                     <el-table-column v-for="(item,index) in studentListHeader" 
                       :key="index" 
                       :label="item.label" 
                       :prop="item.prop" 
                       :index="item.index" 
-                    ></el-table-column>
+                    >
+                      <template #default="scoped">
+                        {{ item }}
+                        <el-button link type="primary" size="small" @click="showStudentTest(scoped.row)">查看详情</el-button>
+                        <!-- {{ scoped.row }} -->
+                      </template>
+                    </el-table-column>
                     <el-table-column fixed="right" label="操作">
                       <template #default="scoped">
-                        <el-button link type="primary" size="small" @click="editData(scoped)">编辑</el-button>
-                        <el-button link type="danger" size="small" @click="delData(scoped)">删除</el-button>
+                        <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDelSelect(scoped.row)">
+                          <template #reference>
+                            <el-button link type="danger" size="small">删除</el-button>
+                          </template>
+                        </el-popconfirm>
+                        <!-- <el-button link type="primary" size="small" @click="editData(scoped)">编辑</el-button> -->
+                        <!-- <el-button link type="danger" size="small" @click="delData(scoped)">删除</el-button> -->
                       </template>
                     </el-table-column>
                   </el-table>
@@ -644,9 +688,9 @@ onMounted(async() => {
         <div class="dialog-footer">
           <el-button @click="addNewCheck">添加单选题</el-button>
           <el-button @click="addNewText">添加简答题</el-button>
-          <el-button @click="doNotAddTest">取消新建</el-button>
-          <el-button type="primary" @click="addTest">
-            确定新建
+          <el-button @click="dialogEditTestVisible = false">取消修改</el-button>
+          <el-button type="primary" @click="editTest">
+            确定修改
           </el-button>
         </div>
       </template>
@@ -654,7 +698,7 @@ onMounted(async() => {
 
     <el-dialog v-model="dialogAddStudentVisible" title="添加学生" width="500" @close="endAddStudent">
       <el-form :model="addStudentForm">
-        <el-form-item label="学生" :label-width="formLabelWidth">
+        <el-form-item label="学生">
           <el-select v-model="addStudentForm.studentid" placeholder="请选择学生">
             <el-option
               v-for="item in studentList"
