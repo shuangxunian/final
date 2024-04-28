@@ -11,6 +11,7 @@ const allClass = require('./class')
 const test = require('./test')
 const select_class = require('./select_class')
 const talking = require('./talking')
+const myTest = require('./myTest')
 
 app.use(bodyParser.json())
 
@@ -19,6 +20,7 @@ app.use('/class', allClass)
 app.use('/test', test)
 app.use('/select_class', select_class)
 app.use('/talking', talking)
+app.use('/myTest', myTest)
 
 app.listen(3000)
 console.log('服务启动成功')

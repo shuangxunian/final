@@ -49,13 +49,15 @@ const studentList = ref([])
 const selectStudentList = ref([])
 const userList = ref([])
 const talkingList = ref([])
+const myTestList = ref([])
 const talkText = ref('')
 const userid = ref('')
 const addStudentForm = ref({
   studentid: '',
   classid: ''
 })
-
+const dialogShowTestVisible = ref(false)
+const grade = ref(null)
 
 function refreshFrom() {
   form.value = {
@@ -102,8 +104,34 @@ function delData(scoped) {
 
 // id 试卷/作业 课程id 问题
 function showHomework(scoped) {}
-function showStudentTest(row) {
-
+function showStudentTest(row, item) {
+  let answerMap = {}
+  for (let i = 0; i < myTestList.value.length; i++) {
+    // console.log(myTestList.value[i].testid, )
+    if (myTestList.value[i].testid === item.prop) {
+      answerMap = myTestList.value[i]
+      break
+    }
+  }
+  for (let i = 0; i < testList.value.length; i++) {
+    if (testList.value[i].id === item.prop) {
+      testForm.value = testList.value[i]
+      break
+    }
+  }
+  testForm.value.checkQuestionList.map(item1 => {
+    item1.selectAnswer = answerMap.answer[item1.key]
+    return item1
+  })
+  testForm.value.textQuestionList.map(item1 => {
+    item1.textAnswer = answerMap.answer[item1.key]
+    return item1
+  })
+  testForm.value.grade = answerMap.grade
+  testForm.value.studentid = row.studentid
+  console.log(row)
+  // testForm.value.grade = answerMap.grade
+  dialogShowTestVisible.value = true
 }
 function showStudent(scoped) {}
 
@@ -143,23 +171,8 @@ function refreshTestFrom() {
   testForm.value = {
     name: '',
     type: "1",
-    checkQuestionList: [
-      // {
-      //   key: 0,
-      //   question: '',
-      //   check1: '',
-      //   check2: '',
-      //   check3: '',
-      //   check4: '',
-      //   answer: ''
-      // }
-    ],
-    textQuestionList: [
-      // {
-      //   key: 1,
-      //   question: '',
-      // }
-    ],
+    checkQuestionList: [],
+    textQuestionList: [],
   }
 }
 
@@ -207,20 +220,7 @@ async function editTest() {
 }
 
 
-async function getStudentList() {
-  // studentListHeader.value = [
-  //   {
-  //     prop: 'name',
-  //     label: '学生姓名'
-  //   },{
-  //     prop: 'work1',
-  //     label: '作业1'
-  //   },{
-  //     prop: 'test1',
-  //     label: '考试1'
-  //   },
-  // ]
-}
+async function getStudentList() {}
 
 function getDate(timestamp) {
   const date = new Date(Number(timestamp))
@@ -290,30 +290,46 @@ async function editClassName() {
   }
 }
 
+async function getMyTestList() {
+  const { data } = await axios.post('http://localhost:3000/myTest/allData', {})
+  if (data.code === 2) {
+    myTestList.value = data.body
+  }
+}
+
 async function selectClassStudent() {
+  await getMyTestList()
   const { data } = await axios.post('http://localhost:3000/select_class/allData', {
     classid: nowSelectClass.value.id,
   })
   if (data.code === 2) {
     studentListHeader.value = []
-    //   {
-    //     prop: 'name',
-    //     label: '学生姓名'
-    //   }
-    // ]
     testList.value.forEach(item => {
       studentListHeader.value.push({
         prop: item.id,
         label: item.name
       })
     })
-    console.log(data.body)
     selectStudentList.value = []
     data.body.forEach(item => {
+      let time = 0
+      let allGrade = 0
       const obj = {
         ...item
-        // id: item.id
       }
+      myTestList.value.forEach(item2 => {
+
+        if (item2.studentid === item.studentid) {
+          console.log(item2)
+          if (item2.grade) {
+            time++
+            allGrade += Number(item2.grade)
+            obj[item2.testid] = Number(item2.grade)
+          } else {
+            obj[item2.testid] = item2.status
+          }
+        }
+      })
       let name = '已删除'
       for (let i = 0; i < studentList.value.length; i++) {
         if (studentList.value[i].id === item.studentid) {
@@ -322,8 +338,43 @@ async function selectClassStudent() {
         }
       }
       obj.name = name
+      obj.studyStatus = '正常'
+      const avg = allGrade/time
+      if (avg < 60) {
+        obj.studyStatus = '不及格'
+      } else if (avg < 80) {
+        obj.studyStatus = '良好'
+      } else if (avg < 90) {
+        obj.studyStatus = '优秀'
+      } else {
+        obj.studyStatus = '极好'
+      }
       selectStudentList.value.push(obj)
     })
+  }
+}
+
+async function giveGrade() {
+  if (!(grade.value >= 0 && grade.value <= 100)) {
+    return ElMessage.error('请输入0-100的数字')
+  }
+  console.log(testForm.value)
+  const { data } = await axios.post('http://localhost:3000/myTest/edit', {
+    testid: testForm.value.id,
+    studentid: testForm.value.studentid,
+    grade: grade.value
+  })
+
+  if (data.code === 2) {
+    ElMessage.success('添加成功')
+    tabClick({
+      props: {
+        name: '3'
+      }
+    }, {})
+    // selectClassStudent()
+
+    dialogShowTestVisible.value = false
   }
 }
 
@@ -493,12 +544,6 @@ onMounted(async() => {
                     <el-table-column fixed="right" label="操作">
                       <template #default="scoped">
                         <el-button link type="primary" size="small" @click="showTestDetail(scoped.row)">题目详情</el-button>
-                        <!-- <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDelTest(scoped.row)">
-                          <template #reference>
-                            <el-button link type="danger" size="small">删除</el-button>
-                          </template>
-                        </el-popconfirm> -->
-                        <!-- <el-button link type="danger" size="small" @click="delTestDetail(scoped)">删除</el-button> -->
                       </template>
                     </el-table-column>
                   </el-table>
@@ -516,16 +561,15 @@ onMounted(async() => {
                   <el-table :data="selectStudentList" style="width: 100%">
                     <el-table-column prop="name" label="学生姓名"/>
                     <el-table-column prop="studyStatus" label="学习状态"/>
-                    <el-table-column v-for="(item,index) in studentListHeader" 
-                      :key="index" 
+                    <el-table-column v-for="item in studentListHeader" 
+                      :key="item.prop" 
                       :label="item.label" 
                       :prop="item.prop" 
-                      :index="item.index" 
                     >
                       <template #default="scoped">
-                        {{ item }}
-                        <el-button link type="primary" size="small" @click="showStudentTest(scoped.row)">查看详情</el-button>
-                        <!-- {{ scoped.row }} -->
+                        {{ scoped.row[item.prop] }}
+                        <el-button v-if="scoped.row[item.prop]" link type="primary" size="small" @click="showStudentTest(scoped.row, item)">查看详情</el-button>
+                        <p v-else>学生未提交</p>
                       </template>
                     </el-table-column>
                     <el-table-column fixed="right" label="操作">
@@ -718,6 +762,39 @@ onMounted(async() => {
         </div>
       </template>
     </el-dialog>
+
+    <el-dialog fullscreen v-model="dialogShowTestVisible" title="查看" @close="refreshTestFrom">
+      <div class="show-question-form">
+        <h2>{{testForm.type === '1' ? '作业' : '考试'}}名称：{{ testForm.name }}</h2>
+        分数：
+        <el-input v-model="grade" style="width: 240px" placeholder="请评分" />
+        <!-- <h3>分数：{{testForm.grade}}</h3> -->
+        <div v-for="(domain, index) in testForm.checkQuestionList" :key="domain.key" class="select-question">
+          <div class="question-title">
+            <span>{{ index + 1 }}.</span>
+            <span>{{ domain.question }}</span>
+          </div>
+          <div class="question-options">
+            <el-radio-group disabled v-model="domain.selectAnswer">
+              <el-radio value="1">{{ domain.check1 }}</el-radio>
+              <el-radio value="2">{{ domain.check2 }}</el-radio>
+              <el-radio value="3">{{ domain.check3 }}</el-radio>
+              <el-radio value="4">{{ domain.check4 }}</el-radio>
+            </el-radio-group>
+          </div>
+        </div>
+        <div v-for="(domain, index) in testForm.textQuestionList" :key="domain.key" class="select-question">
+          <div class="question-title">
+            <span>{{ index + 1 }}.</span>
+            <span>{{ domain.value }}</span>
+          </div>
+          <div class="question-options">
+            <el-input disabled v-model="domain.textAnswer" type="textarea" />
+          </div>
+        </div>
+        <el-button type="primary" @click="giveGrade">提交分数</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -825,6 +902,14 @@ onMounted(async() => {
   .add-question-form {
     height: 600px;
     overflow: auto;
+  }
+
+  .show-question-form {
+    margin: 0 auto;
+    width: 50%;
+    .question-title {
+      font-size: 24px;
+    }
   }
 }
 </style>

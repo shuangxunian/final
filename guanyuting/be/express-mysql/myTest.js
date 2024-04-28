@@ -1,16 +1,17 @@
 const express = require('express')
 const DataBase = require('./mysql')
 
-const test = express.Router()
+const myTest = express.Router()
 
-test.post('/allData', async (req, res) => {
+myTest.post('/allData', async (req, res) => {
   const { body } = req
-  let sql = `select * from test_list where classid='${body.classid}'`
+  let sql =''
+  if (body.studentid) sql = `select * from my_test_list where studentid='${body.studentid}'`
+  else sql = `select * from my_test_list`
   const database = new DataBase()
   let info = await database.getSqlData(sql)
   info = info.map(item => {
-    item.checkQuestionList = JSON.parse(item.checkQuestion)
-    item.textQuestionList = JSON.parse(item.textQuestion)
+    item.answer = JSON.parse(item.answer)
     return item
   })
   res.send({
@@ -19,28 +20,11 @@ test.post('/allData', async (req, res) => {
   })
 })
 
-test.post('/add', async (req, res) => {
+myTest.post('/add', async (req, res) => {
   const { body } = req
-  let sql = ''
-  sql = `insert into test_list (id,type,name,classid,checkQuestion,textQuestion,finishNum) values ('${new Date().getTime()}','${body.type}','${body.name}','${body.classid}','${JSON.stringify(body.checkQuestionList)}','${JSON.stringify(body.textQuestionList)}','0')`
-  const database = new DataBase()
-  await database.getSqlData(sql)
-  if (body.type === '1') {
-    sql = `update class_list set homeworkNum=homeworkNum + 1 where id='${body.classid}'`
-  } else {
-    sql = `update class_list set testNum=testNum + 1 where id='${body.classid}'`
-  }
-  const updateDatabase = new DataBase()
-  await updateDatabase.getSqlData(sql)
-  res.send({
-    code: 2,
-    msg: ''
-  })
-})
-
-test.post('/edit', async (req, res) => {
-  const { body } = req
-  let sql = `update test_list set type='${body.type}',name='${body.name}',classid='${body.classid}',checkQuestion='${JSON.stringify(body.checkQuestionList)}',textQuestion='${JSON.stringify(body.textQuestionList)}',finishNum='${body.finishNum}' where id = '${body.id}'`
+  // let sql = `insert into test_list (id,type,name,classid,checkQuestion,textQuestion,finishNum) values ('${new Date().getTime()}','${body.type}','${body.name}','${body.classid}','${JSON.stringify(body.checkQuestionList)}','${JSON.stringify(body.textQuestionList)}','0')`
+  let sql = `insert into my_test_list (id,testid,studentid,answer,status) values ('${new Date().getTime()}','${body.testid}','${body.studentid}','${JSON.stringify(body.answer)}','待评分')`
+  console.log(sql)
   const database = new DataBase()
   const info = await database.getSqlData(sql)
   res.send({
@@ -49,7 +33,19 @@ test.post('/edit', async (req, res) => {
   })
 })
 
-test.post('/del', async (req, res) => {
+myTest.post('/edit', async (req, res) => {
+  const { body } = req
+  let sql = `update my_test_list set grade='${body.grade}',status='已完成' where testid='${body.testid}' and studentid='${body.studentid}'`
+  console.log(sql)
+  const database = new DataBase()
+  const info = await database.getSqlData(sql)
+  res.send({
+    code: 2,
+    msg: ''
+  })
+})
+
+myTest.post('/del', async (req, res) => {
   const { body } = req
   let sql = `delete from class_list where id='${body.id}'`
   const database = new DataBase()
@@ -59,7 +55,7 @@ test.post('/del', async (req, res) => {
   })
 })
 
-test.post('/edit', async (req, res) => {
+myTest.post('/edit', async (req, res) => {
   const { body } = req
   let sql = `update class_list set name='${body.name}' where id = '${body.id}'`
   const database = new DataBase()
@@ -69,7 +65,7 @@ test.post('/edit', async (req, res) => {
   })
 })
 
-test.post('/fix', async (req, res) => {
+myTest.post('/fix', async (req, res) => {
   const { body } = req
   let sql = `update user_info set password = '123456' where userid = '${body.userid}'`
   const database = new DataBase()
@@ -79,7 +75,7 @@ test.post('/fix', async (req, res) => {
   })
 })
 
-test.post('/fixPassword', async (req, res) => {
+myTest.post('/fixPassword', async (req, res) => {
   const { body } = req
   sql = `update user_info set password='123456' where id='${body.id}'`
   const fixDatabase = new DataBase()
@@ -90,10 +86,7 @@ test.post('/fixPassword', async (req, res) => {
   })
 })
 
-
-
-
-test.post('/addList', async (req, res) => {
+myTest.post('/addList', async (req, res) => {
   const { body } = req
   const list = body.list
   for (let i = 0; i < list.length; i++) {
@@ -107,4 +100,4 @@ test.post('/addList', async (req, res) => {
   })
 })
 
-module.exports = test
+module.exports = myTest

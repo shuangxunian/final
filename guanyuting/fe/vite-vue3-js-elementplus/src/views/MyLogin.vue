@@ -6,12 +6,12 @@ import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const loginForm = ref({
-  id: 'admin',
+  id: '100001',
   password: '123456'
 })
 
 function resetLoginForm() {
-  loginForm.value.id = 'admin'
+  loginForm.value.id = '100001'
   loginForm.value.password = '123456'
 }
 
