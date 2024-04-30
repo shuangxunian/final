@@ -16,6 +16,7 @@ const addClassForm = ref({
   testID: null
 })
 const formLabelWidth = ref(100)
+const userid = ref('')
 
 const addClass = async () => {}
 const editClass = async (row) => {
@@ -50,222 +51,79 @@ const trueAddClass = async () => {
 }
 
 const beginStudy = async (row) => {
-  for(let i = 0; i < tableData.value.length; i++) {
-    if (tableData.value[i].id === row.id) {
-      tableData.value[i].type = 1
-      tableData.value[i].typeText = '在学'
-    }
+  const { data } = await axios.post('http://localhost:3000/myclass/edit',{
+    id: row.id,
+    status: '在学'
+  })
+  if (data.code === 2) {
+    getMyClass()
   }
 }
 
 const endStudy = async (row) => {
-  for(let i = 0; i < tableData.value.length; i++) {
-    if (tableData.value[i].id === row.id) {
-      tableData.value[i].type = 2
-      tableData.value[i].typeText = '学完'
-    }
+  const { data } = await axios.post('http://localhost:3000/myclass/edit',{
+    id: row.id,
+    status: '学完'
+  })
+  if (data.code === 2) {
+    getMyClass()
   }
+  // for(let i = 0; i < tableData.value.length; i++) {
+  //   if (tableData.value[i].id === row.id) {
+  //     tableData.value[i].type = 2
+  //     tableData.value[i].typeText = '学完'
+  //   }
+  // }
 }
 
 
 const getTableData = async () => {}
 
 const getKnowList = async () => {
-  knowList.value = [
-    {
-      id: 0,
-      label: '企业的功能与定义',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [],
-      downstream: '',
-      downstreamIDList: [4,8],
-    },
-    {
-      id: 1,
-      label: '个人独资/合伙企业',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [],
-      downstream: '',
-      downstreamIDList: [4,8],
-    },
-    {
-      id: 2,
-      label: '公司制企业',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [],
-      downstream: '',
-      downstreamIDList: [4,8],
-    },
-    {
-      id: 3,
-      label: '企业财务管理的内容',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [],
-      downstream: '',
-      downstreamIDList: [4,8],
-    },
-    {
-      id: 4,
-      label: '利润最大化',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [0,1,2,3],
-      downstream: '',
-      downstreamIDList: [5,6,7],
-    },
-    {
-      id: 5,
-      label: '股东财富最大化',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [4],
-      downstream: '',
-      downstreamIDList: [],
-    },
-    {
-      id: 6,
-      label: '企业价值最大化',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [4],
-      downstream: '',
-      downstreamIDList: [],
-    },
-    {
-      id: 7,
-      label: '相关者利益最大化',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [4],
-      downstream: '',
-      downstreamIDList: [],
-    },
-    {
-      id: 8,
-      label: '各种财务管理目标之间的关系',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [0,1,2,3],
-      downstream: '',
-      downstreamIDList: [9,10,11],
-    },
-    {
-      id: 9,
-      label: '所有者和经营者利益冲突与协调',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [8],
-      downstream: '',
-      downstreamIDList: [],
-    },
-    {
-      id: 10,
-      label: '大股东与中小股东利益冲突与协调',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [8],
-      downstream: '',
-      downstreamIDList: [],
-    },
-    {
-      id: 11,
-      label: '所有者和债权人的利益冲突与协调',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [8],
-      downstream: '',
-      downstreamIDList: [],
-    },
-  ]
-}
-
-const getMyClass = async () => {
-  myClassList.value = [
-    {
-      userid: '2001',
-      classid: 0,
-      type: 0,
-    },
-    {
-      userid: '2001',
-      classid: 1,
-      type: 1,
-    },
-    {
-      userid: '2001',
-      type: 0,
-      testid: 0,
-      score: null
-    },
-  ]
-  tableData.value = []
-  let typeMap = {
-    0: '未学',
-    1: '在学',
-    2: '学完',
+  const { data } = await axios.post('http://localhost:3000/know/allData',{})
+  if (data.code === 2) {
+    knowList.value = data.body
   }
-  myClassList.value.forEach(item => {
-    if (item.classid) {
-      for (let i = 0; i < classList.value.length; i++) {
-        if (classList.value[i].id === item.classid) {
-          tableData.value.push({
-            ...classList.value[i],
-            type: item.type,
-            typeText: typeMap[item.type]
-          })
-          break
-        }
-      }
-    }
-    
-  })
 }
 
 const getClassList = async () => {
-  classList.value = [
-    {
-      id: 0,
-      name: '企业的定义与功能课程',
-      know: '',
-      knowID: 0,
-      url: 'https://ldwd4y8oeh.feishu.cn/docx/SPUFdKDNQoDchlx7VVWcH59Gnsd',
-      test: '',
-      testID: 0,
-    },{
-      id: 1,
-      name: '个人独资企业，合伙企业课程',
-      know: '',
-      knowID: 1,
-      url: 'https://ldwd4y8oeh.feishu.cn/docx/SPUFdKDNQoDchlx7VVWcH59Gnsd',
-      test: '',
-      testID: 0,
-    },{
-      id: 2,
-      name: '公司制企业课程',
-      know: '',
-      knowID: 2,
-      url: 'https://ldwd4y8oeh.feishu.cn/docx/SPUFdKDNQoDchlx7VVWcH59Gnsd',
-      test: '',
-      testID: 0,
-    },
-  ]
-  const knowMap = {}
-  for (let i = 0; i <knowList.value.length; i++) {
-    knowMap[knowList.value[i].id] = knowList.value[i].label
-  }
-  for (let i = 0; i <classList.value.length; i++) {
-    const item = classList.value[i]
-    const know = knowMap[item.knowID] || '--'
-    classList.value[i].know = know
+  const { data } = await axios.post('http://localhost:3000/class/allData',{})
+  if (data.code === 2) {
+    classList.value = data.body
+    const knowMap = {}
+    for (let i = 0; i <knowList.value.length; i++) {
+      knowMap[knowList.value[i].id] = knowList.value[i].name
+    }
+    for (let i = 0; i <classList.value.length; i++) {
+      classList.value[i].know = knowMap[classList.value[i].knowID] || '--'
+    }
   }
 }
 
+const getMyClass = async () => {
+  const { data } = await axios.post('http://localhost:3000/myclass/allData',{
+    userid: userid.value,
+  })
+
+  if (data.code === 2) {
+    myClassList.value = data.body
+    tableData.value = []
+    for (let i = 0; i <myClassList.value.length; i++) {
+      for (let j = 0; j <classList.value.length; j++) {
+        if (myClassList.value[i].classid === classList.value[j].id) {
+          myClassList.value[i].name = classList.value[j].name
+          myClassList.value[i].url = classList.value[j].url
+          myClassList.value[i].knowID = classList.value[j].knowID
+          myClassList.value[i].know = classList.value[j].know
+        }
+      }
+    }
+    tableData.value = myClassList.value
+  }
+}
 
 onMounted(async() => {
+  userid.value = window.sessionStorage.getItem('id')
   await getKnowList()
   await getClassList()
   await getMyClass()
@@ -281,11 +139,11 @@ onMounted(async() => {
     <div class="table">
       <el-table :data="tableData" border style="width: 100%">
         <el-table-column prop="name" label="课程名称" width="180" />
-        <el-table-column prop="typeText" label="当前状态" width="100" />
+        <el-table-column prop="status" label="当前状态" width="100" />
         <el-table-column prop="know" label="知识点" width="180" />
         <el-table-column prop="url" label="学习文档" width="700" >
           <template #default="scope">
-            <p v-if="scope.row.type === 0">请点击学习，即可看见课程文章</p>
+            <p v-if="scope.row.status === '未学'">请点击学习，即可看见课程文章</p>
             <el-link v-else :href="scope.row.url" type="primary" target="_blank">
               {{ scope.row.url }}
             </el-link>
@@ -293,8 +151,9 @@ onMounted(async() => {
         </el-table-column>
         <el-table-column fixed="right" label="操作" width="120">
           <template #default="scope">
-            <el-button v-if="scope.row.type === 0" link type="primary" size="small" @click="beginStudy(scope.row)">开始学习</el-button>
-            <el-button v-if="scope.row.type === 1" link type="primary" size="small" @click="endStudy(scope.row)">结束学习</el-button>
+            <el-button v-if="scope.row.status === '未学'" link type="primary" size="small" @click="beginStudy(scope.row)">开始学习</el-button>
+            <el-button v-if="scope.row.status === '在学'" link type="primary" size="small" @click="endStudy(scope.row)">结束学习</el-button>
+            <p v-if="scope.row.status === '学完'">已学完</p>
           </template>
         </el-table-column>
       </el-table>

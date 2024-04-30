@@ -13,6 +13,7 @@ const addUserForm = ref({
   id: '',
   name: '',
   password: '123456',
+  joinyear: '',
 })
 
 const clearForm = () => {
@@ -20,11 +21,21 @@ const clearForm = () => {
     id: '',
     name: '',
     password: '123456',
+    joinyear: ''
   }
 }
 
 const dontAddUser = () => {}
 const trueAddUser = async () => {
+  if (addUserForm.value.id === '' || addUserForm.value.name === '' || addUserForm.value.joinyear === '') {
+    ElMessage({
+      message: '请填写完整',
+      type: 'warning',
+    })
+    return
+  }
+  // new Date().getFullYear();
+  if (Number(addUserForm.value.joinyear) > Number(new Date().getFullYear()) || Number(addUserForm.value.joinyear) < 1900) return ElMessage.error('入职年份有问题！')
   const{ data } = await axios.post('http://localhost:3000/user/add',{
     ...addUserForm.value,
     roleType: '2',
@@ -44,7 +55,33 @@ const editUser = (row) => {
   editUserDialog.value = true
 }
 
-const trueEditUser = () => {}
+const trueEditUser = async() => {
+  const{ data } = await axios.post('http://localhost:3000/user/edit',{
+    ...addUserForm.value,
+  })
+  if (data.code === 2) {
+    ElMessage({
+      message: '编辑成功',
+      type: 'success',
+    })
+    await getUserList()
+    editUserDialog.value = false
+  }
+}
+
+const makeSureDel = async(row) => {
+  const { data } = await axios.post('http://localhost:3000/user/del',{
+    id: row.id
+  })
+  if (data.code === 2) {
+    ElMessage({
+      message: '删除成功',
+      type: 'success',
+    })
+    await getUserList()
+  }
+}
+
 const fixPassword = (row) => {}
 
 const getTableList = async () => {
@@ -86,8 +123,10 @@ onMounted(async () => {
     </div>
     <div class="body">
       <el-table :data="tableList" row-key="id" border style="width: 100%">
-        <el-table-column prop="name" label="姓名" width="180" />
+        <el-table-column prop="id" label="工号" />
+        <el-table-column prop="name" label="姓名"/>
         <el-table-column prop="standing" label="身份" />
+        <el-table-column prop="joinyear" label="入职年份" />
         <el-table-column fixed="right" label="操作" width="200">
           <template #default="scope">
             <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认重置密码吗" @confirm="fixPassword(scope.row)">
@@ -111,6 +150,9 @@ onMounted(async () => {
         <el-form-item label="成员工号" :label-width="formLabelWidth">
           <el-input v-model="addUserForm.id" />
         </el-form-item>
+        <el-form-item label="入职年份" :label-width="formLabelWidth">
+          <el-input v-model="addUserForm.joinyear" />
+        </el-form-item>
         <el-form-item label="成员姓名" :label-width="formLabelWidth">
           <el-input v-model="addUserForm.name" />
         </el-form-item>
@@ -130,6 +172,9 @@ onMounted(async () => {
       <el-form :model="addUserForm">
         <el-form-item label="成员工号" :label-width="formLabelWidth" disabled>
           <el-input v-model="addUserForm.id" disabled/>
+        </el-form-item>
+        <el-form-item label="入职年份" :label-width="formLabelWidth">
+          <el-input v-model="addUserForm.joinyear" />
         </el-form-item>
         <el-form-item label="成员姓名" :label-width="formLabelWidth">
           <el-input v-model="addUserForm.name" />

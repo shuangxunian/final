@@ -14,6 +14,7 @@ const testForm = ref({
   userid: '',
   testid: '',
 })
+const sysTestType = ref(false)
 
 const addUserTest = async () => {
   const { data } = await axios.post('http://localhost:3000/mytest/add',testForm.value)
@@ -50,6 +51,7 @@ const getAllTestList = async () => {
         if (item.testid === testList.value[i].id) {
           item.testname = testList.value[i].name
           item.know = testList.value[i].know
+          item.questionList = testList.value[i].questionList
           break
         }
       }
@@ -91,6 +93,7 @@ const getTestList = async () => {
 
 onMounted(async() => {
   userid.value = window.sessionStorage.getItem('id')
+  sysTestType.value = window.sessionStorage.getItem('sysTestType') === '1'
   await getUserList()
   await getKnowList()
   await getTestList()
@@ -105,14 +108,20 @@ onMounted(async() => {
 <template>
   <div class="admin-test">
     <div class="header">
-      <el-button type="primary" @click="addMyTestDialog = true">新建考试</el-button>
+      <el-button :disabled="sysTestType" type="primary" @click="addMyTestDialog = true">新建考试</el-button>
     </div>
     <div class="table">
       <el-table :data="tableData" border style="width: 100%">
         <el-table-column prop="username" label="考试人" width="180" />
         <el-table-column prop="testname" label="考试名称" width="180" />
         <el-table-column prop="know" label="涉及到的知识点" />
-        <el-table-column prop="score" label="成绩" width="80" />
+        <el-table-column prop="course" label="成绩" width="100">
+          <template #default="scope">
+            <el-tag v-if="!scope.row.course" type="danger">未考试</el-tag>
+            <el-tag v-else type="success">{{scope.row.course}} / {{scope.row.questionList.length}}</el-tag>
+          </template>
+        </el-table-column>
+
       </el-table>
     </div>
 

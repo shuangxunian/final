@@ -55,6 +55,15 @@ test.post('/edit', async (req, res) => {
   })
 })
 
+test.post('/change', async (req, res) => {
+  const { body } = req
+  let sql = `update test_list set isNew='${body.isNew}' where id = '${body.id}'`
+  const database = new DataBase()
+  await database.getSqlData(sql)
+  res.send({
+    code: 2
+  })
+})
 
 test.post('/fix', async (req, res) => {
   const { body } = req

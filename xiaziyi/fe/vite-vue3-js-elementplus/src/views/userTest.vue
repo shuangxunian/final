@@ -28,7 +28,16 @@ const questionForm = ref({
   answerCText: "是法人",
   answerDText: "实行自主经营、自负盈亏、独立核算",
 })
-
+const userid = ref('')
+const myTestList = ref([])
+const selectQuestionList = ref([])
+const nowQuestionIndex = ref(0)
+const needStudyList = ref([])
+const errorStr = ref('')
+const showErrorDialog = ref(false)
+const rightAnswer = ref(0)
+const selectObj = ref({})
+const sysTestType = ref(false)
 
 const clearForm = () => {
   addTestForm.value = {
@@ -52,188 +61,210 @@ const addQuestionList = async (row) => {
   addTestForm.value.questionList = [1,2,3,4]
 }
 const watchQuestion = async (item) => {
-  console.log(item)
   watchQuestionDialog.value = true
 }
-const delQuestion = (item) => {
-  console.log(item)
-}
+const delQuestion = (item) => {}
 
-const beginTest = async () => {
-  watchQuestionDialog.value = true
-  // testForm
-}
-
-const getTestList = async () => {
-  testList.value = [
-    {
-      id: 0,
-      name: '第一次全知识点考试',
-      questionList: [1,2,3],
-      knowList: [0,1],
-    }
-  ]
+const beginTest = async (row) => {
+  selectObj.value = row
+  needStudyList.value = []
+  nowQuestionIndex.value = 0
+  rightAnswer.value = 0
+  selectQuestionList.value = row.questionList
+  const { data } = await axios.post('http://localhost:3000/question/find',{
+    id: selectQuestionList.value[nowQuestionIndex.value]
+  })
+  if (data.code === 2) {
+    questionForm.value = data.body[0]
+    let answer = 0
+    questionForm.value.selectList.split(',').forEach(item => {
+      if (item === '1') {
+        answer++
+      }
+    })
+    questionForm.value.type = answer === 1 ? '单选' : '多选'
+    watchQuestionDialog.value = true
+  }
 }
 
 const getKnowList = async () => {
-  knowList.value = [
-    {
-      id: 0,
-      label: '企业的功能与定义',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [],
-      downstream: '',
-      downstreamIDList: [4,8],
-    },
-    {
-      id: 1,
-      label: '个人独资/合伙企业',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [],
-      downstream: '',
-      downstreamIDList: [4,8],
-    },
-    {
-      id: 2,
-      label: '公司制企业',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [],
-      downstream: '',
-      downstreamIDList: [4,8],
-    },
-    {
-      id: 3,
-      label: '企业财务管理的内容',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [],
-      downstream: '',
-      downstreamIDList: [4,8],
-    },
-    {
-      id: 4,
-      label: '利润最大化',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [0,1,2,3],
-      downstream: '',
-      downstreamIDList: [5,6,7],
-    },
-    {
-      id: 5,
-      label: '股东财富最大化',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [4],
-      downstream: '',
-      downstreamIDList: [],
-    },
-    {
-      id: 6,
-      label: '企业价值最大化',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [4],
-      downstream: '',
-      downstreamIDList: [],
-    },
-    {
-      id: 7,
-      label: '相关者利益最大化',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [4],
-      downstream: '',
-      downstreamIDList: [],
-    },
-    {
-      id: 8,
-      label: '各种财务管理目标之间的关系',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [0,1,2,3],
-      downstream: '',
-      downstreamIDList: [9,10,11],
-    },
-    {
-      id: 9,
-      label: '所有者和经营者利益冲突与协调',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [8],
-      downstream: '',
-      downstreamIDList: [],
-    },
-    {
-      id: 10,
-      label: '大股东与中小股东利益冲突与协调',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [8],
-      downstream: '',
-      downstreamIDList: [],
-    },
-    {
-      id: 11,
-      label: '所有者和债权人的利益冲突与协调',
-      tag: '正常',
-      upstream: '',
-      upstreamIDList: [8],
-      downstream: '',
-      downstreamIDList: [],
-    },
-  ]
+  const { data } = await axios.post('http://localhost:3000/know/allData',{})
+  if (data.code === 2) {
+    knowList.value = data.body
+  }
 }
 
-const getMyClass = async () => {
-  myClassList.value = [
-    {
-      userid: '2001',
-      classid: 0,
-      type: 0,
-    },
-    {
-      userid: '2001',
-      classid: 1,
-      type: 1,
-    },
-    {
-      userid: '2001',
-      type: 0,
-      testid: 0,
-      score: null
-    },
-  ]
-  const knowMap = {}
-  for (let i = 0; i <knowList.value.length; i++) {
-    knowMap[knowList.value[i].id] = knowList.value[i].label
-  }
-  tableData.value = []
-  myClassList.value.forEach(obj => {
-    if (obj.testid !== undefined) {
-      testList.value.forEach(item => {
-        let know = ''
-        item.knowList.forEach(key => {
-          know += knowMap[key] + ','
-        })
-        tableData.value.push({
-          ...item,
-          score: obj.score || '--',
-          know
-        })
-      })
+const getTestList = async () => {
+  const { data } = await axios.post('http://localhost:3000/test/allData')
+  if (data.code === 2) {
+    testList.value = data.body
+    const knowMap = {}
+    for (let i = 0; i < knowList.value.length; i++) {
+      knowMap[knowList.value[i].id] = knowList.value[i].name
     }
+    for (let i = 0; i < testList.value.length; i++) {
+      let knowArr = testList.value[i].knowStr.split(',')
+      let str = ''
+      knowArr.forEach(item => {
+        str += knowMap[item] + ','
+      })
+      testList.value[i].know = str
+      testList.value[i].questionList = testList.value[i].questionStr.split(',')
+      testList.value[i].isNew = testList.value[i].isNew === "true"
+    }
+    // tableData.value = testList.value
+  }
+}
+
+const getMyTest = async () => {
+  const { data } = await axios.post('http://localhost:3000/mytest/allData',{
+    userid: userid.value
+  })
+  if (data.code === 2) {
+    myTestList.value = data.body
+    const arr = []
+    myTestList.value.forEach(item => {
+      let obj = {}
+      for (let i = 0; i < testList.value.length; i++) {
+        if (item.testid === testList.value[i].id) {
+          obj = {
+            name: testList.value[i].name,
+            know: testList.value[i].know,
+            questionList: testList.value[i].questionList,
+          }
+          break
+        }
+      }
+      if (item.course >= 0 && item.course !== null) {
+        obj.course = item.course
+      } else {
+        obj.course = '--'
+      }
+      obj.myTestID = item.id
+      arr.push(obj)
+    })
+    tableData.value = arr
+  }
+}
+
+const nextQuestion = async () => {
+  let str = ''
+  if (questionForm.value.checkList.includes('A')) {
+    str += '1,'
+  } else {
+    str += '0,'
+  }
+  if (questionForm.value.checkList.includes('B')) {
+    str += '1,'
+  } else {
+    str += '0,'
+  }
+  if (questionForm.value.checkList.includes('C')) {
+    str += '1,'
+  } else {
+    str += '0,'
+  }
+  if (questionForm.value.checkList.includes('D')) {
+    str += '1'
+  } else {
+    str += '0'
+  }
+  if (questionForm.value.selectList !== str) {
+    if (!needStudyList.value.includes(questionForm.value.knowID)) {
+      needStudyList.value.push(questionForm.value.knowID)
+    }
+  } else {
+    rightAnswer.value++
+  }
+
+  nowQuestionIndex.value++
+  const { data } = await axios.post('http://localhost:3000/question/find',{
+    id: selectQuestionList.value[nowQuestionIndex.value]
+  })
+  if (data.code === 2) {
+    questionForm.value = data.body[0]
+    let answer = 0
+    questionForm.value.selectList.split(',').forEach(item => {
+      if (item === '1') {
+        answer++
+      }
+    })
+    questionForm.value.type = answer === 1 ? '单选' : '多选'
+  }
+}
+
+const finishQuestion = async () => {
+  let str = ''
+  if (questionForm.value.checkList.includes('A')) {
+    str += '1,'
+  } else {
+    str += '0,'
+  }
+  if (questionForm.value.checkList.includes('B')) {
+    str += '1,'
+  } else {
+    str += '0,'
+  }
+  if (questionForm.value.checkList.includes('C')) {
+    str += '1,'
+  } else {
+    str += '0,'
+  }
+  if (questionForm.value.checkList.includes('D')) {
+    str += '1'
+  } else {
+    str += '0'
+  }
+  if (questionForm.value.selectList !== str) {
+    if (!needStudyList.value.includes(questionForm.value.knowID)) {
+      needStudyList.value.push(questionForm.value.knowID)
+    }
+  } else {
+    rightAnswer.value++
+  }
+
+  errorStr.value = ''
+  for (let i = 0; i < needStudyList.value.length; i++) {
+    let obj = {}
+    for(let j = 0; j < knowList.value.length; j++) {
+      if (knowList.value[j].id === needStudyList.value[i]) {
+        obj = knowList.value[j]
+        break
+      }
+    }
+    errorStr.value += obj.name + ','
+  }
+
+
+  await axios.post('http://localhost:3000/mytest/edit',{
+    id: selectObj.value.myTestID,
+    course: rightAnswer.value
   })
 
+  await axios.post('http://localhost:3000/myclass/add',{
+    userid: userid.value,
+    knowid: needStudyList.value
+  })
+
+  showErrorDialog.value = true
 }
 
+const finishAll = async () => {
+  watchQuestionDialog.value = false
+  showErrorDialog.value = false
+  await getMyTest()
+
+}
+
+
+
 onMounted(async() => {
+  userid.value = window.sessionStorage.getItem('id')
+  sysTestType.value = window.sessionStorage.getItem('sysTestType') === '1'
   await getKnowList()
   await getTestList()
-  await getMyClass()
+  await getMyTest()
+  // await getMyClass()
 })
 
 
@@ -248,10 +279,15 @@ onMounted(async() => {
       <el-table :data="tableData" border style="width: 100%">
         <el-table-column prop="name" label="考试名称" width="180" />
         <el-table-column prop="know" label="涉及到的知识点" />
-        <el-table-column prop="score" label="成绩" />
+        <el-table-column prop="course" label="成绩" width="100">
+          <template #default="scope">
+            <el-tag v-if="scope.row.course === '--'" type="danger">未考试</el-tag>
+            <el-tag v-else type="success">{{scope.row.course}} / {{scope.row.questionList.length}}</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column fixed="right" label="操作" width="120">
           <template #default="scope">
-            <el-button :disabled="scope.row.score !== '--'" link type="primary" size="small" @click="beginTest(scope.row)">开始考试</el-button>
+            <el-button :disabled="scope.row.course !== '--'" link type="primary" size="small" @click="beginTest(scope.row)">开始考试</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -277,8 +313,20 @@ onMounted(async() => {
       </div>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="backQuestion">上一题</el-button>
-          <el-button @click="nextQuestion">下一题</el-button>
+          <!-- <el-button @click="backQuestion">上一题</el-button> -->
+          <el-button v-if="nowQuestionIndex === selectQuestionList.length - 1" @click="finishQuestion">提交试卷</el-button>
+          <el-button v-else @click="nextQuestion">下一题</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="showErrorDialog" title="薄弱知识点" width="500">
+      <div>
+        <p>经测试，您对于{{errorStr}}掌握薄弱，已为您自动添加对应课程！</p>
+      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="finishAll">好的</el-button>
         </div>
       </template>
     </el-dialog>

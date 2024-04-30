@@ -20,6 +20,7 @@ async function login () {
   if (data.code === 2) {
     window.sessionStorage.setItem('id', data.body.id)
     window.sessionStorage.setItem('roleType', data.body.roleType)
+    window.sessionStorage.setItem('sysTestType', data.body.sysTestType)
     router.push('/home')
   } else {
     ElMessage.error(data.msg)
@@ -59,7 +60,9 @@ async function login () {
 .about {
   width: 100%;
   height: 100%;
-  background-color: #999;
+  background-image: url('../assets/back.jpg');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
   .login_box{
     width: 450px;
     height: 220px;

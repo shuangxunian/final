@@ -15,13 +15,19 @@ user.post('/allData', async (req, res) => {
 
 user.post('/login', async (req, res) => {
   const { body } = req
-  let sql = `select * from user_info where id='${body.id}' and password='${body.password}'`
+  let sql = `select * from user_info where id='admin'`
+  const findDatabase = new DataBase()
+  const obj = await findDatabase.getSqlData(sql)
+  sql = `select * from user_info where id='${body.id}' and password='${body.password}'`
   const addDatabase = new DataBase()
   const info = await addDatabase.getSqlData(sql)
   if (info.length) {
     res.send({
       code: 2,
-      body: info[0]
+      body: {
+        ...info[0],
+        sysTestType: obj[0].sysTestType
+      }
     })
   } else {
     res.send({
@@ -42,9 +48,28 @@ user.post('/add', async (req, res) => {
       msg: '此账户已存在！'
     })
   } else {
-    sql = `insert into user_info (id,name,password,roleType,master) values ('${body.id}','${body.name}','${body.password}','${body.roleType}','${body.master}')`
+    sql = `insert into user_info (id,name,joinyear,password,roleType,master) values ('${body.id}','${body.name}','${body.joinyear}','${body.password}','${body.roleType}','${body.master}')`
     const addDatabase = new DataBase()
     await addDatabase.getSqlData(sql)
+    console.log(new Date().getFullYear())
+    sql = `select * from user_info where id='admin'`
+    const findDatabase = new DataBase()
+    const obj = await findDatabase.getSqlData(sql)
+    console.log(obj[0].sysTestType === 1)
+    console.log(Number(new Date().getFullYear()) - Number(body.joinyear) < 3)
+    if (obj[0].sysTestType === 1 && Number(new Date().getFullYear()) - Number(body.joinyear) < 3) {
+      sql = 'select * from test_list'
+      const testDatabase = new DataBase()
+      const testList = await testDatabase.getSqlData(sql)
+      for (let i = 0; i < testList.length; i++) {
+        if (testList[i].isNew === 'true') {
+          sql = `insert into my_test_list (id,userid,testid) values ('${new Date().getTime()}','${body.id}', '${testList[i].id}')`
+          console.log(sql)
+          const addTestDatabase = new DataBase()
+          await addTestDatabase.getSqlData(sql)
+        }
+      }
+    }
     res.send({
       code: 2,
       msg: ''
@@ -95,7 +120,7 @@ user.post('/fixPassword', async (req, res) => {
 
 user.post('/edit', async (req, res) => {
   const { body } = req
-  let sql = `update user_info set username='${body.username}', roleType ='${body.roleType}' where userid = '${body.userid}'`
+  let sql = `update user_info set name='${body.name}', joinyear ='${body.joinyear}' where id='${body.id}'`
   console.log(sql)
   const database = new DataBase()
   await database.getSqlData(sql)
@@ -104,6 +129,15 @@ user.post('/edit', async (req, res) => {
   })
 })
 
+user.post('/change', async (req, res) => {
+  const { body } = req
+  let sql = `update user_info set sysTestType='${body.value}' where id = 'admin'`
+  const database = new DataBase()
+  await database.getSqlData(sql)
+  res.send({
+    code: 2
+  })
+})
 
 user.post('/addList', async (req, res) => {
   const { body } = req

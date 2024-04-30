@@ -13,6 +13,16 @@ question.post('/allData', async (req, res) => {
   })
 })
 
+question.post('/find', async (req, res) => {
+  const { body } = req
+  let sql = `select * from question_list where id='${body.id}'`
+  const database = new DataBase()
+  let info = await database.getSqlData(sql)
+  res.send({
+    code: 2,
+    body: info
+  })
+})
 
 question.post('/add', async (req, res) => {
   const { body } = req

@@ -3,6 +3,8 @@ import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
+const sysTestType = ref(false)
+const userid = ref('')
 const tableData = ref([])
 const knowList = ref([])
 const testList = ref([])
@@ -38,6 +40,11 @@ const clearForm = () => {
     num: 0,
   }
 }
+
+const userAddTest = async (row) => {
+  console.log(row)
+}
+
 const editTest = async (row) => {
   addTestForm.value = row
   editTestDialog.value = true
@@ -139,7 +146,24 @@ const delQuestion = (item) => {
   addTestForm.value.questionList = addTestForm.value.questionList.filter(obj => obj !== item)
 }
 
+const isNewChange = async (row) => {
+  const { data } = await axios.post('http://localhost:3000/test/change', {
+    ...row
+  })
+  if (data.code === 2) {
+    ElMessage.success('修改成功')
+  }
+}
 
+const sysTestTypeChange = async () => {
+  console.log(sysTestType.value)
+  const { data } = await axios.post('http://localhost:3000/user/change', {
+    value: sysTestType.value ? '1' : '0'
+  })
+  if (data.code === 2) {
+    ElMessage.success('修改成功')
+  }
+}
 
 const getTestList = async () => {
   const { data } = await axios.post('http://localhost:3000/test/allData')
@@ -149,7 +173,6 @@ const getTestList = async () => {
     for (let i = 0; i < knowList.value.length; i++) {
       knowMap[knowList.value[i].id] = knowList.value[i].name
     }
-    console.log(testList.value)
     for (let i = 0; i < testList.value.length; i++) {
       let knowArr = testList.value[i].knowStr.split(',')
       let str = ''
@@ -158,7 +181,7 @@ const getTestList = async () => {
       })
       testList.value[i].know = str
       testList.value[i].questionList = testList.value[i].questionStr.split(',')
-
+      testList.value[i].isNew = testList.value[i].isNew === "true"
     }
     tableData.value = testList.value
   }
@@ -179,25 +202,30 @@ const getQuestList = async () => {
 }
 
 onMounted(async() => {
+  userid.value = window.sessionStorage.getItem('id')
+  sysTestType.value = window.sessionStorage.getItem('sysTestType') === '1'
   await getKnowList()
   await getTestList()
   await getQuestList()
 })
-
-
-
-
 </script>
 
 <template>
   <div class="admin-test">
     <div class="header">
       <el-button type="primary" @click="addTestDialog = true">新建试卷</el-button>
+      <el-switch v-if="userid === 'admin'" style="margin-left: 10px;" v-model="sysTestType" active-text="未满三年系统自动分配模式" inactive-text="人工添加模式" @change="sysTestTypeChange"/>
+      <span style="margin-left: 10px;" v-else>当前为：{{ !sysTestType ? '人工添加模式': '未满三年系统自动分配模式' }}</span>
     </div>
     <div class="table">
       <el-table :data="tableData" border style="width: 100%">
         <el-table-column prop="name" label="考试名称" width="180" />
         <el-table-column prop="know" label="知识点" />
+        <el-table-column v-if="!sysTestType" prop="isNew" label="是否新人必考" width="180">
+          <template #default="scope">
+            <el-switch :disabled="userid !== 'admin'" v-model="scope.row.isNew" active-text="是" inactive-text="否" @change="isNewChange(scope.row)"/>
+          </template>
+        </el-table-column>
         <el-table-column label="所含题目" width="180">
           <template #default="scope">
             <span  v-for="(item, index) in scope.row.questionList" :key="item">
@@ -206,8 +234,9 @@ onMounted(async() => {
             </span>
           </template>
         </el-table-column>
-        <el-table-column fixed="right" label="操作" width="120">
+        <el-table-column fixed="right" label="操作" width="200">
           <template #default="scope">
+            <el-button link v-if="sysTestType" type="primary" size="small" @click="userAddTest(scope.row)">添加待考试学生</el-button>
             <el-button link type="primary" size="small" @click="editTest(scope.row)">编辑</el-button>
             <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scope.row)">
               <template #reference>
@@ -234,7 +263,6 @@ onMounted(async() => {
         </el-form-item>
         <el-form-item v-if="addTestForm.questionList.length !== 0" label="问题" :label-width="formLabelWidth">
           <span v-for="(item, index) in addTestForm.questionList" :key="item">
-            <!-- <el-link @click="watchQuestion(item)">{{item}}</el-link> -->
             <el-tag @click.stop="watchQuestion(item)" closable @close="delQuestion(item)">
               问题{{ index + 1 }}
             </el-tag>
