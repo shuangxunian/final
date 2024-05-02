@@ -33,9 +33,9 @@ const routerList = ref([
     icon: "Menu"
   },
   {
-    index: "info",
-    name: "信息",
-    icon: "Service"
+    index: "Users",
+    name: "评论列表",
+    icon: "Menu"
   },
 ])
 

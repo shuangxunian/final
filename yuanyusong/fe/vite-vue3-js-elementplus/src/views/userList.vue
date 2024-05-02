@@ -75,13 +75,6 @@ const getUserList = async() => {
   if (data.code === 2) {
     tableData.value = data.body
   }
-  // tableData.value = [
-  //   { id: 'admin', username: '张三', roleType: '0' },
-  //   { id: '13012345670', username: '李四', roleType: '1' },
-  //   { id: '13012345678', username: '王五', roleType: '2' }
-  // ]
-  // 调用接口获取数据
-  // 更新userList
 }
 
 const addUser = async() => {
@@ -99,12 +92,6 @@ const addUser = async() => {
 
 onMounted(async() => {
   await getUserList()
-  // 获取本周食谱数据
-  // 调用接口获取数据
-  // 更新tableData
-  // 获取本周食谱数据
-  // 调用接口获取数据
-  // 更新tableData
 })
 
 </script>
@@ -120,7 +107,7 @@ onMounted(async() => {
         <el-table-column prop="username" label="用户名"/>
         <el-table-column prop="roleType" label="身份">
           <template #default="scope">
-            {{ scope.row.roleType === '0' ? '管理员' : scope.row.roleType === '1' ? '老师' : '家长' }}
+            {{ scope.row.roleType === 0 ? '管理员' : scope.row.roleType === 1 ? '老师' : '家长' }}
           </template>
         </el-table-column>
         <el-table-column fixed="right" label="操作" width="180">

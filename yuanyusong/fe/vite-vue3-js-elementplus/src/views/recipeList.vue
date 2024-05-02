@@ -5,6 +5,7 @@ import { ElMessage } from 'element-plus'
 
 const tableData = ref([])
 const foodList = ref([])
+const foodDetailDialog = ref(false)
 const addRecipeDialog = ref(false)
 const selectFoodDialog = ref(false)
 const foodListDialog = ref(false)
@@ -17,16 +18,17 @@ const form = ref({
   name: '',
   needFood: [],
   ingredient: '',
-  energy: '',
-  protein: '',
-  fat: '',
-  sugar: ''
+  energy: 0,
+  protein: 0,
+  fat: 0,
+  sugar: 0
 })
 const foodForm = ref({
   id: '',
   name: '',
   num: 0
 })
+const foodDetailForm = ref({})
 const formLabelWidth = '140px'
 
 const closeSelectFoodDialog = () => {
@@ -38,9 +40,15 @@ const closeSelectFoodDialog = () => {
 }
 
 const refreshForm = () => {
+  checkList.value = []
   form.value = {
     name: '',
     needFood: [],
+    ingredient: '',
+    energy: 0,
+    protein: 0,
+    fat: 0,
+    sugar: 0
   }
 }
 
@@ -49,75 +57,87 @@ const lookBigImg = (scope) => {
 }
 
 const addRecipe = async() => {
-  console.log(checkList.value.join(','))
-  // console.log(form.value)
-  // const { data } = await axios.post('http://localhost:3000/food/addData', form.value)
-  // if (data.code === 2) {
-  //   ElMessage.success('添加成功')
-  //   await getRecList()
-  // }
+  if (form.value.name === '' || form.value.needFood.length === 0) {
+    ElMessage.error('请填写完整')
+    return
+  }
+  const { data } = await axios.post('http://localhost:3000/recipe/add', {
+    ...form.value,
+    ingredient: checkList.value.join(',')
+  })
+  if (data.code === 2) {
+    addRecipeDialog.value = false
+    ElMessage.success('添加成功')
+    await getRecList()
+  }
+}
+
+const editRecipe = async() => {
+  if (form.value.name === '' || form.value.needFood.length === 0) {
+    ElMessage.error('请填写完整')
+    return
+  }
+  console.log(checkList.value)
+  const { data } = await axios.post('http://localhost:3000/recipe/edit', {
+    ...form.value,
+    ingredient: checkList.value.join(',')
+  })
+  if (data.code === 2) {
+    editRecipeDialog.value = false
+    ElMessage.success('修改成功')
+    await getRecList()
+  }
+}
+
+const makeSureDel = async(row) => {
+  const { data } = await axios.post('http://localhost:3000/recipe/del', {
+    id: row.id
+  })
+  if (data.code === 2) {
+    ElMessage.success('删除成功')
+    await getRecList()
+  }
 }
 
 const editData = async(row) => {
   form.value = row
-  // console.log(row)
   checkList.value = row.ingredient.split(',')
   console.log(checkList.value)
   editRecipeDialog.value = true
-  // console.log(scope)
-  // const { data } = await axios.post('http://localhost:3000/food/addData', form.value)
-  // if (data.code === 2) {
-    // ElMessage.success('添加成功')
-    // await getRecList()
-  // }
 }
 
 const getRecList = async() => {
-  tableData.value = [
-    {
-      id: 0,
-      name: '蛋炒饭',
-      needFood: [
-        {
-          foodid: 1712067881341,
-          name: '鸡蛋',
-          num: '100'
-        },
-        {
-          foodid: 1712067838395,
-          name: '米饭',
-          num: '250'
-        }
-      ],
-      ingredient: '葱,姜,料酒,盐',
-      energy: '141',
-      protein: '18.33',
-      fat: '5.35',
-      sugar: '5.24'
-    }
-  ]
-  // const { data } = await axios.post('http://localhost:3000/recipe/allData', {})
-  // if (data.code === 2) {
-  //   tableData.value = data.body
-  // }
+  const { data } = await axios.post('http://localhost:3000/recipe/allData', {})
+  if (data.code === 2) {
+    tableData.value = data.body
+  }
 }
 
 const addNeedFood = async() => {
   for(let i = 0; i < foodList.value.length; i++) {
     if (foodList.value[i].id === foodForm.value.id) {
+      console.log(foodList.value[i])
       form.value.needFood.push({
         ...foodList.value[i],
         num: foodForm.value.num
       })
+      form.value.energy = (Number(form.value.energy) + Number(foodList.value[i].energy) * foodForm.value.num / 100).toFixed(2)
+      form.value.protein = (Number(form.value.protein) + Number(foodList.value[i].protein) * foodForm.value.num / 100).toFixed(2)
+      form.value.fat = (Number(form.value.fat) + Number(foodList.value[i].fat) * foodForm.value.num / 100).toFixed(2)
+      form.value.sugar = (Number(form.value.sugar) + Number(foodList.value[i].sugar) * foodForm.value.num / 100).toFixed(2)
     }
   }
   selectFoodDialog.value = false
-  // console.log(foodForm.value)
-  // const { data } = await axios.post('http://localhost:3000/food/addData', foodForm.value)
 }
 
 const handleClose = (tag) => {
   form.value.needFood = form.value.needFood.filter(item => item.id !== tag.id)
+}
+
+const showDetail = (row) => {
+  foodDetailForm.value = row
+  // console.log(row)
+  foodDetailDialog.value = true
 }
 
 const editFood = (tag) => {
@@ -151,11 +171,11 @@ onMounted(async() => {
     </div>
     <div class="body">
       <el-table :data="tableData" style="width: 100%">
-        <el-table-column prop="name" label="食谱名称"/>
+        <el-table-column prop="name" label="食谱名称" width="200"/>
         <el-table-column prop="needFood" label="所需食材" width="400">
           <template #default="scope">
             <span v-for="(item, index) in scope.row.needFood" :key="index">
-              <el-button type="primary" link>{{ item.name }}</el-button>
+              <el-button type="primary" link @click="showDetail(item)">{{ item.name }}</el-button>
               : {{ item.num }}g，
             </span>
             <!-- <div v-for="(item, index) in scope.row.needFood" :key="index">
@@ -183,6 +203,31 @@ onMounted(async() => {
       </el-table>
     </div>
 
+
+    <el-dialog v-model="foodDetailDialog" title="食材详情" width="500">
+      <el-form>
+        <el-form-item label="食材名称" :label-width="formLabelWidth">
+          {{foodDetailForm.name}}
+        </el-form-item>
+        <el-form-item label="热量/kJ" :label-width="formLabelWidth">
+          {{foodDetailForm.energy}}
+        </el-form-item>
+        <el-form-item label="蛋白质/g" :label-width="formLabelWidth">
+          {{foodDetailForm.protein}}
+        </el-form-item>
+        <el-form-item label="脂肪/g" :label-width="formLabelWidth">
+          {{foodDetailForm.fat}}
+        </el-form-item>
+        <el-form-item label="碳水化合物/g" :label-width="formLabelWidth">
+          {{foodDetailForm.sugar}}
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button type="primary" @click="foodDetailDialog = false">确定</el-button>
+        </div>
+      </template>
+    </el-dialog>
 
     <el-dialog v-model="addRecipeDialog" title="添加食谱" width="500" @close="refreshForm">
       <el-form :model="form">
@@ -214,16 +259,16 @@ onMounted(async() => {
           </el-checkbox-group>
         </el-form-item>
         <el-form-item label="热量/kJ/100g" :label-width="formLabelWidth">
-          <el-input v-model="form.energy"/>
+          <el-input disabled v-model="form.energy" placeholder="系统自动生成"/>
         </el-form-item>
         <el-form-item label="蛋白质/g/100g" :label-width="formLabelWidth">
-          <el-input v-model="form.protein"/>
+          <el-input disabled v-model="form.protein" placeholder="系统自动生成"/>
         </el-form-item>
         <el-form-item label="脂肪/g/100g" :label-width="formLabelWidth">
-          <el-input v-model="form.fat"/>
+          <el-input disabled v-model="form.fat" placeholder="系统自动生成"/>
         </el-form-item>
         <el-form-item label="碳水化合物/g/100g" :label-width="formLabelWidth">
-          <el-input v-model="form.sugar"/>
+          <el-input disabled v-model="form.sugar" placeholder="系统自动生成"/>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -264,22 +309,22 @@ onMounted(async() => {
           </el-checkbox-group>
         </el-form-item>
         <el-form-item label="热量/kJ/100g" :label-width="formLabelWidth">
-          <el-input v-model="form.energy"/>
+          <el-input disabled v-model="form.energy"/>
         </el-form-item>
         <el-form-item label="蛋白质/g/100g" :label-width="formLabelWidth">
-          <el-input v-model="form.protein"/>
+          <el-input disabled v-model="form.protein"/>
         </el-form-item>
         <el-form-item label="脂肪/g/100g" :label-width="formLabelWidth">
-          <el-input v-model="form.fat"/>
+          <el-input disabled v-model="form.fat"/>
         </el-form-item>
         <el-form-item label="碳水化合物/g/100g" :label-width="formLabelWidth">
-          <el-input v-model="form.sugar"/>
+          <el-input disabled v-model="form.sugar"/>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="addRecipeDialog = false">取消</el-button>
-          <el-button type="primary" @click="addRecipe">添加</el-button>
+          <el-button @click="editRecipeDialog = false">取消</el-button>
+          <el-button type="primary" @click="editRecipe">确定修改</el-button>
         </div>
       </template>
     </el-dialog>
