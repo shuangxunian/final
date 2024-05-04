@@ -108,34 +108,6 @@ onMounted(async() => {
         </div>
       </div>
     </div>
-
-    <!-- <el-dialog v-model="getDataDialog" title="数据处理" width="500">
-      <p align="center">共有{{ getTalkList.length }}条，当前是第{{ nowTextarea + 1}}条</p>
-      <el-form :model="form">
-        <el-form-item label="文本" :label-width="formLabelWidth">
-          <el-input
-            v-model="form.textarea"
-            :autosize="{ minRows: 2, maxRows: 4 }"
-            type="textarea"
-            placeholder="请输入"
-          />
-        </el-form-item>
-        <el-form-item label="态度" :label-width="formLabelWidth">
-          <el-select v-model="form.status" placeholder="请选择">
-            <el-option label="积极" value="1" />
-            <el-option label="消极" value="2" />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="finishAdd">取消</el-button>
-          <el-button type="danger" @click="nextText">删除并下一条</el-button>
-          <el-button type="primary" @click="saveText">保存并下一条</el-button>
-        </div>
-      </template>
-    </el-dialog> -->
-
   </div>
 </template>
 

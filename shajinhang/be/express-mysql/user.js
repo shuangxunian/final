@@ -33,7 +33,7 @@ user.post('/login', async (req, res) => {
 
 user.post('/del', async (req, res) => {
   const { body } = req
-  let sql = `delete from user_info where userid='${body.userid}'`
+  let sql = `delete from user_info where id='${body.id}'`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({
@@ -43,7 +43,7 @@ user.post('/del', async (req, res) => {
 
 user.post('/fix', async (req, res) => {
   const { body } = req
-  let sql = `update user_info set password = '123456' where userid = '${body.userid}'`
+  let sql = `update user_info set password = '123456' where id='${body.id}'`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({
@@ -53,11 +53,11 @@ user.post('/fix', async (req, res) => {
 
 user.post('/fixPassword', async (req, res) => {
   const { body } = req
-  let sql = `select * from user_info where userid='${body.userid}' and password='${body.oldPwd}'`
+  let sql = `select * from user_info where id='${body.id}' and password='${body.oldPwd}'`
   const findDatabase = new DataBase()
   const info = await findDatabase.getSqlData(sql)
   if (info.length) {
-    sql = `update user_info set password = '${body.newPwd1}' where userid = '${body.userid}'`
+    sql = `update user_info set password = '${body.newPwd1}' where id = '${body.id}'`
     const fixDatabase = new DataBase()
     await fixDatabase.getSqlData(sql)
     res.send({
@@ -74,8 +74,7 @@ user.post('/fixPassword', async (req, res) => {
 
 user.post('/edit', async (req, res) => {
   const { body } = req
-  let sql = `update user_info set username='${body.username}', roleType ='${body.roleType}' where userid = '${body.userid}'`
-  console.log(sql)
+  let sql = `update user_info set name='${body.name}' where id='${body.id}'`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({
@@ -85,7 +84,7 @@ user.post('/edit', async (req, res) => {
 
 user.post('/add', async (req, res) => {
   const { body } = req
-  let sql = `select * from user_info where userid='${body.userid}'`
+  let sql = `select * from user_info where id='${body.id}'`
   const database = new DataBase()
   const info = await database.getSqlData(sql)
   if (info.length) {
@@ -94,7 +93,7 @@ user.post('/add', async (req, res) => {
       msg: '此账户已存在！'
     })
   } else {
-    sql = `insert into user_info (userid,username,password,roleType) values ('${body.userid}','${body.username}','${body.password}','${body.roleType}')`
+    sql = `insert into user_info (id,name,password) values ('${body.id}','${body.name}','${body.password}')`
     const addDatabase = new DataBase()
     await addDatabase.getSqlData(sql)
     res.send({
@@ -102,20 +101,6 @@ user.post('/add', async (req, res) => {
       msg: ''
     })
   }
-})
-
-user.post('/addList', async (req, res) => {
-  const { body } = req
-  const list = body.list
-  for (let i = 0; i < list.length; i++) {
-    let sql = `insert into user_info (userid,username,password,roleType) values ('${list[i].userid}','${list[i].username}','123456','2')`
-    const database = new DataBase()
-    await database.getSqlData(sql)
-  }
-  res.send({
-    code: 2,
-    msg: ''
-  })
 })
 
 module.exports = user

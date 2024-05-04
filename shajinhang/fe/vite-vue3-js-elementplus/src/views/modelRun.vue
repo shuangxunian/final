@@ -15,6 +15,14 @@ const form = ref({
 const formLabelWidth = '100px'
 
 const addModel = async() => {
+  if (!form.value.name || !form.value.up || !form.value.down) {
+    ElMessage.error('请输入完整信息')
+    return
+  }
+  if (form.value.up < form.value.down) {
+    ElMessage.error('积极阈值必须大于消极阈值')
+    return
+  }
   const { data } = await axios.post('http://localhost:3000/model/add', {
     ...form.value
   })
