@@ -5,89 +5,103 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
 
-const textarea2 = ref('行动代号：猎鹰，执行时间：二四年三月三十日，机型：歼十，途经：长春、沈阳、大连、北京，需配合单位：长春航空局、沈阳航空局、大连航空局')
-const name = ref('--')
-const time = ref('--')
-const warplane = ref('--')
-const path = ref('--')
-const unit = ref('--')
+const textarea2 = ref(`龙岩市71 BEUW G汉阳峰 ZYJBE 公主岭XUK E103'11N25'15 E101'93N24'57 天长市 E103'19N25'35 阳春市17 东经101'84北纬25'00`)
+const newLocation = ref('--')
+const newPath = ref('--')
+const newUnit = ref('--')
 const markerList = ref([])
 const locationList = ref([])
 const unitList = ref([])
+const loading = ref(false)
 
 const getXY = (str) => {
   const arr = str.split(',')
   return [Number(arr[0]),Number(arr[1])]
 }
 
-const getMapPath = async () => {
+const getData = async() => {
+  loading.value = true
   markerList.value = []
-  unitList.value = unit.value.split('、')
   const pathList = []
-  for (let i = 0; i < unitList.value.length; i++) {
-    const { data } = await axios.get(`https://restapi.amap.com/v3/place/text?key=3f388fee9f84b98ebbfa46137f40926c&keywords=${unitList.value[i]}&types=&city=&children=1&offset=1&page=1&extensions=base`)
-    const xy = getXY(data.pois[0].location)
-    const position = new AmapObj.LngLat(xy[0],xy[1])
-    pathList.push(position)
-    const marker = new AmapObj.Marker({
-      position: position,
-      title: unitList.value[i]
-    })
-    markerList.value.push(marker)
+  newPath.value = ''
+  newLocation.value = ''
+  newUnit.value = ''
+  const arr = textarea2.value.split(' ')
+  const regex1 = /^E\d+'\d+N\d+'\d+$/
+  const regex2 = /^东经\d+'\d+北纬\d+'\d+$/
+  const regex3 = /[\u4e00-\u9fa5]+/g;
+  for (let i = 0; i < arr.length; i++) {
+    const match1 = arr[i].match(regex1)
+    const match2 = arr[i].match(regex2)
+    const match3 = arr[i].match(regex3)
+    if (match1) {
+      const location = (arr[i].split('E'))[1].split('N')
+      const xy = []
+      location.forEach(item => {
+        const data = item.split(`'`)
+        xy.push(Number(data[0] + '.' + data[1]))
+      })
+      newPath.value += `东经${xy[0]},北纬${xy[1]}；`
+      const position = new AmapObj.LngLat(xy[0],xy[1])
+      pathList.push(position)
+      const marker = new AmapObj.Marker({
+        position: position,
+        title: unitList.value[i]
+      })
+      markerList.value.push(marker)
+    } else if (match2) {
+      const location = (arr[i].split('东经'))[1].split('北纬')
+      const xy = []
+      location.forEach(item => {
+        const data = item.split(`'`)
+        xy.push(Number(data[0] + '.' + data[1]))
+      })
+      newPath.value += `东经${xy[0]},北纬${xy[1]}；`
+      const position = new AmapObj.LngLat(xy[0],xy[1])
+      pathList.push(position)
+      const marker = new AmapObj.Marker({
+        position: position,
+        title: unitList.value[i]
+      })
+      markerList.value.push(marker)
+    } else if (match3) {
+      const { data } = await axios.get(`https://restapi.amap.com/v3/place/text?key=3f388fee9f84b98ebbfa46137f40926c&keywords=${match3[0]}&types=&city=&children=1&offset=1&page=1&extensions=base`)
+      const xy = getXY(data.pois[0].location)
+      newPath.value += `东经${xy[0]},北纬${xy[1]}；`
+      newLocation.value += `${match3[0]}；`
+      const position = new AmapObj.LngLat(xy[0],xy[1])
+      pathList.push(position)
+      const marker = new AmapObj.Marker({
+        position: position,
+        title: unitList.value[i]
+      })
+      markerList.value.push(marker)
+    } else {
+      newUnit.value += arr[i] + '；'
+    }
   }
+  if (newPath.value === '') newPath.value = '--'
+  if (newLocation.value === '') newLocation.value = '--'
+  if (newUnit.value === '') newUnit.value = '--'
+
   map.add(markerList.value)
-  const polyline = new AMap.Polyline({
+
+  const polyline = new AmapObj.Polyline({
     path: pathList,
     strokeWeight: 2, //线条宽度
     strokeColor: "blue", //线条颜色
     lineJoin: "round", //折线拐点连接处样式
   })
   map.add(polyline)
-}
 
-const getData = async() => {
-  for (let i = 0; i < textarea2.value.length; i++) {
-    if(textarea2.value[i] === '行' &&textarea2.value[i+1] === '动' &&textarea2.value[i+2] === '代' &&textarea2.value[i+3] === '号') {
-      name.value = ''
-      for(let j = i + 5; j < textarea2.value.length && textarea2.value[j] !== '，'; j++) {
-        name.value += textarea2.value[j]
-      }
-    }
-    if(textarea2.value[i] === '执' &&textarea2.value[i+1] === '行' &&textarea2.value[i+2] === '时' &&textarea2.value[i+3] === '间') {
-      time.value = ''
-      for(let j = i + 5; j < textarea2.value.length && textarea2.value[j] !== '，'; j++) {
-        time.value += textarea2.value[j]
-      }
-    }
-    if(textarea2.value[i] === '机' &&textarea2.value[i+1] === '型') {
-      warplane.value = ''
-      for(let j = i + 3; j < textarea2.value.length && textarea2.value[j] !== '，'; j++) {
-        warplane.value += textarea2.value[j]
-      }
-    }
-    if(textarea2.value[i] === '途' &&textarea2.value[i+1] === '经') {
-      path.value = ''
-      for(let j = i + 3; j < textarea2.value.length && textarea2.value[j] !== '，'; j++) {
-        path.value += textarea2.value[j]
-      }
-    }
-    if(textarea2.value[i] === '需' &&textarea2.value[i+1] === '配' &&textarea2.value[i+2] === '合' &&textarea2.value[i+3] === '单'&&textarea2.value[i+4] === '位') {
-      unit.value = ''
-      for(let j = i + 6; j < textarea2.value.length && textarea2.value[j] !== '，'; j++) {
-        unit.value += textarea2.value[j]
-      }
-    }
-  }
-  getMapPath()
+  loading.value = false
+
 }
 
 const sendEmail = async() => {
-  if (unitList.value.length === 0) return ElMessage.error('当前无单位需通知！')
+  if (newUnit.value.length === 0) return ElMessage.error('当前无单位需通知！')
   const { data } = await axios.post('http://localhost:3000/option/send', {
-    time: time.value,
-    name: name.value,
-    warplane: warplane.value,
-    data: unitList.value
+    data: newUnit.value.split('；')
   })
   if(data.code === 2) {
     ElMessage({
@@ -142,20 +156,22 @@ onMounted(async () => {
         />
       </div>
       <div class="my-btn">
-        <el-button type="primary" @click="getData">转换</el-button>
+        <el-button v-loading="loading" type="primary" @click="getData">转换</el-button>
       </div>
       <div class="my-input">
         <el-row>
-          <el-col :span="6">行动代号：</el-col>
+          <!-- <el-col :span="6">行动代号：</el-col>
           <el-col :span="18">{{name}}</el-col>
           <el-col :span="6">执行时间：</el-col>
           <el-col :span="18">{{time}}</el-col>
           <el-col :span="6">机型</el-col>
-          <el-col :span="18">{{warplane}}</el-col>
-          <el-col :span="6">途经：</el-col>
-          <el-col :span="18">{{path}}</el-col>
+          <el-col :span="18">{{warplane}}</el-col> -->
+          <el-col :span="6">途经坐标：</el-col>
+          <el-col :span="18">{{newPath}}</el-col>
+          <el-col :span="6">涉及地点：</el-col>
+          <el-col :span="18">{{newLocation}}</el-col>
           <el-col :span="6">需配合单位：</el-col>
-          <el-col :span="18">{{unit}}</el-col>
+          <el-col :span="18">{{newUnit}}</el-col>
         </el-row>
       </div>
     </div>

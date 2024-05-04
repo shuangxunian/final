@@ -81,10 +81,11 @@ option.post('/send', async (req, res) => {
   let sql = 'select * from `user_list`'
   const userListDataBase = new DataBase()
   let userList = await userListDataBase.getSqlData(sql)
-  for (let k = 0; k < body.data.length; k++) {
+  for (let k = 0; k < body.data.length - 1; k++) {
     const item = body.data[k]
     for (let i = 0; i < userList.length; i++) {
       if (userList[i].name === item) {
+        successSend++
         await sendEmail(userList[i],model)
         break
       }
