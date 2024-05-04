@@ -1,11 +1,13 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
 import { useRoute, useRouter } from 'vue-router'
-
+import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 const router = useRouter()
 
+const id = ref('')
 const routerList = ref([
   {
     index: "users",
@@ -17,12 +19,45 @@ const routerList = ref([
     name: "活动列表",
     icon: "Menu"
   },
-  // {
-  //   index: "info",
-  //   name: "信息",
-  //   icon: "Service"
-  // },
 ])
+
+const dialogFormVisible = ref(false)
+const form = ref({
+  oldPwd: '',
+  newPwd1: '',
+  newPwd2: '',
+})
+const refresh = function() {
+  dialogFormVisible.value = false
+  form.value.oldPwd = ''
+  form.value.newPwd1 = ''
+  form.value.newPwd2 = ''
+}
+
+const goPost = async function() {
+  if (form.value.oldPwd === '') {
+    return ElMessage.error('请输入旧密码！')
+  } else if (form.value.newPwd1 === '') {
+    return ElMessage.error('请输入新密码！')
+  } else if (form.value.newPwd2 === '') {
+    return ElMessage.error('请再次输入新密码！')
+  } else if (form.value.newPwd2 !== form.value.newPwd1) {
+    return ElMessage.error('两次密码不一致！')
+  }
+  const { data } = await axios.post('http://localhost:3000/user/fixPassword', {
+    ...form.value,
+    id: id.value
+  })
+  if (data.code === 2) {
+    ElMessage({
+      message: '修改成功！',
+      type: 'success',
+    })
+    refresh()
+  } else {
+    ElMessage.error(data.msg)
+  }
+}
 
 function handleSelect(key, keyPath) {
   router.push('/' + key)
@@ -33,6 +68,20 @@ function logout() {
   router.push('/login')
 }
 
+
+onMounted(() => {
+  id.value = window.sessionStorage.getItem('id')
+  if (id.value === 'admin') {
+    routerList.value.push({
+      index: "info",
+      name: "用户信息",
+      icon: "Service"
+    })
+  }
+  router.push('/' + routerList.value[0].index)
+})
+
+
 </script>
 
 <template>
@@ -42,6 +91,8 @@ function logout() {
         <span>无人机物流配送管理系统</span>
       </div>
       <div class="options">
+        <el-button @click="dialogFormVisible = true">修改密码</el-button>
+        <el-button type="info" @click="logout">退出</el-button>
         <!-- <el-button type="info" @click="logout">退出</el-button> -->
       </div>
     </div>
@@ -62,6 +113,27 @@ function logout() {
         <router-view/>
       </div>
     </div>
+    <el-dialog v-model="dialogFormVisible" title="修改密码" width="500" @close="refresh">
+      <el-form :model="form">
+        <el-form-item label="旧密码" label-width="120">
+          <el-input v-model="form.oldPwd" placeholder="请输入旧密码" />
+        </el-form-item>
+        <el-form-item label="新密码" label-width="120">
+          <el-input v-model="form.newPwd1" placeholder="请输入新密码" />
+        </el-form-item>
+        <el-form-item label="再次输入新密码" label-width="120">
+          <el-input v-model="form.newPwd2" placeholder="请再次输入新密码" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="dialogFormVisible = false">取消</el-button>
+          <el-button type="primary" @click="goPost">
+            确定
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 

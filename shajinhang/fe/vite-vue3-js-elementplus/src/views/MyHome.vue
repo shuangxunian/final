@@ -44,7 +44,6 @@ const goPost = async function() {
   } else {
     ElMessage.error(data.msg)
   }
-  
 }
 
 const routerList = ref([
