@@ -37,33 +37,6 @@ user.post('/add', async (req, res) => {
     code: 2,
     msg: ''
   })
-  // let sql = 'select * from `user_info` where `name`= ? and `belong`= ?'
-  // let data = [body.name,body.belong]
-  // const database = new DataBase()
-  // let info = await database.getSqlData(sql, data)
-  // if (info.length !== 0) {
-  //   res.send({
-  //     code: 4,
-  //     msg: '此厂家生成的此药已存在，请检查！'
-  //   })
-  // } else {
-  //   sql = 'select * from `product_list`'
-  //   const getDatabase = new DataBase()
-  //   info = await getDatabase.getSqlData(sql)
-  //   if (info.length === 0) {
-  //     body.id = 0
-  //   } else {
-  //     body.id = info[info.length - 1].id + 1
-  //   }
-  //   sql = 'INSERT INTO `product_list` (`name`, `belong`, `haveNum`, `id`) VALUES (?,?,?,?);'
-  //   data = [body.name,body.belong,0,body.id]
-  //   const setDatabase = new DataBase()
-  //   await setDatabase.getSqlData(sql, data)
-  //   res.send({
-  //     code: 2,
-  //     msg: ''
-  //   })
-  // }
 })
 
 user.post('/login', async (req, res) => {
@@ -73,17 +46,25 @@ user.post('/login', async (req, res) => {
   const database = new DataBase()
   let info = await database.getSqlData(sql)
   if (info.length !== 0) {
-    const { data } = await axios.post('https://api-cn.faceplusplus.com/facepp/v3/compare', qs.stringify({
-      api_key: process.env.APIKey,
-      api_secret: process.env.APISecret,
-      image_url1: info[0].imgUrl,
-      image_url2: body.imgUrl,
-    }))
-    if (data.confidence < 80) {
-      return res.send({
-        code: 4,
-        msg: '人脸识别失败，禁止登录！'
-      })
+    if (info[0].imgUrl !== '') {
+      const { data } = await axios.post('https://api-cn.faceplusplus.com/facepp/v3/compare', qs.stringify({
+        api_key: process.env.APIKey,
+        api_secret: process.env.APISecret,
+        image_url1: info[0].imgUrl,
+        image_url2: body.imgUrl,
+      }))
+      if (data.confidence < 80) {
+        return res.send({
+          code: 4,
+          msg: '人脸识别失败，禁止登录！'
+        })
+      } else {
+        res.send({
+          code: 2,
+          body: info[0],
+          msg: '登录成功！'
+        })
+      }
     } else {
       res.send({
         code: 2,
