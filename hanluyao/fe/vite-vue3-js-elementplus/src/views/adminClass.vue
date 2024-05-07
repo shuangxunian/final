@@ -5,22 +5,23 @@ import { ElMessage } from 'element-plus'
 
 const findData = ref('')
 const form = ref({
-  name: '',
-  teacherid: '',
-  num: 0
+  classname: '',
+  collegeid: '',
+  needwordnum: 0
 })
 const tableData = ref([])
 const dialogFormVisible = ref(false)
 const userList = ref([])
 const classList = ref([])
+const collegeList = ref([])
 const addClassDialog = ref(false)
 const editClassDialog = ref(false)
 
 function refreshFrom() {
   form.value = {
-    name: '',
-    teacherid: '',
-    num: 0
+    classname: '',
+    collegeid: '',
+    needwordnum: 0
   }
 }
 
@@ -42,6 +43,22 @@ function editData(row) {
 }
 
 async function addClass() {
+  if (form.value.classname === '') {
+    ElMessage.error('课程名不能为空')
+    return
+  }
+  if (form.value.collegeid === '') {
+    ElMessage.error('学院名不能为空')
+    return
+  }
+  if (form.value.needwordnum === '') {
+    ElMessage.error('所需文档数量不能为空')
+    return
+  }
+  if (form.value.needwordnum === 0) {
+    ElMessage.error('所需文档数量不能为0')
+    return
+  }
   // console.log(form.value)
   const { data } = await axios.post('http://localhost:3000/class/add', form.value)
   if (data.code === 2) {
@@ -67,43 +84,33 @@ async function editClass() {
 
 
 async function makeSureDel(row) {
-  const { data } = await axios.post('http://localhost:3000/class/del', { id: row.id })
+  const { data } = await axios.post('http://localhost:3000/class/del', { classid: row.classid })
   if (data.code === 2) {
     ElMessage.success('删除成功')
     getClassList()
   }
 }
 
-async function getUserList() {
-  const { data } = await axios.post('http://localhost:3000/user/allData', {})
+
+async function getCollegeList() {
+  if (collegeList.value.length !== 0) {
+    return
+  }
+  const { data } = await axios.post('http://localhost:3000/college/allData', {})
   if (data.code === 2) {
-    userList.value = []
-    data.body.forEach(item => {
-      if (item.roletype === '1') userList.value.push(item)
-    })
+    collegeList.value = data.body
   }
 }
 
 async function getClassList() {
   const { data } = await axios.post('http://localhost:3000/class/allData', {})
   if (data.code === 2) {
-    const userMap = {}
-    userList.value.forEach(item => {
-      userMap[item.id] = item.name
-    })
-    classList.value = []
-    data.body.forEach(item => {
-      classList.value.push({
-        ...item,
-        teacher: userMap[item.teacherid]
-      })
-    })
-    tableData.value = classList.value
+    classList.value = data.body
+    tableData.value = data.body
   }
 }
 
 onMounted(async() => {
-  await getUserList()
   await getClassList()
 })
 
@@ -122,9 +129,9 @@ onMounted(async() => {
     </div>
     <div class="body">
       <el-table :data="tableData" border style="width: 100%" max-height="600">
-        <el-table-column prop="name" label="课程名" width="300" />
-        <el-table-column prop="teacher" label="教师名" />
-        <el-table-column prop="num" label="选课人数" />
+        <el-table-column prop="collegename" label="所属学院" />
+        <el-table-column prop="classname" label="课程名" width="300" />
+        <el-table-column prop="needwordnum" label="所需文档数量" />
         <el-table-column fixed="right" label="操作" width="200">
           <template #default="scoped">
             <el-button link type="primary" size="small" @click="editData(scoped.row)">编辑</el-button>
@@ -141,15 +148,15 @@ onMounted(async() => {
     <el-dialog v-model="addClassDialog" title="添加课程" width="500" @close="refreshFrom">
       <el-form :model="form">
         <el-form-item label="课程名" label-width="100">
-          <el-input v-model="form.name" placeholder="请填写课程名"/>
+          <el-input v-model="form.classname" placeholder="请填写课程名"/>
         </el-form-item>
-        <el-form-item label="教师名" label-width="100">
-          <el-select v-model="form.teacherid" filterable placeholder="请选择教师">
-            <el-option v-for="item in userList" :key="item.id" :label="item.name" :value="item.id" />
+        <el-form-item label="所属学院" label-width="100">
+          <el-select v-model="form.collegeid" filterable placeholder="请选择学院" @click="getCollegeList">
+            <el-option v-for="item in collegeList" :key="item.collegeid" :label="item.name" :value="item.collegeid" />
           </el-select>
         </el-form-item>
-        <el-form-item label="选课人数" label-width="100">
-          <el-input v-model="form.num" disabled placeholder="请填写选课人数"/>
+        <el-form-item label="所需文档数量" label-width="100">
+          <el-input-number v-model="form.needwordnum" placeholder="请填写所需文档数量"/>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -163,13 +170,15 @@ onMounted(async() => {
     <el-dialog v-model="editClassDialog" title="编辑课程" width="500" @close="refreshFrom">
       <el-form :model="form">
         <el-form-item label="课程名" label-width="100">
-          <el-input v-model="form.name" placeholder="请填写课程名"/>
+          <el-input v-model="form.classname" placeholder="请填写课程名"/>
         </el-form-item>
-        <el-form-item label="教师名" label-width="100">
-          <span>{{ form.teacher }}</span>
+        <el-form-item label="所属学院" label-width="100">
+          <el-select v-model="form.collegeid" filterable placeholder="请选择学院" @click="getCollegeList">
+            <el-option v-for="item in collegeList" :key="item.collegeid" :label="item.name" :value="item.collegeid" />
+          </el-select>
         </el-form-item>
-        <el-form-item label="选课人数" label-width="100">
-          <el-input v-model="form.num" disabled placeholder="请填写选课人数"/>
+        <el-form-item label="所需文档数量" label-width="100">
+          <el-input-number v-model="form.needwordnum" placeholder="请填写所需文档数量"/>
         </el-form-item>
       </el-form>
       <template #footer>

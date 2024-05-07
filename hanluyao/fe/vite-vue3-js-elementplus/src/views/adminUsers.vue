@@ -14,15 +14,14 @@ const form = ref({
   roletype: ''
 })
 const dialogFormVisible = ref(false)
-const dialogUploadVisible = ref(false)
 const standingList = ref([
   {
-    label: '老师',
-    value: '1'
+    label: '系主任',
+    value: 1
   },
   {
-    label: '学生',
-    value: '2'
+    label: '老师',
+    value: 2
   },
 ])
 const uploadRef = ref(null)
@@ -46,7 +45,7 @@ function getList() {
 }
 
 async function addUser() {
-  if (form.value.id === '') return ElMessage.error('请输入学工号')
+  if (form.value.id === '') return ElMessage.error('请输入工号')
   if (form.value.name === '') return ElMessage.error('请输入用户姓名')
   if (form.value.roletype === '') return ElMessage.error('请选择用户身份')
   const { data } = await axios.post('http://localhost:3000/user/add', form.value)
@@ -60,7 +59,7 @@ async function addUser() {
 }
 
 async function editUser() {
-  if (form.value.id === '') return ElMessage.error('请输入学工号')
+  if (form.value.id === '') return ElMessage.error('请输入工号')
   if (form.value.name === '') return ElMessage.error('请输入用户姓名')
   if (form.value.roletype === '') return ElMessage.error('请选择用户身份')
   const { data } = await axios.post('http://localhost:3000/user/edit', form.value)
@@ -139,13 +138,13 @@ onMounted(async() => {
     </div>
     <div class="body">
       <el-table :data="tableData" border style="width: 100%" max-height="600">
-        <el-table-column prop="id" label="学工号" width="300" />
+        <el-table-column prop="id" label="工号" width="300" />
         <el-table-column prop="name" label="用户昵称" width="300" />
         <el-table-column prop="standing" label="身份">
           <template #default="scoped">
-            <span v-if="scoped.row.roletype === '0'">管理员</span>
-            <span v-if="scoped.row.roletype === '1'">老师</span>
-            <span v-if="scoped.row.roletype === '2'">学生</span>
+            <span v-if="scoped.row.roletype === 0">管理员</span>
+            <span v-if="scoped.row.roletype === 1">系主任</span>
+            <span v-if="scoped.row.roletype === 2">老师</span>
           </template>
         </el-table-column>
         <el-table-column fixed="right" label="操作" width="200">
@@ -162,8 +161,8 @@ onMounted(async() => {
     </div>
     <el-dialog v-model="addUserDialog" title="添加用户" width="500" @close="clearForm">
       <el-form :model="form">
-        <el-form-item label="学工号" label-width="100">
-          <el-input v-model="form.id" placeholder="请填写学工号"/>
+        <el-form-item label="工号" label-width="100">
+          <el-input v-model="form.id" placeholder="请填写工号"/>
         </el-form-item>
         <el-form-item label="用户姓名" label-width="100">
           <el-input v-model="form.name" placeholder="请填写用户姓名"/>
@@ -184,7 +183,6 @@ onMounted(async() => {
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <!-- <el-button link type="primary" @click="dialogUploadVisible = true">一键导入</el-button> -->
           <el-button @click="addUserDialog = false">取消</el-button>
           <el-button type="primary" @click="addUser">新建</el-button>
         </div>
@@ -194,16 +192,16 @@ onMounted(async() => {
 
     <el-dialog v-model="editUserDialog" title="编辑用户" width="500"  @close="clearForm">
       <el-form :model="form">
-        <el-form-item label="学工号" label-width="100">
+        <el-form-item label="工号" label-width="100">
           <el-input disabled v-model="form.id" />
         </el-form-item>
         <el-form-item label="用户姓名" label-width="100">
           <el-input v-model="form.name" />
         </el-form-item>
         <el-form-item label="身份：" label-width="100">
-          <span v-if="form.roletype === '0'">管理员</span>
-          <span v-if="form.roletype === '1'">老师</span>
-          <span v-if="form.roletype === '2'">学生</span>
+          <span v-if="form.roletype === 0">管理员</span>
+          <span v-if="form.roletype === 1">系主任</span>
+          <span v-if="form.roletype === 2">老师</span>
         </el-form-item>
         <el-form-item label="密码" label-width="100">
           <el-button link type="primary" size="small" @click="fixPassword">重置密码</el-button>
@@ -216,34 +214,6 @@ onMounted(async() => {
         </div>
       </template>
     </el-dialog>
-
-    <el-dialog
-      v-model="dialogUploadVisible"
-      title="上传"
-      width="500"
-    >
-      <el-upload
-        ref="uploadRef"
-        :show-file-list="false"
-        :auto-upload="false"
-        :file-list="fileList"
-        :on-change="fileChange"
-      >
-        <el-button type="success">
-          点此上传
-        </el-button>
-      </el-upload>
-      <!-- <span>This is a message</span> -->
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="dialogVisible = false">Cancel</el-button>
-          <el-button type="primary" @click="dialogVisible = false">
-            Confirm
-          </el-button>
-        </div>
-      </template>
-    </el-dialog>
-    <!-- dialogUploadVisible -->
   </div>
 </template>
 
