@@ -87,24 +87,21 @@ async function getUserList() {
 async function getClassList() {
   const { data } = await axios.post('http://localhost:3000/class/allData', {})
   if (data.code === 2) {
-    const userMap = {}
-    userList.value.forEach(item => {
-      userMap[item.id] = item.name
-    })
-    classList.value = []
-    data.body.forEach(item => {
-      classList.value.push({
-        ...item,
-        teacher: userMap[item.teacherid]
-      })
-    })
-    tableData.value = classList.value
+    classList.value = data.body
+    tableData.value = data.body
+  }
+}
+
+async function getWordList() {
+  const { data } = await axios.post('http://localhost:3000/word/allData', {})
+  if (data.code === 2) {
+    classList.value = data.body
+    tableData.value = data.body
   }
 }
 
 onMounted(async() => {
-  await getUserList()
-  await getClassList()
+  await getWordList()
 })
 
 </script>
@@ -122,12 +119,12 @@ onMounted(async() => {
     </div>
     <div class="body">
       <el-table :data="tableData" border style="width: 100%" max-height="600">
-        <el-table-column prop="name" label="课程名" width="300" />
-        <el-table-column prop="teacher" label="教师名" />
-        <el-table-column prop="num" label="选课人数" />
+        <el-table-column prop="collegename" label="学院名" width="300" />
+        <el-table-column prop="username" label="教师名" />
+        <el-table-column prop="wordname" label="文档名称" />
+        <el-table-column prop="word" label="文档" />
         <el-table-column fixed="right" label="操作" width="200">
           <template #default="scoped">
-            <el-button link type="primary" size="small" @click="editData(scoped.row)">编辑</el-button>
             <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scoped.row)">
               <template #reference>
                 <el-button link type="danger" size="small">删除</el-button>
@@ -137,48 +134,6 @@ onMounted(async() => {
         </el-table-column>
       </el-table>
     </div>
-
-    <el-dialog v-model="addClassDialog" title="添加课程" width="500" @close="refreshFrom">
-      <el-form :model="form">
-        <el-form-item label="课程名" label-width="100">
-          <el-input v-model="form.name" placeholder="请填写课程名"/>
-        </el-form-item>
-        <el-form-item label="教师名" label-width="100">
-          <el-select v-model="form.teacherid" filterable placeholder="请选择教师">
-            <el-option v-for="item in userList" :key="item.id" :label="item.name" :value="item.id" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="选课人数" label-width="100">
-          <el-input v-model="form.num" disabled placeholder="请填写选课人数"/>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="editClassDialog = false">取消</el-button>
-          <el-button type="primary" @click="addClass">新建</el-button>
-        </div>
-      </template>
-    </el-dialog>
-
-    <el-dialog v-model="editClassDialog" title="编辑课程" width="500" @close="refreshFrom">
-      <el-form :model="form">
-        <el-form-item label="课程名" label-width="100">
-          <el-input v-model="form.name" placeholder="请填写课程名"/>
-        </el-form-item>
-        <el-form-item label="教师名" label-width="100">
-          <span>{{ form.teacher }}</span>
-        </el-form-item>
-        <el-form-item label="选课人数" label-width="100">
-          <el-input v-model="form.num" disabled placeholder="请填写选课人数"/>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="editClassDialog = false">取消</el-button>
-          <el-button type="primary" @click="editClass">编辑</el-button>
-        </div>
-      </template>
-    </el-dialog>
   </div>
 </template>
 

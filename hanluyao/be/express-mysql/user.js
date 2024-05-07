@@ -4,12 +4,27 @@ const DataBase = require('./mysql')
 const user = express.Router()
 
 user.post('/allData', async (req, res) => {
-  let sql = 'select * from user_info'
+  let sql = 'select * from college_list'
+  const getCollegeDatabase = new DataBase()
+  let college = await getCollegeDatabase.getSqlData(sql)
+  sql = 'select * from user_info'
   const database = new DataBase()
   let info = await database.getSqlData(sql)
+  const body = []
+  const collegeMap = {}
+  college.forEach(item => {
+    collegeMap[item.collegeid] = item.name
+  })
+  info.forEach(item => {
+    const obj = {
+      ...item,
+      collegename: collegeMap[item.collegeid]
+    }
+    body.push(obj)
+  })
   res.send({
     code: 2,
-    body: info
+    body
   })
 })
 

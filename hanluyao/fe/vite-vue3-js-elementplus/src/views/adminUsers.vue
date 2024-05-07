@@ -147,6 +147,7 @@ onMounted(async() => {
             <span v-if="scoped.row.roletype === 2">老师</span>
           </template>
         </el-table-column>
+        <el-table-column prop="collegename" label="所属学院"/>
         <el-table-column fixed="right" label="操作" width="200">
           <template #default="scoped">
             <el-button link type="primary" size="small" @click="editData(scoped.row)">编辑</el-button>
