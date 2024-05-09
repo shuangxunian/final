@@ -156,7 +156,7 @@ const isNewChange = async (row) => {
 }
 
 const sysTestTypeChange = async () => {
-  console.log(sysTestType.value)
+  window.sessionStorage.setItem('sysTestType', sysTestType.value)
   const { data } = await axios.post('http://localhost:3000/user/change', {
     value: sysTestType.value ? '1' : '0'
   })

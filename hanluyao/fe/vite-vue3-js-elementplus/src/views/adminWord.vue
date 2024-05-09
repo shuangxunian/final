@@ -111,25 +111,27 @@ onMounted(async() => {
     <div class="header">
       <div class="left">
         <el-input v-model="findData" style="width: 240px" placeholder="请输入内容" />
-        <el-button @click="getList">筛选</el-button>
+        <!-- <el-button @click="getList">筛选</el-button> -->
       </div>
       <div class="right">
-        <el-button type="primary" @click="addClassDialog = true">新建课程</el-button>
+        <el-button @click="getList">筛选</el-button>
+        <!-- <el-button type="primary" @click="addClassDialog = true">新建课程</el-button> -->
       </div>
     </div>
     <div class="body">
       <el-table :data="tableData" border style="width: 100%" max-height="600">
         <el-table-column prop="collegename" label="学院名" width="300" />
         <el-table-column prop="username" label="教师名" />
-        <el-table-column prop="wordname" label="文档名称" />
-        <el-table-column prop="word" label="文档" />
+        <el-table-column prop="classname" label="所属课程名称" />
+        <el-table-column prop="percent" label="文档完成度" />
         <el-table-column fixed="right" label="操作" width="200">
           <template #default="scoped">
-            <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scoped.row)">
+            <el-button link type="primary" size="small" @click="downLoad(scoped.row)">下载</el-button>
+            <!-- <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scoped.row)">
               <template #reference>
                 <el-button link type="danger" size="small">删除</el-button>
               </template>
-            </el-popconfirm>
+            </el-popconfirm> -->
           </template>
         </el-table-column>
       </el-table>

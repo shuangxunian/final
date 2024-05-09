@@ -57,7 +57,7 @@ user.post('/add', async (req, res) => {
       msg: '此账户已存在！'
     })
   } else {
-    sql = `insert into user_info (id,name,password,roletype) values ('${body.id}','${body.name}','123456','${body.roletype}')`
+    sql = `insert into user_info (id,name,password,roletype,collegeid) values ('${body.id}','${body.name}','123456','${body.roletype}','${body.collegeid}')`
     const addDatabase = new DataBase()
     await addDatabase.getSqlData(sql)
     res.send({

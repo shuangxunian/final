@@ -26,7 +26,9 @@ const dontAddUser = () => {}
 const trueAddUser = async () => {
   const{ data } = await axios.post('http://localhost:3000/user/add',{
     ...addUserForm.value,
-    roleType: '1'
+    roleType: '1',
+    master: '-1',
+    joinyear: '-1'
   })
   if (data.code === 2) {
     ElMessage({
@@ -56,7 +58,7 @@ const getTableList = async () => {
   for (let i = 0; i < userList.value.length; i++) {
     const nowData = userList.value[i]
     nowData.standing = roleMap[userList.value[i].roleType]
-    if (!nowData.master) {
+    if (nowData.master === '-1') {
       tableList.value.push({
         ...nowData,
         children: []
@@ -113,7 +115,11 @@ onMounted(async () => {
         <el-table-column prop="id" label="工号" width="180" />
         <el-table-column prop="name" label="姓名" width="180" />
         <el-table-column prop="standing" label="身份" />
-        <el-table-column prop="joinyear" label="入职年份" />
+        <el-table-column prop="joinyear" label="入职年份">
+          <template #default="scope">
+            {{ scope.row.joinyear === '-1' ? '-' : scope.row.joinyear }}
+          </template>
+        </el-table-column>
         <el-table-column fixed="right" label="操作" width="200">
           <template #default="scope">
             <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认重置密码吗" @confirm="fixPassword(scope.row)">

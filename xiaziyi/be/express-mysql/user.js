@@ -99,11 +99,11 @@ user.post('/fix', async (req, res) => {
 
 user.post('/fixPassword', async (req, res) => {
   const { body } = req
-  let sql = `select * from user_info where userid='${body.userid}' and password='${body.oldPwd}'`
+  let sql = `select * from user_info where id='${body.id}' and password='${body.oldPwd}'`
   const findDatabase = new DataBase()
   const info = await findDatabase.getSqlData(sql)
   if (info.length) {
-    sql = `update user_info set password = '${body.newPwd1}' where userid = '${body.userid}'`
+    sql = `update user_info set password = '${body.newPwd1}' where id = '${body.id}'`
     const fixDatabase = new DataBase()
     await fixDatabase.getSqlData(sql)
     res.send({

@@ -4,6 +4,8 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import Papa from 'papaparse'
 
+const userid = ref('')
+const collegeid = ref('')
 const findData = ref('')
 const tableData = ref([])
 const form = ref({
@@ -41,6 +43,7 @@ async function addUser() {
   if (form.value.roletype === '') return ElMessage.error('请选择用户身份')
   const { data } = await axios.post('http://localhost:3000/user/add', {
     ...form.value,
+    collegeid: collegeid.value,
     roletype: '2',
   })
   if (data.code === 2) {
@@ -117,52 +120,26 @@ function isNewUser(item,newList) {
   return true
 }
 
-function fileChange(uploadFile, uploadFiles) {
-  var reader = new FileReader()
-  reader.readAsDataURL(uploadFile.raw)
-  reader.onload = evt => {
-    Papa.parse(uploadFile.raw, {
-      complete: res => {
-        let data = res.data
-        const result = Papa.unparse(data)
-        const csvRecordsArray = result?.split(/\r\n|\n/)
-        const newArr = csvRecordsArray.slice(1)
-        const newList = []
-        newArr.forEach(str => {
-          const obj = str.split(',')
-          const item = {
-            userID: obj[0],
-            name: obj[1],
-          }
-          if (item.userID !== '' && item.name !== '' && isNewUser(item,newList)) {
-            newList.push(item)
-          }
-        })
-        newUserList.value = newList
-        console.log(newUserList.value)
-      }
-    })
+async function makeSureDel(row) {
+  const { data } = await axios.post('http://localhost:3000/user/del', { id: row.id })
+  if (data.code === 2) {
+    ElMessage.success('删除成功')
+    getUserList()
   }
-  // console.log(file, fileList)
-  // console.log(uploadRef.value)
 }
 
 async function getUserList() {
   const { data } = await axios.post('http://localhost:3000/user/allData', {})
   if (data.code === 2) {
-    userList.value = []
-    data.body.forEach(item => {
-      if (item.roletype === '2') {
-        userList.value.push({
-          ...item,
-          status: '正常'
-        })
-      }
-    })
-    tableData.value = userList.value
+    const list = data.body.filter(item => item.collegeid === collegeid.value)
+    userList.value = list
+    tableData.value = list
   }
 }
+
 onMounted(async() => {
+  userid.value = window.sessionStorage.getItem('id')
+  collegeid.value = window.sessionStorage.getItem('collegeid')
   await getUserList()
 })
 
@@ -176,35 +153,38 @@ onMounted(async() => {
         <el-button @click="getList">筛选</el-button>
       </div>
       <div class="right">
-        <el-button type="primary" @click="addUserDialog = true">新建学生</el-button>
+        <el-button type="primary" @click="addUserDialog = true">新建老师</el-button>
       </div>
     </div>
     <div class="body">
       <el-table :data="tableData" border style="width: 100%" max-height="600">
-        <el-table-column prop="id" label="学号"/>
-        <el-table-column prop="name" label="学生姓名" width="300" />
-        <el-table-column prop="status" label="学习状态" width="300" />
+        <el-table-column prop="id" label="工号"/>
+        <el-table-column prop="name" label="姓名" />
+        <!-- <el-table-column prop="status" label="学习状态" width="300" /> -->
         <el-table-column fixed="right" label="操作" width="200">
           <template #default="scoped">
             <el-button link type="primary" size="small" @click="editData(scoped.row)">编辑</el-button>
-            <el-button link type="danger" size="small" @click="delData(scoped)">删除</el-button>
+            <el-popconfirm v-if="scoped.row.roletype === 2" confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scoped.row)">
+              <template #reference>
+                <el-button link type="danger" size="small">删除</el-button>
+              </template>
+            </el-popconfirm>
           </template>
         </el-table-column>
       </el-table>
     </div>
 
-    <el-dialog v-model="addUserDialog" title="添加学生" width="500" @close="clearForm">
+    <el-dialog v-model="addUserDialog" title="添加教师" width="500" @close="clearForm">
       <el-form :model="form">
-        <el-form-item label="学号" label-width="100">
-          <el-input v-model="form.id" placeholder="请填写学号"/>
+        <el-form-item label="工号" label-width="100">
+          <el-input v-model="form.id" placeholder="请填写工号"/>
         </el-form-item>
-        <el-form-item label="学生姓名" label-width="100">
-          <el-input v-model="form.name" placeholder="请填写学生姓名"/>
+        <el-form-item label="教师姓名" label-width="100">
+          <el-input v-model="form.name" placeholder="请填写教师姓名"/>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <!-- <el-button link type="primary" @click="dialogUploadVisible = true">一键导入</el-button> -->
           <el-button @click="addUserDialog = false">取消</el-button>
           <el-button type="primary" @click="addUser">新建</el-button>
         </div>
@@ -212,12 +192,12 @@ onMounted(async() => {
     </el-dialog>
 
 
-    <el-dialog v-model="editUserDialog" title="编辑用户" width="500"  @close="clearForm">
+    <el-dialog v-model="editUserDialog" title="编辑教师" width="500"  @close="clearForm">
       <el-form :model="form">
-        <el-form-item label="学工号" label-width="100">
+        <el-form-item label="工号" label-width="100">
           <el-input disabled v-model="form.id" />
         </el-form-item>
-        <el-form-item label="用户姓名" label-width="100">
+        <el-form-item label="教师姓名" label-width="100">
           <el-input v-model="form.name" />
         </el-form-item>
         <el-form-item label="密码" label-width="100">
@@ -232,35 +212,6 @@ onMounted(async() => {
       </template>
     </el-dialog>
 
-    <el-dialog
-      v-model="dialogUploadVisible"
-      title="上传"
-      width="500"
-    >
-      <el-upload
-        ref="uploadRef"
-        :show-file-list="false"
-        :auto-upload="false"
-        :on-change="fileChange"
-      >
-        <el-button type="success">
-          点此上传
-        </el-button>
-      </el-upload>
-      <div v-if="newUserList.length !== 0">
-        一共有{{ newUserList.length }}条有效数据，确定添加吗？
-      </div>
-      <!-- <span>This is a message</span> -->
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="dialogUploadVisible = false">取消</el-button>
-          <el-button type="primary" @click="pushUserList">
-            确定
-          </el-button>
-        </div>
-      </template>
-    </el-dialog>
-    <!-- dialogUploadVisible -->
   </div>
 </template>
 

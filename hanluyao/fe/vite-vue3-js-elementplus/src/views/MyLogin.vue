@@ -6,7 +6,7 @@ import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const loginForm = ref({
-  id: 'admin',
+  id: '101',
   password: '123456'
 })
 
@@ -21,6 +21,7 @@ async function login () {
     window.sessionStorage.setItem('id', data.body.id)
     window.sessionStorage.setItem('name', data.body.name)
     window.sessionStorage.setItem('roletype', data.body.roletype)
+    window.sessionStorage.setItem('collegeid', data.body.collegeid)
     router.push('/home')
   } else {
     ElMessage.error(data.msg)
