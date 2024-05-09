@@ -89,7 +89,7 @@ user.post('/del', async (req, res) => {
 
 user.post('/fix', async (req, res) => {
   const { body } = req
-  let sql = `update user_info set password = '123456' where userid = '${body.userid}'`
+  let sql = `update user_info set password = '123456' where id='${body.id}'`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({

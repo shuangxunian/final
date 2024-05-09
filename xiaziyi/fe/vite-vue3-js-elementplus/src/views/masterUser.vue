@@ -82,7 +82,17 @@ const makeSureDel = async(row) => {
   }
 }
 
-const fixPassword = (row) => {}
+const fixPassWord = async (row) => {
+  const { data } = await axios.post('http://localhost:3000/user/fix', {
+    id: row.id,
+  })
+  if (data.code === 2) {
+    ElMessage({
+      message: '重置成功！',
+      type: 'success',
+    })
+  }
+}
 
 const getTableList = async () => {
   tableList.value = []
