@@ -29,25 +29,42 @@ word.post('/allData', async (req, res) => {
   })
 })
 
+word.post('/myData', async (req, res) => {
+  const { body } = req
+  let sql = `select * from word_list where userid='${body.userid}'`
+  const database = new DataBase()
+  const wordList = await database.getSqlData(sql)
+  sql = 'select * from class_list'
+  const getClassDatabase = new DataBase()
+  const classList = await getClassDatabase.getSqlData(sql)
+  const arr = []
+  const classMap = {}
+  classList.forEach(item => {
+    classMap[item.classid] = item.classname
+  })
+  wordList.forEach(item => {
+    const obj = {
+      ...item,
+      classname: classMap[item.classid]
+    }
+    arr.push(obj)
+  })
+
+  res.send({
+    code: 2,
+    body: arr,
+  })
+})
+
 word.post('/add', async (req, res) => {
   const { body } = req
-  let sql = `select * from class_list where classname='${body.classname}' and collegeid='${body.collegeid}'`
+  let sql = `insert into word_list (wordid,wordname,userid,classid,url) values ('${new Date().getTime()}','${body.wordname}','${body.userid}','${body.classid}','${body.url}')`
   const database = new DataBase()
-  const info = await database.getSqlData(sql)
-  if (info.length) {
-    res.send({
-      code: 4,
-      msg: '此学院已存在此课程！'
-    })
-  } else {
-    sql = `insert into class_list (classid,collegeid,classname,needwordnum) values ('${new Date().getTime()}','${body.collegeid}','${body.classname}','${body.needwordnum}')`
-    const addDatabase = new DataBase()
-    await addDatabase.getSqlData(sql)
-    res.send({
-      code: 2,
-      msg: ''
-    })
-  }
+  await database.getSqlData(sql)
+  res.send({
+    code: 2,
+    msg: ''
+  })
 })
 
 word.post('/del', async (req, res) => {

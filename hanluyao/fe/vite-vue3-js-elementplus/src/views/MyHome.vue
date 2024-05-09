@@ -62,6 +62,11 @@ onMounted(async () => {
         icon: "Menu"
       },
       {
+        index: "myword",
+        name: "我的文档",
+        icon: "Menu"
+      },
+      {
         index: "info",
         name: "个人信息",
         icon: "Service"
