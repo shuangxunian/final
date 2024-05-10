@@ -82,7 +82,7 @@ const makeSureDel = async(row) => {
   }
 }
 
-const fixPassWord = async (row) => {
+const fixPassword = async (row) => {
   const { data } = await axios.post('http://localhost:3000/user/fix', {
     id: row.id,
   })
