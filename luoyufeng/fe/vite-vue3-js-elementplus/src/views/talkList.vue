@@ -302,7 +302,7 @@ onMounted(async () => {
       </el-table>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="editTalkDialog = false">取消</el-button>
+          <el-button @click="trainDialog = false">取消</el-button>
           <el-button :disabled="btnLoading" type="primary" @click="toTrain">训练</el-button>
         </div>
       </template>

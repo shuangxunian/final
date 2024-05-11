@@ -48,6 +48,8 @@ const trueAddUser = async () => {
     })
     await getUserList()
     addUserDialog.value = false
+  } else {
+    return ElMessage.error(data.msg)
   }
 }
 const editUser = (row) => {

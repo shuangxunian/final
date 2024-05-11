@@ -108,7 +108,7 @@ onMounted(async() => {
 <template>
   <div class="admin-test">
     <div class="header">
-      <el-button :disabled="sysTestType" type="primary" @click="addMyTestDialog = true">新建考试</el-button>
+      <el-button type="primary" @click="addMyTestDialog = true">新建考试</el-button>
     </div>
     <div class="table">
       <el-table :data="tableData" border style="width: 100%">
