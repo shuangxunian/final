@@ -6,7 +6,7 @@ import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 const loginForm = ref({
-  id: '101',
+  id: 'admin',
   password: '123456'
 })
 

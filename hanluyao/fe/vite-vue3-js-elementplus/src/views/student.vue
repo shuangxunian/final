@@ -10,6 +10,7 @@ const form = ref({
   wordname: '',
   url: ''
 })
+const wordList = ref([])
 const tableData = ref([])
 const dialogFormVisible = ref(false)
 const userList = ref([])
@@ -28,22 +29,16 @@ function refreshFrom() {
 }
 
 function getList() {
-  if (findData.value === '') {
-    getClassList()
-    return
-  }
   const list = classList.value.filter(item => {
-    return item.name.includes(findData.value) || item.teacher.includes(findData.value)
+    return item.classname.includes(findData.value)
   })
   tableData.value = list
 }
 
 function editData(row) {
-  console.log(row)
   editClassDialog.value = true
   form.value.classid = row.classid
   form.value.classname = row.classname
-  // console.log(scoped)
 }
 
 async function editClass() {
@@ -64,7 +59,8 @@ async function editClass() {
   if (data.code === 2) {
     editClassDialog.value = false
     ElMessage.success('提交成功')
-    getClassList()
+    await getWordList()
+    await getClassList()
   } else {
     ElMessage.error(data.msg)
   }
@@ -107,7 +103,10 @@ async function getClassList() {
     const arr = []
     for (let i = 0; i < data.body.length; i++) {
       if (data.body[i].collegeid === collegeid.value) {
-        arr.push(data.body[i])
+        arr.push({
+          ...data.body[i],
+          mywordnum: wordList.value.filter(item => item.classid === data.body[i].classid).length
+        })
       }
     }
     classList.value = arr
@@ -115,9 +114,19 @@ async function getClassList() {
   }
 }
 
+async function getWordList() {
+  const { data } = await axios.post('http://localhost:3000/word/myData', {
+    userid: userid.value
+  })
+  if (data.code === 2) {
+    wordList.value = data.body
+  }
+}
+
 onMounted(async() => {
   userid.value = window.sessionStorage.getItem('id')
   collegeid.value = window.sessionStorage.getItem('collegeid')
+  await getWordList()
   await getClassList()
 })
 
@@ -127,13 +136,13 @@ onMounted(async() => {
   <div class="admin-class">
     <div class="header">
       <div class="left">
-        <el-input v-model="findData" style="width: 240px" placeholder="请输入内容" />
+        <el-input v-model="findData" style="width: 240px" placeholder="请输入课程名" />
         <el-button @click="getList">筛选</el-button>
       </div>
     </div>
     <div class="body">
       <el-table :data="tableData" border style="width: 100%" max-height="600">
-        <el-table-column prop="collegename" label="所属学院" />
+        <!-- <el-table-column prop="collegename" label="所属学院" /> -->
         <el-table-column prop="classname" label="课程名" width="300" />
         <el-table-column prop="needwordnum" label="所需文档数量" />
         <el-table-column prop="mywordnum" label="我已提交的数量" />

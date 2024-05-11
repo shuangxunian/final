@@ -10,6 +10,7 @@ import adminClass from '../views/adminClass.vue'
 import adminWord from '../views/adminWord.vue'
 import teacherUsers from '../views/teacherUsers.vue'
 import teacherClass from '../views/teacherClass.vue'
+import teacherWord from '../views/teacherWord.vue'
 import student from '../views/student.vue'
 import myword from '../views/myword.vue'
 
@@ -29,6 +30,7 @@ const router = createRouter({
         { path: '/adminWord', component: adminWord },
         { path: '/teacherUsers', component: teacherUsers },
         { path: '/teacherClass', component: teacherClass },
+        { path: '/teacherWord', component: teacherWord },
         { path: '/users', component: Users },
         { path: '/info', component: info },
         { path: '/student', component: student },

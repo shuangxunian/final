@@ -10,10 +10,13 @@ const form = ref({
 })
 const tableData = ref([])
 const collegeList = ref([])
+const wordList = ref([])
 const addClassDialog = ref(false)
 const editClassDialog = ref(false)
 const userid = ref('')
 const collegeid = ref('')
+const findClass = ref('')
+const findWord = ref('')
 
 function refreshFrom() {
   form.value = {
@@ -23,12 +26,11 @@ function refreshFrom() {
 }
 
 function getList() {
-  if (findData.value === '') {
-    getClassList()
-    return
-  }
-  const list = classList.value.filter(item => {
-    return item.name.includes(findData.value) || item.teacher.includes(findData.value)
+  const list = wordList.value.filter(item => {
+    return (
+      item.classname.includes(findClass.value) &&
+      item.wordname.includes(findWord.value)
+    )
   })
   tableData.value = list
 }
@@ -92,8 +94,7 @@ async function getWordList() {
     userid: userid.value
   })
   if (data.code === 2) {
-    // classList.value = data.body
-    console.log(data.body)
+    wordList.value = data.body
     tableData.value = data.body
   }
 }
@@ -121,11 +122,21 @@ onMounted(async() => {
   <div class="admin-class">
     <div class="header">
       <div class="left">
-        <el-input v-model="findData" style="width: 240px" placeholder="请输入内容" />
-        <el-button @click="getList">筛选</el-button>
+        <el-row :gutter="20">
+          <el-col :span="4">所属课程名称：</el-col>
+          <el-col :span="8">
+            <el-input v-model="findClass" style="width: 240px" placeholder="请输入内容" />
+          </el-col>
+          <el-col :span="4">文档名称：</el-col>
+          <el-col :span="8">
+            <el-input v-model="findWord" style="width: 240px" placeholder="请输入内容" />
+          </el-col>
+        </el-row>
+        <!-- <el-input v-model="findData" style="width: 240px" placeholder="请输入内容" /> -->
       </div>
       <div class="right">
-        <el-button type="primary" @click="addClassDialog = true">新建课程</el-button>
+        <el-button @click="getList">筛选</el-button>
+        <!-- <el-button type="primary" @click="addClassDialog = true">新建课程</el-button> -->
       </div>
     </div>
     <div class="body">
@@ -151,40 +162,6 @@ onMounted(async() => {
         </el-table-column>
       </el-table>
     </div>
-
-    <el-dialog v-model="addClassDialog" title="添加课程" width="500" @close="refreshFrom">
-      <el-form :model="form">
-        <el-form-item label="课程名" label-width="100">
-          <el-input v-model="form.classname" placeholder="请填写课程名"/>
-        </el-form-item>
-        <el-form-item label="所需文档数量" label-width="100">
-          <el-input-number v-model="form.needwordnum" placeholder="请填写所需文档数量"/>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="editClassDialog = false">取消</el-button>
-          <el-button type="primary" @click="addClass">新建</el-button>
-        </div>
-      </template>
-    </el-dialog>
-
-    <el-dialog v-model="editClassDialog" title="编辑课程" width="500" @close="refreshFrom">
-      <el-form :model="form">
-        <el-form-item label="课程名" label-width="100">
-          <el-input v-model="form.classname" placeholder="请填写课程名"/>
-        </el-form-item>
-        <el-form-item label="所需文档数量" label-width="100">
-          <el-input-number v-model="form.needwordnum" placeholder="请填写所需文档数量"/>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="editClassDialog = false">取消</el-button>
-          <el-button type="primary" @click="editClass">编辑</el-button>
-        </div>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
@@ -199,6 +176,9 @@ onMounted(async() => {
     justify-content: space-between;
     padding: 0 10px;
     line-height: 60px;
+    .left {
+      width: 80%;
+    }
   }
   .body {
     padding: 0 10px;

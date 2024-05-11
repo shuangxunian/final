@@ -8,6 +8,7 @@ const findCollege = ref('')
 const findName = ref('')
 const findClass = ref('')
 const findWord = ref('')
+const collegeid = ref('')
 const form = ref({
   name: '',
   teacherid: '',
@@ -136,7 +137,7 @@ async function getWordList() {
     allWordList.value = []
     userList.value.forEach(item => {
       const list = []
-      if (item.roletype === 2) {
+      if (item.roletype === 2 && item.collegeid === collegeid.value) {
         for (let i = 0; i < classList.value.length; i++) {
           if (item.collegeid === classList.value[i].collegeid) {
             list.push({
@@ -156,6 +157,7 @@ async function getWordList() {
 }
 
 onMounted(async() => {
+  collegeid.value = window.sessionStorage.getItem('collegeid')
   await getUserList()
   await getClassList()
   await getWordList()

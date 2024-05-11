@@ -20,6 +20,8 @@ const newUserList = ref([])
 const userList = ref([])
 const addUserDialog = ref(false)
 const editUserDialog = ref(false)
+const findID = ref('')
+const findName = ref('')
 
 function clearForm() {
   form.value = {
@@ -29,11 +31,12 @@ function clearForm() {
 }
 
 function getList() {
-  if (findData.value === '') {
-    getUserList()
-    return
-  }
-  const list = userList.value.filter(item => item.id.includes(findData.value))
+  const list = userList.value.filter(item => {
+    return (
+      item.id.includes(findID.value) &&
+      item.name.includes(findName.value)
+    )
+  })
   tableData.value = list
 }
 
@@ -149,10 +152,19 @@ onMounted(async() => {
   <div class="admin-user">
     <div class="header">
       <div class="left">
-        <el-input v-model="findData" style="width: 240px" placeholder="请输入内容" />
-        <el-button @click="getList">筛选</el-button>
+        <el-row :gutter="20">
+          <el-col :span="4">工号：</el-col>
+          <el-col :span="8">
+            <el-input v-model="findID" style="width: 240px" placeholder="请输入内容" />
+          </el-col>
+          <el-col :span="4">用户姓名：</el-col>
+          <el-col :span="8">
+            <el-input v-model="findName" style="width: 240px" placeholder="请输入内容" />
+          </el-col>
+        </el-row>
       </div>
       <div class="right">
+        <el-button @click="getList">筛选</el-button>
         <el-button type="primary" @click="addUserDialog = true">新建老师</el-button>
       </div>
     </div>
@@ -226,7 +238,9 @@ onMounted(async() => {
     justify-content: space-between;
     padding: 0 10px;
     line-height: 60px;
-    .left {}
+    .left {
+      width: 80%;
+    }
     .right {}
   }
   .body {

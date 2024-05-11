@@ -8,6 +8,11 @@ const userList = ref([])
 const addUserDialog = ref(false)
 const editUserDialog = ref(false)
 const tableData = ref([])
+const collegeList = ref([])
+const findID = ref('')
+const findName = ref('')
+const findStanding = ref('')
+const findCollege = ref('')
 const form = ref({
   id: '',
   name: '',
@@ -36,11 +41,14 @@ function clearForm() {
 }
 
 function getList() {
-  if (findData.value === '') {
-    getUserList()
-    return
-  }
-  const list = userList.value.filter(item => item.id.includes(findData.value))
+  const list = userList.value.filter(item => {
+    return (
+      item.id.includes(findID.value) &&
+      item.name.includes(findName.value) &&
+      item.standing.includes(findStanding.value) &&
+      item.collegename.includes(findCollege.value)
+    )
+  })
   tableData.value = list
 }
 
@@ -48,6 +56,7 @@ async function addUser() {
   if (form.value.id === '') return ElMessage.error('请输入工号')
   if (form.value.name === '') return ElMessage.error('请输入用户姓名')
   if (form.value.roletype === '') return ElMessage.error('请选择用户身份')
+  if (form.value.collegeid === '') return ElMessage.error('请选择用户所属学院')
   const { data } = await axios.post('http://localhost:3000/user/add', form.value)
   if (data.code === 2) {
     addUserDialog.value = false
@@ -62,6 +71,7 @@ async function editUser() {
   if (form.value.id === '') return ElMessage.error('请输入工号')
   if (form.value.name === '') return ElMessage.error('请输入用户姓名')
   if (form.value.roletype === '') return ElMessage.error('请选择用户身份')
+  if (form.value.collegeid === '') return ElMessage.error('请选择用户所属学院')
   const { data } = await axios.post('http://localhost:3000/user/edit', form.value)
   if (data.code === 2) {
     editUserDialog.value = false
@@ -114,13 +124,25 @@ async function fixPassword() {
 async function getUserList() {
   const { data } = await axios.post('http://localhost:3000/user/allData', {})
   if (data.code === 2) {
+    data.body.forEach(item => {
+      item.standing = item.roletype === 0 ? '管理员' : item.roletype === 1 ? '系主任' : '老师'
+    })
     userList.value = data.body
     tableData.value = data.body
   }
 }
 
+async function getCollegeList() {
+  const { data } = await axios.post('http://localhost:3000/college/allData', {})
+  if (data.code === 2) {
+    collegeList.value = data.body
+    console.log(collegeList.value)
+  }
+}
+
 onMounted(async() => {
   await getUserList()
+  await getCollegeList()
 })
 
 </script>
@@ -129,10 +151,27 @@ onMounted(async() => {
   <div class="admin-user">
     <div class="header">
       <div class="left">
-        <el-input v-model="findData" style="width: 240px" placeholder="请输入内容" />
-        <el-button @click="getList">筛选</el-button>
+        <el-row :gutter="20">
+          <el-col :span="4">工号：</el-col>
+          <el-col :span="8">
+            <el-input v-model="findID" style="width: 240px" placeholder="请输入内容" />
+          </el-col>
+          <el-col :span="4">用户姓名：</el-col>
+          <el-col :span="8">
+            <el-input v-model="findName" style="width: 240px" placeholder="请输入内容" />
+          </el-col>
+          <el-col :span="4">身份：</el-col>
+          <el-col :span="8">
+            <el-input v-model="findStanding" style="width: 240px" placeholder="请输入内容" />
+          </el-col>
+          <el-col :span="4">所属学院：</el-col>
+          <el-col :span="8">
+            <el-input v-model="findCollege" style="width: 240px" placeholder="请输入内容" />
+          </el-col>
+        </el-row>
       </div>
       <div class="right">
+        <el-button @click="getList">筛选</el-button>
         <el-button type="primary" @click="addUserDialog = true">新建用户</el-button>
       </div>
     </div>
@@ -140,18 +179,12 @@ onMounted(async() => {
       <el-table :data="tableData" border style="width: 100%" max-height="600">
         <el-table-column prop="id" label="工号" width="300" />
         <el-table-column prop="name" label="用户昵称" width="300" />
-        <el-table-column prop="standing" label="身份">
-          <template #default="scoped">
-            <span v-if="scoped.row.roletype === 0">管理员</span>
-            <span v-if="scoped.row.roletype === 1">系主任</span>
-            <span v-if="scoped.row.roletype === 2">老师</span>
-          </template>
-        </el-table-column>
+        <el-table-column prop="standing" label="身份"/>
         <el-table-column prop="collegename" label="所属学院"/>
         <el-table-column fixed="right" label="操作" width="200">
           <template #default="scoped">
-            <el-button link type="primary" size="small" @click="editData(scoped.row)">编辑</el-button>
-            <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scoped.row)">
+            <el-button v-if="scoped.row.id !== 'admin'" link type="primary" size="small" @click="editData(scoped.row)">编辑</el-button>
+            <el-popconfirm v-if="scoped.row.id !== 'admin'" confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scoped.row)">
               <template #reference>
                 <el-button link type="danger" size="small">删除</el-button>
               </template>
@@ -181,6 +214,19 @@ onMounted(async() => {
             />
           </el-select>
         </el-form-item>
+        <el-form-item label="所属学院" label-width="100">
+          <el-select
+            v-model="form.collegeid"
+            placeholder="请选择"
+          >
+            <el-option
+              v-for="item in collegeList"
+              :key="item.collegeid"
+              :label="item.name"
+              :value="item.collegeid"
+            />
+          </el-select>
+        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -204,6 +250,19 @@ onMounted(async() => {
           <span v-if="form.roletype === 1">系主任</span>
           <span v-if="form.roletype === 2">老师</span>
         </el-form-item>
+        <el-form-item label="所属学院" label-width="100">
+          <el-select
+            v-model="form.collegeid"
+            placeholder="请选择"
+          >
+            <el-option
+              v-for="item in collegeList"
+              :key="item.collegeid"
+              :label="item.name"
+              :value="item.collegeid"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item label="密码" label-width="100">
           <el-button link type="primary" size="small" @click="fixPassword">重置密码</el-button>
         </el-form-item>
@@ -224,15 +283,18 @@ onMounted(async() => {
   width: 100%;
   background-color: #fff;
   .header {
-    height: 60px;
+    height: 20%;
     display: flex;
     justify-content: space-between;
     padding: 0 10px;
     line-height: 60px;
-    .left {}
+    .left {
+      width: 80%;
+    }
     .right {}
   }
   .body {
+    height: 80%;
     padding: 0 10px;
   }
 }

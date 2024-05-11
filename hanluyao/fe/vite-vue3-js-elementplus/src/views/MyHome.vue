@@ -27,7 +27,7 @@ onMounted(async () => {
       },
       {
         index: "adminWord",
-        name: "教学文档管理",
+        name: "教学文档列表",
         icon: "Menu"
       },
       {
@@ -40,12 +40,17 @@ onMounted(async () => {
     routerList.value = [
       {
         index: "teacherUsers",
-        name: "学生信息",
+        name: "教师信息",
         icon: "Menu"
       },
       {
         index: "teacherClass",
         name: "课程信息",
+        icon: "Menu"
+      },
+      {
+        index: "teacherWord",
+        name: "教学文档列表",
         icon: "Menu"
       },
       {

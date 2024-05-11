@@ -4,6 +4,8 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
 const findData = ref('')
+const findCollege = ref('')
+const findClass = ref('')
 const form = ref({
   classname: '',
   collegeid: '',
@@ -26,12 +28,8 @@ function refreshFrom() {
 }
 
 function getList() {
-  if (findData.value === '') {
-    getClassList()
-    return
-  }
   const list = classList.value.filter(item => {
-    return item.name.includes(findData.value) || item.teacher.includes(findData.value)
+    return item.classname.includes(findClass.value) && item.collegename.includes(findCollege.value)
   })
   tableData.value = list
 }
@@ -120,10 +118,19 @@ onMounted(async() => {
   <div class="admin-class">
     <div class="header">
       <div class="left">
-        <el-input v-model="findData" style="width: 240px" placeholder="请输入内容" />
-        <el-button @click="getList">筛选</el-button>
+        <el-row :gutter="20">
+          <el-col :span="4">所属学院：</el-col>
+          <el-col :span="8">
+            <el-input v-model="findCollege" style="width: 240px" placeholder="请输入内容" />
+          </el-col>
+          <el-col :span="4">课程名称：</el-col>
+          <el-col :span="8">
+            <el-input v-model="findClass" style="width: 240px" placeholder="请输入内容" />
+          </el-col>
+        </el-row>
       </div>
       <div class="right">
+        <el-button @click="getList">筛选</el-button>
         <el-button type="primary" @click="addClassDialog = true">新建课程</el-button>
       </div>
     </div>
@@ -202,6 +209,9 @@ onMounted(async() => {
     justify-content: space-between;
     padding: 0 10px;
     line-height: 60px;
+    .left {
+      width: 80%;
+    }
   }
   .body {
     padding: 0 10px;

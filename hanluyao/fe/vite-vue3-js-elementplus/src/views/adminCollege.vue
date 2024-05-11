@@ -21,10 +21,10 @@ function refreshFrom() {
 }
 
 function getList() {
-  if (findData.value === '') {
-    getClassList()
-    return
-  }
+  // if (findData.value === '') {
+  //   getClassList()
+  //   return
+  // }
   const list = classList.value.filter(item => {
     return item.name.includes(findData.value)
   })

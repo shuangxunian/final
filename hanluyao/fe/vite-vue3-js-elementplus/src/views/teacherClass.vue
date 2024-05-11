@@ -26,12 +26,8 @@ function refreshFrom() {
 }
 
 function getList() {
-  if (findData.value === '') {
-    getClassList()
-    return
-  }
   const list = classList.value.filter(item => {
-    return item.name.includes(findData.value) || item.teacher.includes(findData.value)
+    return item.classname.includes(findData.value)
   })
   tableData.value = list
 }
@@ -104,8 +100,16 @@ async function getCollegeList() {
 async function getClassList() {
   const { data } = await axios.post('http://localhost:3000/class/allData', {})
   if (data.code === 2) {
-    classList.value = data.body
-    tableData.value = data.body
+    const arr = []
+    for (let i = 0; i < data.body.length; i++) {
+      if (data.body[i].collegeid === collegeid.value) {
+        arr.push({
+          ...data.body[i],
+        })
+      }
+    }
+    classList.value = arr
+    tableData.value = arr
   }
 }
 
@@ -121,7 +125,7 @@ onMounted(async() => {
   <div class="admin-class">
     <div class="header">
       <div class="left">
-        <el-input v-model="findData" style="width: 240px" placeholder="请输入内容" />
+        <el-input v-model="findData" style="width: 240px" placeholder="请输入课程名" />
         <el-button @click="getList">筛选</el-button>
       </div>
       <div class="right">
@@ -130,8 +134,8 @@ onMounted(async() => {
     </div>
     <div class="body">
       <el-table :data="tableData" border style="width: 100%" max-height="600">
-        <el-table-column prop="collegename" label="所属学院" />
-        <el-table-column prop="classname" label="课程名" width="300" />
+        <!-- <el-table-column prop="collegename" label="所属学院" /> -->
+        <el-table-column prop="classname" label="课程名"/>
         <el-table-column prop="needwordnum" label="所需文档数量" />
         <el-table-column fixed="right" label="操作" width="200">
           <template #default="scoped">
