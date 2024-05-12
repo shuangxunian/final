@@ -111,7 +111,7 @@ onMounted(async() => {
       <el-button type="primary" @click="addMyTestDialog = true">新建考试</el-button>
     </div>
     <div class="table">
-      <el-table :data="tableData" border style="width: 100%">
+      <el-table :data="tableData" border style="width: 100%" height="800">
         <el-table-column prop="username" label="考试人" width="180" />
         <el-table-column prop="testname" label="考试名称" width="180" />
         <el-table-column prop="know" label="涉及到的知识点" />

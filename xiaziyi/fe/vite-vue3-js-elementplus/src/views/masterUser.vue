@@ -115,7 +115,6 @@ const getTableList = async () => {
 const getUserList = async () => {
   const { data } = await axios.post('http://localhost:3000/user/allData',{})
   if (data.code === 2) {
-    console.log(data)
     userList.value = data.body
     getTableList()
   }

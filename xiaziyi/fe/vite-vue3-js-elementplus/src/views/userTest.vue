@@ -122,6 +122,7 @@ const getMyTest = async () => {
   })
   if (data.code === 2) {
     myTestList.value = data.body
+    console.log(myTestList.value)
     const arr = []
     myTestList.value.forEach(item => {
       let obj = {}

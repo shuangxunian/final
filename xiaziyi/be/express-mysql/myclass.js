@@ -5,7 +5,13 @@ const mySelectClass = express.Router()
 
 mySelectClass.post('/allData', async (req, res) => {
   const { body } = req
-  let sql = `select * from my_class_list where userid='${body.userid}'`
+  let sql = ''
+  if(body.userid) {
+    sql = `select * from my_class_list where userid=${body.userid}`
+  } else {
+    sql = `select * from my_class_list`
+  }
+  // let sql = `select * from my_class_list where userid='${body.userid}'`
   const database = new DataBase()
   let info = await database.getSqlData(sql)
   res.send({

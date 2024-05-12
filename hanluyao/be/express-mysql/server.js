@@ -10,10 +10,6 @@ const user = require('./user')
 const college = require('./college')
 const allClass = require('./class')
 const word = require('./word')
-// const test = require('./test')
-// const select_class = require('./select_class')
-// const talking = require('./talking')
-// const myTest = require('./myTest')
 
 app.use(bodyParser.json())
 

@@ -174,6 +174,11 @@ onMounted(() => {
         icon: "Menu"
       },
       {
+        index: "myUserClass",
+        name: "所属员工考试记录",
+        icon: "Menu"
+      },
+      {
         index: "masterUser",
         name: "用户列表",
         icon: "Menu"
