@@ -1,10 +1,7 @@
 from flask import Flask, request
 from flask_cors import CORS
-import paddlehub as hub
-import cv2
 import requests
 
-ocr = hub.Module(name="chinese_ocr_db_crnn_mobile", enable_mkldnn=True)       # mkldnn加速仅在CPU下有效
 
 def download_image(url, save_path):
     response = requests.get(url, stream=True)
@@ -20,9 +17,12 @@ CORS(app, supports_credentials=True)
 @app.route('/airesult', methods=['POST'])
 def airesult():
     body = request.json['body']
-    download_image(body, '1.png')
-    result = ocr.recognize_text(images=[cv2.imread('./1.png')])
-    return result
+    download_image(body[0], '1.png')
+    download_image(body[1], '2.png')
+    # ./1.png ./2.png 就是你需要合并的图片
+    # 经过你的处理后
+    # 生成 ./3.png
+    # return result
 
 if __name__ == '__main__':
     app.run()
