@@ -8,7 +8,7 @@ from Stitcher import Stitcher
 import tkinter as tk
 from tkinter import filedialog
 from PIL import Image, ImageTk
-from cut import cut
+# from cut import cut
 import oss2
 import time
 
@@ -378,8 +378,8 @@ def airesult3():
 
     # Display cropped image
     # 保存在包下
-    cv2.imwrite('left_half.jpg', left_half)
-    cv2.imwrite('right_half.jpg', right_half)
+    cv2.imwrite('left_half.png', left_half)
+    cv2.imwrite('right_half.png', right_half)
 
     # img1是左半张img2是右半张
     img1 = cv2.imread('left_half.png', cv2.IMREAD_UNCHANGED)
