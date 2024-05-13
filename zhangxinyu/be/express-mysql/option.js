@@ -15,8 +15,8 @@ option.post('/allData', async (req, res) => {
 
 option.post('/add', async (req, res) => {
   const { body } = req
-  let sql = 'INSERT INTO `option_list` (`id`, `userid`, `username`, `optionType`, `requireWord`) VALUES (?,?,?,?,?);'
-  let data = [new Date().getTime() + '',body.userid,body.username,body.optionType,body.requireWord]
+  let sql = 'INSERT INTO `option_list` (`id`, `userid`, `username`, `optionType`, `requireWord`, `wherefrom`) VALUES (?,?,?,?,?,?);'
+  let data = [new Date().getTime() + '',body.userid,body.username,body.optionType,body.requireWord,body.wherefrom]
   const addOptionDatabase = new DataBase()
   await addOptionDatabase.getSqlData(sql, data)
   res.send({
