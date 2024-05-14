@@ -9,6 +9,10 @@ import charts2 from '../views/charts2.vue'
 import Users from '../views/Users.vue'
 import Options from '../views/Options.vue'
 import DataList from '../views/DataList.vue'
+import Data1List from '../views/Data1List.vue'
+import Data2List from '../views/Data2List.vue'
+import Data3List from '../views/Data3List.vue'
+import Data4List from '../views/Data4List.vue'
 import Info from '../views/Info.vue'
 
 const router = createRouter({
@@ -27,6 +31,10 @@ const router = createRouter({
         { path: '/charts2', component: charts2 },
         { path: '/options', component: Options },
         { path: '/dataList', component: DataList },
+        { path: '/data1List', component: Data1List },
+        { path: '/data2List', component: Data2List },
+        { path: '/data3List', component: Data3List },
+        { path: '/data4List', component: Data4List },
         { path: '/info', component: Info }
       ]
     },

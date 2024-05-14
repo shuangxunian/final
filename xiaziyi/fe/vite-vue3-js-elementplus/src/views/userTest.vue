@@ -323,7 +323,8 @@ onMounted(async() => {
 
     <el-dialog v-model="showErrorDialog" title="薄弱知识点" width="500">
       <div>
-        <p>经测试，您对于{{errorStr}}掌握薄弱，已为您自动添加对应课程！</p>
+        <p v-if="errorStr !== ''">经测试，您对于{{errorStr}}掌握薄弱，已为您自动添加对应课程！</p>
+        <p v-else>恭喜您，您所有答案均正确，并无需要提升的课程</p>
       </div>
       <template #footer>
         <div class="dialog-footer">

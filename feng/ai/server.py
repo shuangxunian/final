@@ -8,7 +8,7 @@ from Stitcher import Stitcher
 import tkinter as tk
 from tkinter import filedialog
 from PIL import Image, ImageTk
-from cut import cut
+# from cut import cut
 import oss2
 import time
 
@@ -22,6 +22,19 @@ def download_image(url, save_path):
     with open(save_path, 'wb') as file:
         for chunk in response.iter_content(chunk_size=8192):
             file.write(chunk)
+
+
+# class Cut:
+#     def cut(self, img):
+#         height, width = img.shape[:2]
+#         left_half = img[:, :width // 2]
+#         right_half = img[:, width // 2:]
+
+#         # Display cropped image
+#         # 保存在包下
+#         cv2.imwrite('left_half.jpg', left_half)
+#         cv2.imwrite('right_half.jpg', right_half)
+#         return (left_half, right_half)
 
 
 class Stitcher:
@@ -40,7 +53,7 @@ class Stitcher:
         (kpsA, featureA) = self.detectAndDescrib(imageA)
         (kpsB, featureB) = self.detectAndDescrib(imageB)
 
-        M = self.matchKeypoints(kpsA,kpsB,featureA,featureB,ratio,reprojThresh)
+        M = self.matchKeypoints(kpsA, kpsB, featureA, featureB, ratio, reprojThresh)
         # 无匹配点
         if M is None:
             return None
@@ -52,43 +65,39 @@ class Stitcher:
         # dst = cv2.perspectiveTransform(src, M)
 
         # 将图片A进行视角变换，
-        result = cv2.warpPerspective(imageA, H, (imageA.shape[1] + imageB.shape[1], imageA.shape[0]) )
+        result = cv2.warpPerspective(imageA, H, (imageA.shape[1] + imageB.shape[1], imageA.shape[0]))
         result1 = cv2.resize(result, (0, 0), fx=0.3, fy=0.3)
         # self.cv_show('result', result1) # 显示视角变换之后的图片
 
         # 检测是否需要显示图片最最左端
-        result[0:imageB.shape[0],0:imageB.shape[1]] = imageB
+        result[0:imageB.shape[0], 0:imageB.shape[1]] = imageB
         # self.cv_show('result', result) # 显示左端图片（大图）
 
         # 检查是否需要显示图像匹配
-        #vis = self.bf_match(imageA,imageB,kpsA,kpsB,featureA,featureB)
-
+        # vis = self.bf_match(imageA,imageB,kpsA,kpsB,featureA,featureB)
 
         return result
 
+    def detectAndDescrib(self, image):
+        # 转灰度图
 
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-
-    def detectAndDescrib(self,image):
-        #转灰度图
-
-        gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
-
-        #建立sift生成器
+        # 建立sift生成器
         descriptor = cv2.SIFT_create()
-        #检测SIFT特征点，并计算描述子
-        (kps,feature) = descriptor.detectAndCompute(image,None)
+        # 检测SIFT特征点，并计算描述子
+        (kps, feature) = descriptor.detectAndCompute(image, None)
 
         kps = np.float32([kp.pt for kp in kps])
 
-        return (kps,feature)
+        return (kps, feature)
 
-    def bf_match(self,imageA,imageB,kpsA,kpsB,featureA,featureB):
+    def bf_match(self, imageA, imageB, kpsA, kpsB, featureA, featureB):
 
-            # 创建BFMatcher实例
+        # 创建BFMatcher实例
         bf = cv2.BFMatcher()
 
-            # 获得最佳匹配
+        # 获得最佳匹配
         matches = bf.knnMatch(featureA, featureB, k=2)
         good = []
         for m, n in matches:
@@ -97,30 +106,31 @@ class Stitcher:
             # 绘制匹配结果
         AllmatchK = cv2.drawMatchesKnn(self, imageA, kpsA, imageB, kpsB, good, None, flags=2)
 
+    def matchKeypoints(self, kpsA, kpsB, featureA, featureB, ratio, reprojThresh):
+        matches = cv2.BFMatcher()
+        rawMatches = matches.knnMatch(featureA, featureB, 2)
 
-    def matchKeypoints(self, kpsA,kpsB,featureA,featureB,ratio,reprojThresh):
-         matches= cv2.BFMatcher()
-         rawMatches = matches.knnMatch(featureA, featureB, 2)
-
-         matches = []
-         for m in rawMatches:
-             if len(m) == 2 and m[0].distance < m[1].distance * ratio:
+        matches = []
+        for m in rawMatches:
+            if len(m) == 2 and m[0].distance < m[1].distance * ratio:
                 matches.append((m[0].trainIdx, m[0].queryIdx))
-        #匹配对大于4对时，计算视角变换矩阵
-         if len(matches) > 4:
+        # 匹配对大于4对时，计算视角变换矩阵
+        if len(matches) > 4:
             # 获取匹配对的坐标
             ptsA = np.float32([kpsA[i] for (_, i) in matches])
-            ptsB = np.float32([kpsB[i] for (i,_) in matches])
+            ptsB = np.float32([kpsB[i] for (i, _) in matches])
 
-            #计算视角变换矩阵
+            # 计算视角变换矩阵
             (H, status) = cv2.findHomography(ptsA, ptsB, cv2.RANSAC, reprojThresh)
-         return (matches, H, status)
+        return (matches, H, status)
 
     def cv_show(self, name, img):
         cv2.imshow('name', img)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
+
+'''
 def Cut(self, img):
     height, width = img.shape[:2]
     left_half = img[:, :width // 2]
@@ -131,6 +141,7 @@ def Cut(self, img):
     cv2.imwrite('left_half.jpg', left_half)
     cv2.imwrite('right_half.jpg', right_half)
     return (left_half, right_half)
+'''
 
 
 def calWeight(d, k):
@@ -195,19 +206,7 @@ def imgFusion(img1, img2, overlap=128, left_right=True):
     return img_new_dst
 
 
-class cut:
-    def Cut(self,img):
-
-        height, width = img.shape[:2]
-        left_half = img[:, :width//2]
-        right_half = img[:, width//2:]
-
-
-            # Display cropped image
-        #保存在包下
-        cv2.imwrite('left_half.jpg', left_half)
-        cv2.imwrite('right_half.jpg', right_half)
-        return (left_half ,right_half)
+'''
 def cut(self,img):
     height, width = img.shape[:2]
     left_half = img[:, :width // 2]
@@ -218,6 +217,9 @@ def cut(self,img):
     cv2.imwrite('left_half.jpg', left_half)
     cv2.imwrite('right_half.jpg', right_half)
     return (left_half, right_half)
+'''
+
+
 def calWeight(d, k):
     '''
     :param d: 融合重叠部分直径
@@ -262,7 +264,6 @@ def imgFusion(img1, img2, overlap=128, left_right=True, some_initial_value=None)
             img_new = np.zeros((row1, col1 + col2 - overlap))
             img_new[0:row1, 0:col1] = img1  # 赋值第一张图片
 
-
             w_expand = np.tile(w, (row1, 1))  # 权重扩增
             img_new[0:row1, (col1 - overlap):col1] = \
                 (1 - w_expand) * img1[0:row1, (col1 - overlap):col1] + \
@@ -282,12 +283,11 @@ def imgFusion(img1, img2, overlap=128, left_right=True, some_initial_value=None)
     return img_new_dst
 
 
-
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
 
-#Sift处理结果
+# Sift处理结果
 @app.route('/airesult1', methods=['POST'])
 def airesult1():
     body = request.json['body']
@@ -302,13 +302,14 @@ def airesult1():
     cv2.imwrite('3.png', sresult1)
     auth = oss2.Auth(accessKeyId, accessKeySecret)
     bucket = oss2.Bucket(auth, 'https://oss-cn-beijing.aliyuncs.com', 'sxntest')
-    t= time.time()
+    t = time.time()
     file_name = 'uploads/插入时间戳.png'
     new_file_name = file_name.replace('插入时间戳', str(t))
     bucket.put_object_from_file(new_file_name, '3.png')
     return new_file_name
 
-#ORB处理结果
+
+# ORB处理结果
 @app.route('/airesult2', methods=['POST'])
 def airesult2():
     body = request.json['body']
@@ -327,7 +328,7 @@ def airesult2():
     # 根据特征点的距离进行排序
     matches = sorted(matches, key=lambda x: x.distance)
     # 选择前N个最佳匹配的特征点
-    N = 50
+    N = 150
     best_matches = matches[:N]
     # 提取最佳匹配特征点的坐标
     points1 = np.float32([keypoints1[m.queryIdx].pt for m in best_matches]).reshape(-1, 1, 2)
@@ -342,46 +343,59 @@ def airesult2():
     cv2.imwrite('3.png', result2)
     auth = oss2.Auth(accessKeyId, accessKeySecret)
     bucket = oss2.Bucket(auth, 'https://oss-cn-beijing.aliyuncs.com', 'sxntest')
-    t= time.time()
+    t = time.time()
     file_name = 'uploads/插入时间戳.png'
     new_file_name = file_name.replace('插入时间戳', str(t))
     bucket.put_object_from_file(new_file_name, '3.png')
     return new_file_name
 
 
-#Sift+加权平均融合处理结果
+# Sift+加权平均融合处理结果
 @app.route('/airesult3', methods=['POST'])
 def airesult3():
     body = request.json['body']
     download_image(body['leftUrl'], '1.png')
     download_image(body['rightUrl'], '2.png')
     # ./1.png ./2.png 就是你需要合并的图片
-    #先将两张图片按照stiter方法进行拼接
-    stitcher = Stitcher()
-    #将拼接的结果利用cut方法分割为两个部分，以接缝处分割
-    cut = cut()
+
     imag1 = cv2.imread('1.png')
     imag2 = cv2.imread('2.png')
+
+    # 先将两张图片按照stiter方法进行拼接
+    stitcher = Stitcher()
     result1 = stitcher.stitch([imag1, imag2], showMatches=True)
-    sresult1 = cv2.resize(result1, (0, 0), fx=0.4, fy=0.4)
-    #sresult1为拼接之后的结果图片
-    cutL, cutR = cut.Cut(sresult1)  # 拼接好的图片平均分成两半
+    # 将拼接的结果利用cut方法分割为两个部分，以接缝处分割
+    # cut = cut()
+
+    # cutL, cutR = cut.cut(img=result1)  # 拼接好的图片平均分成两半
+    # cv2.imwrite('left_half.png', cutL)
+    # cv2.imwrite('right_half.png', cutR)
+
+
+    height, width = result1.shape[:2]
+    left_half = result1[:, :width // 2]
+    right_half = result1[:, width // 2:]
+
+    # Display cropped image
+    # 保存在包下
+    cv2.imwrite('left_half.png', left_half)
+    cv2.imwrite('right_half.png', right_half)
 
     # img1是左半张img2是右半张
-    img1 = cv2.imread('left_half.jpg', cv2.IMREAD_UNCHANGED)
-    img2 = cv2.imread('right_half.jpg', cv2.IMREAD_UNCHANGED)
+    img1 = cv2.imread('left_half.png', cv2.IMREAD_UNCHANGED)
+    img2 = cv2.imread('right_half.png', cv2.IMREAD_UNCHANGED)
     # 计算融合操作，原理为加权平均融合 ：将分好的图片接缝处像素进行加权平均处理 让像素值过度的更自然
     img1 = (img1 - img1.min()) / img1.ptp()
     img2 = (img2 - img2.min()) / img2.ptp()
     img_new = imgFusion(img1, img2)
-    #sresult3为加权平均融合之后的最终图像
+    # sresult3为加权平均融合之后的最终图像
     sresult3 = np.uint16(img_new * 65535)
     # 经过你的处理后
     # 生成 ./3.png
     cv2.imwrite('3.png', sresult3)
     auth = oss2.Auth(accessKeyId, accessKeySecret)
     bucket = oss2.Bucket(auth, 'https://oss-cn-beijing.aliyuncs.com', 'sxntest')
-    t= time.time()
+    t = time.time()
     file_name = 'uploads/插入时间戳.png'
     new_file_name = file_name.replace('插入时间戳', str(t))
     bucket.put_object_from_file(new_file_name, '3.png')

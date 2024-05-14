@@ -19,6 +19,7 @@ const optionFrom = ref({
 })
 const formLabelWidth = ref(100)
 const options = ref([])
+const loading = ref(false)
 
 const getUserList = async() => {
   const { data } = await axios.post('http://localhost:3000/user/allData', {})
@@ -46,39 +47,54 @@ const clearForm = () => {
     china: '',
     eng: '',
     info: '',
+    text1: '',
+    text2: '',
+    text3: '',
+    text4: ''
   }
 }
 const showText = ref({
   china: '',
   eng: '',
   info: '',
+  text1: '',
+  text2: '',
+  text3: '',
+  text4: ''
 })
 
 const goOption = async() => {
   if (optionFrom.value.select === '') return ElMessage.error('请选择模拟人')
   if (!optionFrom.value.isLogin && optionFrom.value.requireWord === '') return ElMessage.error('请输入单词')
-  // `userid`, `username`, `optionType` select
+  const user = options.value.find(item => item.userid === optionFrom.value.select.split('-')[0])
   const param = {
-    userid: optionFrom.value.select.split('-')[0],
-    username: optionFrom.value.select.split('-')[1],
+    userid: user.userid,
+    username: user.username,
     optionType: optionFrom.value.isLogin ? '登录' : '查询',
-    requireWord: optionFrom.value.requireWord
+    requireWord: optionFrom.value.requireWord,
+    wherefrom: user.belong
   }
   if (param.optionType === '查询') {
-    const { data } = await axios.post('http://localhost:3000/text/find', param)
-    if (data.code === 2) {
+    loading.value = true
+    const { data: data1 } = await axios.post('http://localhost:3000/text1/find', param)
+    if (data1.code === 2) {
       ElMessage({
         message: '模拟访问成功！',
         type: 'success',
       })
+      const { data: data2 } = await axios.post('http://localhost:3000/text2/find', param)
+      const { data: data3 } = await axios.post('http://localhost:3000/text3/find', param)
+      const { data: data4 } = await axios.post('http://localhost:3000/text4/find', param)
       showText.value = {
-        china: data.info[0].china,
-        eng: data.info[0].eng,
-        info: data.info[0].info,
+        text1: data1.info[0].pinyin,
+        text2: data2.info[0].pinyin,
+        text3: data3.info[0].pinyin,
+        text4: data4.info[0].pinyin,
       }
     } else {
-      ElMessage.error(data.msg)
+      ElMessage.error(data1.msg)
     }
+    loading.value = false
   } else {
     const { data } = await axios.post('http://localhost:3000/user/login', param)
     if (data.code === 2) {
@@ -175,18 +191,22 @@ onMounted(async() => {
         <el-form-item v-if="!optionFrom.isLogin" label="单词名" :label-width="formLabelWidth">
           <el-input v-model="optionFrom.requireWord" autocomplete="off" />
         </el-form-item>
-        <div v-if="showText.china !== ''">
+        <div v-loading="loading" v-if="!optionFrom.isLogin">
           <p>
-            <span>中文词语：</span>
-            <span>{{ showText.china }}</span>
+            <span>识字规则：</span>
+            <span>{{ showText.text1 }}</span>
           </p>
           <p>
-            <span>英文单词：</span>
-            <span>{{ showText.eng }}</span>
+            <span>笔顺动画：</span>
+            <el-link v-if="showText.text2 !== ''" :href="showText.text2" target="_blank">点此观看</el-link>
           </p>
           <p>
-            <span>英文词语解释：</span>
-            <span>{{ showText.info }}</span>
+            <span>组词造句：</span>
+            <span>{{ showText.text3 }}</span>
+          </p>
+          <p>
+            <span>演示视频：</span>
+            <el-link v-if="showText.text4 !== ''" :href="showText.text4" target="_blank">点此观看</el-link>
           </p>
         </div>
       </el-form>

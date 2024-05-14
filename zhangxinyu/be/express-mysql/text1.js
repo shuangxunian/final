@@ -1,10 +1,10 @@
 const express = require('express')
 const DataBase = require('./mysql')
 
-const text = express.Router()
+const text1 = express.Router()
 
-text.post('/allData', async (req, res) => {
-  let sql = 'select * from `text_list`'
+text1.post('/allData', async (req, res) => {
+  let sql = 'select * from `text1_list`'
   const database = new DataBase()
   let info = await database.getSqlData(sql)
   res.send({
@@ -13,10 +13,10 @@ text.post('/allData', async (req, res) => {
   })
 })
 
-text.post('/add', async (req, res) => {
+text1.post('/add', async (req, res) => {
   const { body } = req
-  let sql = 'INSERT INTO `text_list` (`id`, `china`, `eng`, `info`, `pinyin`, `wordsAndPhrases`) VALUES (?,?,?,?,?,?);'
-  let data = [new Date().getTime() + '',body.china,body.eng,body.info,body.pinyin,body.wordsAndPhrases]
+  let sql = 'INSERT INTO `text1_list` (`id`, `china`, `pinyin`) VALUES (?,?,?);'
+  let data = [new Date().getTime() + '',body.china,body.pinyin]
   const addTextDatabase = new DataBase()
   await addTextDatabase.getSqlData(sql, data)
   res.send({
@@ -26,10 +26,10 @@ text.post('/add', async (req, res) => {
 })
 
 
-text.post('/edit', async (req, res) => {
+text1.post('/edit', async (req, res) => {
   const { body } = req
-  let sql = 'UPDATE `text_list` SET `china` = ?, `eng` = ?, `info` = ?, `pinyin` = ?, `wordsAndPhrases` = ? WHERE `id` = ?;'
-  let data = [body.china,body.eng,body.info,body.pinyin,body.wordsAndPhrases,body.id]
+  let sql = 'UPDATE `text1_list` SET `china` = ?, `pinyin` = ? WHERE `id` = ?;'
+  let data = [body.china,body.pinyin,body.id]
   const textDatabase = new DataBase()
   await textDatabase.getSqlData(sql, data)
   res.send({
@@ -39,9 +39,9 @@ text.post('/edit', async (req, res) => {
 })
 
 
-text.post('/del', async (req, res) => {
+text1.post('/del', async (req, res) => {
   const { body } = req
-  let sql = 'DELETE FROM `text_list` WHERE `id` = ?;'
+  let sql = 'DELETE FROM `text1_list` WHERE `id` = ?;'
   let data = [body.id]
   const textDatabase = new DataBase()
   await textDatabase.getSqlData(sql, data)
@@ -51,9 +51,9 @@ text.post('/del', async (req, res) => {
   })
 })
 
-text.post('/find', async (req, res) => {
+text1.post('/find', async (req, res) => {
   const { body } = req
-  let sql = 'select * from `text_list` where `china` = ?'
+  let sql = 'select * from `text1_list` where `china` = ?'
   let data = [body.requireWord]
   const addTextDatabase = new DataBase()
   const info = await addTextDatabase.getSqlData(sql, data)
@@ -74,4 +74,4 @@ text.post('/find', async (req, res) => {
   }
 })
 
-module.exports = text
+module.exports = text1

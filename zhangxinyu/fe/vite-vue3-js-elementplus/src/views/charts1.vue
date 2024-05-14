@@ -24,6 +24,7 @@ const init1 = () => {
   // 基于准备好的dom，初始化echarts实例
   let Chart = echarts.init(document.getElementById("myEcharts5"));
   const belongMap = {}
+  const belongArr = []
   userList.value.forEach(item => {
     const dateString = timestampToDate(item.buildDate)
     // console.log(item)
@@ -38,7 +39,24 @@ const init1 = () => {
       belongMap[dateString][item.belong]++
     }
   })
-  const belongList = Object.keys(belongMap)
+
+  for (const key in belongMap) {
+    if (belongMap.hasOwnProperty(key)) {
+      belongArr.push({
+        date: key,
+        ...belongMap[key],
+      })
+    }
+  }
+  belongArr.sort((a, b) => {
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
+    return dateA - dateB;
+  })
+  const belongList = []
+  belongArr.forEach(item => {
+    belongList.push(item.date)
+  })
   const webList = []
   const appList = []
   const wxList = []
@@ -47,22 +65,6 @@ const init1 = () => {
     appList.push(belongMap[item].app)
     wxList.push(belongMap[item]['小程序'])
   })
-  // const belongData = Object.values(belongMap)
-  // console.log(wxList)
-  
-  // console.log(belongMap)
-  // console.log(userList.value)
-  // const belongMap = {}
-  // userList.value.forEach(item => {
-  //   if (!belongMap[item.belong]) {
-  //     belongMap[item.belong] = 1
-  //   } else {
-  //     belongMap[item.belong]++
-  //   }
-  // })
-  // const belongList = Object.keys(belongMap)
-  // const belongData = Object.values(belongMap)
-  // console.log(belongList, belongData)
 
   // 绘制图表
   let options = {

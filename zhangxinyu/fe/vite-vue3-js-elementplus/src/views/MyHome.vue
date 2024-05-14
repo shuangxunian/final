@@ -32,9 +32,29 @@ const routerList = ref([
     name: "用户操作记录",
     icon: "Menu"
   },
+  // {
+  //   index: "dataList",
+  //   name: "数据列表",
+  //   icon: "Menu"
+  // },
   {
-    index: "dataList",
-    name: "数据列表",
+    index: "data1List",
+    name: "识字规则库",
+    icon: "Menu"
+  },
+  {
+    index: "data2List",
+    name: "笔顺动画库",
+    icon: "Menu"
+  },
+  {
+    index: "data3List",
+    name: "组词造句库",
+    icon: "Menu"
+  },
+  {
+    index: "data4List",
+    name: "演示视频库",
     icon: "Menu"
   },
   // {

@@ -44,11 +44,9 @@ const getOptionList = async() => {
     tableData.value = []
     data.info.forEach(item => {
       tableData.value.push({
-        userid: item.userid,
-        username: item.username,
-        optionDate: getTime(item.id),
+        ...item,
         option: item.optionType,
-        requireWord: item.requireWord,
+        optionDate: getTime(item.id),
       })
     })
   }
@@ -149,7 +147,6 @@ const init2 = async() => {
 
 const init3 = async() => {
   // 基于准备好的dom，初始化echarts实例
-  // console.log(tableData.value)
   chart3 = echarts.init(document.getElementById("myEcharts3"));
   let dataMap = {}
   tableData.value.forEach(item => {
