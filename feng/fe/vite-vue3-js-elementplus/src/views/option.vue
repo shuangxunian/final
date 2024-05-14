@@ -20,9 +20,8 @@ const timestampToDateTime = (timestamp) => {
 }
 
 const getOptionData = async () => {
-  const { data } = await axios.post('http://localhost:3000/option/alldata', {})
+  const { data } = await axios.post('http://localhost:3000/option/allData', {})
   if (data.code === 2) {
-    console.log(data)
     tableData.value = data.body
   }
 }

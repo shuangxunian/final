@@ -33,7 +33,7 @@ option.post('/getImgData', async (req, res) => {
     body: body
   })
   const aiUrl = 'https://sxntest.oss-cn-beijing.aliyuncs.com/' + data.data
-  let sql = `insert into option_list (id,leftUrl,rightUrl,aiUrl) values ('${new Date().getTime()}','${body.leftUrl}','${body.rightUrl}','${aiUrl}')`
+  let sql = `insert into option_list (id,userid,leftUrl,rightUrl,aiUrl) values ('${new Date().getTime()}','${body.id}','${body.leftUrl}','${body.rightUrl}','${aiUrl}')`
   const addDatabase = new DataBase()
   await addDatabase.getSqlData(sql)
   sql = `update user_info set num=num-1 where id='${body.id}'`
@@ -61,57 +61,6 @@ option.post('/add', async (req, res) => {
 
 })
 
-option.post('/del', async (req, res) => {
-  const { body } = req
-  let sql = `delete from option_list where id='${body.id}'`
-  const database = new DataBase()
-  await database.getSqlData(sql)
-  sql = `update fly_list set status=0 where id='${body.IDCard}'`
-  const flyDatabase = new DataBase()
-  await flyDatabase.getSqlData(sql)
-  res.send({
-    code: 2
-  })
-})
-
-option.post('/fix', async (req, res) => {
-  const { body } = req
-  let time = ''
-  let sql =''
-  if (body.status === '运输中') {
-    time = new Date().getTime()
-    sql = `update option_list set status='${body.status}', beginTime='${time}' where id='${body.id}'`
-  } else if (body.status === '已结束') {
-    time = new Date().getTime()
-    sql = `update option_list set status='${body.status}', endTime='${time}' where id='${body.id}'`
-  } else {
-    sql = `update option_list set status='${body.status}' where id='${body.id}'`
-  }
-  const database = new DataBase()
-  await database.getSqlData(sql)
-  if (body.status === '已结束') {
-    sql = `update fly_list set status=0 where id='${body.IDCard}'`
-    console.log(sql)
-    const fixDatabase = new DataBase()
-    await fixDatabase.getSqlData(sql)
-  }
-  res.send({
-    code: 2
-  })
-})
-
-
-option.post('/edit', async (req, res) => {
-  const { body } = req
-  let sql = `update user_info set username='${body.username}', roleType ='${body.roleType}' where userid = '${body.userid}'`
-  console.log(sql)
-  const database = new DataBase()
-  await database.getSqlData(sql)
-  res.send({
-    code: 2
-  })
-})
-
 option.post('/add', async (req, res) => {
   const { body } = req
   let sql = `select * from user_info where userid='${body.userid}'`
@@ -131,20 +80,6 @@ option.post('/add', async (req, res) => {
       msg: ''
     })
   }
-})
-
-option.post('/addList', async (req, res) => {
-  const { body } = req
-  const list = body.list
-  for (let i = 0; i < list.length; i++) {
-    let sql = `insert into user_info (userid,username,password,roleType) values ('${list[i].userid}','${list[i].username}','123456','2')`
-    const database = new DataBase()
-    await database.getSqlData(sql)
-  }
-  res.send({
-    code: 2,
-    msg: ''
-  })
 })
 
 module.exports = option
