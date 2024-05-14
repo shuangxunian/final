@@ -106,9 +106,9 @@ onMounted(() => {
       <div class="table">
         <el-table :data="tableData" style="width: 100%" height="600">
           <el-table-column prop="id" label="手机号" width="180" />
-          <el-table-column prop="username" label="用户名" width="180" />
+          <el-table-column prop="username" label="用户名" />
           <el-table-column prop="birthDay" label="生日" width="180" />
-          <el-table-column prop="blacklist" label="黑名单" />
+          <!-- <el-table-column prop="blacklist" label="黑名单" /> -->
           <el-table-column fixed="right" label="操作" width="160">
             <template #default="scope">
               <el-button link type="danger" @click="adminOp(0, scope)"

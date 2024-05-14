@@ -28,10 +28,19 @@ async function getUserList () {
   userList.value = data.body
   tableData.value.forEach(item => {
     const user = userList.value.find(user => user.id === item.userid)
-    item.username = user.username
+    if (user === undefined) {
+      item.username = '用户已注销'
+    } else {
+      item.username = user.username
+    }
     const product = allProductList.value.find(product => product.id === item.productid)
-    item.productName = product.productName
-    item.brand = product.brand
+    if (product === undefined) {
+      item.brand = '产品已注销'
+      item.productName = '产品已注销'
+    } else {
+      item.brand = product.brand
+      item.productName = product.productName
+    }
   })
   showData.value = tableData.value
 }
