@@ -15,7 +15,7 @@ user.post('/allData', async (req, res) => {
 
 user.post('/del', async (req, res) => {
   const { body } = req
-  let sql = `delete from user_info where userid='${body.id}'`
+  let sql = `delete from user_info where id='${body.id}'`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({
