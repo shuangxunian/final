@@ -27,6 +27,11 @@ const routerList = ref([
     icon: "Menu"
   },
   {
+    index: "regList",
+    name: "正则规则列表",
+    icon: "Menu"
+  },
+  {
     index: "info",
     name: "用户列表",
     icon: "Menu"

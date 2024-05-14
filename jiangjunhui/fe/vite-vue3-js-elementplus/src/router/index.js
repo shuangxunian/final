@@ -7,6 +7,7 @@ import Users from '../views/Users.vue'
 import Info from '../views/Info.vue'
 import pushInfo from '../views/pushInfo.vue'
 import userInfo from '../views/userInfo.vue'
+import regList from '../views/regList.vue'
 import optionList from '../views/optionList.vue'
 import emailModel from '../views/emailModel.vue'
 const router = createRouter({
@@ -23,6 +24,7 @@ const router = createRouter({
         { path: '/info', component: Info },
         { path: '/pushInfo', component: pushInfo },
         { path: '/userInfo', component: userInfo },
+        { path: '/regList', component: regList },
         { path: '/optionList', component: optionList },
         { path: '/emailModel', component: emailModel },
       ]
