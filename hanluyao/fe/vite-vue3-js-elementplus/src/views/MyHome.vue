@@ -49,6 +49,11 @@ onMounted(async () => {
         icon: "Menu"
       },
       {
+        index: "teacherNeed",
+        name: "教学任务",
+        icon: "Menu"
+      },
+      {
         index: "teacherWord",
         name: "教学文档列表",
         icon: "Menu"
@@ -63,7 +68,7 @@ onMounted(async () => {
     routerList.value = [
       {
         index: "student",
-        name: "课程列表",
+        name: "教学任务列表",
         icon: "Menu"
       },
       {

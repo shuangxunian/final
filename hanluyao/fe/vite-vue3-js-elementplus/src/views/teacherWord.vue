@@ -8,6 +8,7 @@ const findCollege = ref('')
 const findName = ref('')
 const findClass = ref('')
 const findWord = ref('')
+const findNeedName = ref('')
 const collegeid = ref('')
 const form = ref({
   name: '',
@@ -17,9 +18,12 @@ const form = ref({
 const tableData = ref([])
 const dialogFormVisible = ref(false)
 const userList = ref([])
+const needList = ref([])
 const classList = ref([])
 const wordList = ref([])
 const allWordList = ref([])
+const allNeedList = ref([])
+const finishAllList = ref([])
 const addClassDialog = ref(false)
 const editClassDialog = ref(false)
 
@@ -42,8 +46,8 @@ const download = async(row) => {
 }
 
 function getList() {
-  console.log(allWordList.value)
-  const list = allWordList.value.filter(item => {
+  console.log(finishAllList.value)
+  const list = finishAllList.value.filter(item => {
     return (
       item.collegename.includes(findCollege.value) &&
       item.username.includes(findName.value) &&
@@ -130,29 +134,61 @@ async function getClassList() {
   }
 }
 
+
+async function getNeedList() {
+  const { data } = await axios.post('http://localhost:3000/need/allData', {})
+  if (data.code === 2) {
+    needList.value = data.body
+    allNeedList.value = []
+    needList.value.forEach(item => {
+      for (let i = 0; i < classList.value.length; i++) {
+        if (item.classid === classList.value[i].classid && classList.value[i].collegeid === collegeid.value) {
+          // console.log(classList.value[i])
+          allNeedList.value.push({
+            ...item,
+            ...classList.value[i]
+          })
+          break
+        }
+      }
+    })
+  }
+}
+
 async function getWordList() {
   const { data } = await axios.post('http://localhost:3000/word/allData', {})
   if (data.code === 2) {
     wordList.value = data.body
-    allWordList.value = []
+    const userMap = {}
     userList.value.forEach(item => {
-      const list = []
-      if (item.roletype === 2 && item.collegeid === collegeid.value) {
-        for (let i = 0; i < classList.value.length; i++) {
-          if (item.collegeid === classList.value[i].collegeid) {
-            list.push({
-              userid: item.id,
-              username: item.name,
-              ...classList.value[i],
-              finish: wordList.value.filter(wordItem => wordItem.classid === classList.value[i].classid && wordItem.userid === item.id)
+      userMap[item.id] = item.name
+    })
+    const ans = []
+    finishAllList.value = []
+    data.body.forEach(item => {
+      for (let i = 0; i < allNeedList.value.length; i++) {
+        if (item.needid === allNeedList.value[i].needid) {
+          if (ans.indexOf(item.userid) === -1) {
+            ans.push(item.userid)
+            finishAllList.value.push({
+              ...item,
+              ...allNeedList.value[i],
+              username: userMap[item.userid],
+              finish: [item]
             })
+          } else {
+            for (let j = 0; j < finishAllList.value.length; j++) {
+              if (finishAllList.value[j].userid === item.userid) {
+                finishAllList.value[j].finish.push(item)
+                break
+              }
+            }
           }
+          break
         }
-        allWordList.value.push(...list)
       }
     })
-    // console.log(allWordList.value)
-    tableData.value = allWordList.value
+    tableData.value = finishAllList.value
   }
 }
 
@@ -160,6 +196,7 @@ onMounted(async() => {
   collegeid.value = window.sessionStorage.getItem('collegeid')
   await getUserList()
   await getClassList()
+  await getNeedList()
   await getWordList()
 })
 
@@ -185,6 +222,10 @@ onMounted(async() => {
           <el-col :span="4">文档名称：</el-col>
           <el-col :span="8">
             <el-input v-model="findWord" style="width: 240px" placeholder="请输入内容" />
+          </el-col>
+          <el-col :span="4">教学任务：</el-col>
+          <el-col :span="8">
+            <el-input v-model="findNeedName" style="width: 240px" placeholder="请输入内容" />
           </el-col>
         </el-row>
       </div>
@@ -216,7 +257,8 @@ onMounted(async() => {
         <el-table-column prop="collegename" label="学院名" width="300" />
         <el-table-column prop="username" label="教师名" />
         <el-table-column prop="classname" label="所属课程名称" />
-        <el-table-column prop="percent" label="文档完成度">
+        <el-table-column prop="needname" label="所属教学任务名称" />
+        <el-table-column prop="percent" label="教学任务完成度">
           <template #default="scope">
             <el-progress :percentage="Math.round(scope.row.finish.length / scope.row.needwordnum * 10000) / 100" />
           </template>

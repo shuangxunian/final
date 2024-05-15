@@ -40,7 +40,7 @@ allClass.post('/add', async (req, res) => {
       msg: '此学院已存在此课程！'
     })
   } else {
-    sql = `insert into class_list (classid,collegeid,classname,needwordnum) values ('${new Date().getTime()}','${body.collegeid}','${body.classname}','${body.needwordnum}')`
+    sql = `insert into class_list (classid,collegeid,classname) values ('${new Date().getTime()}','${body.collegeid}','${body.classname}')`
     const addDatabase = new DataBase()
     await addDatabase.getSqlData(sql)
     res.send({
@@ -62,7 +62,7 @@ allClass.post('/del', async (req, res) => {
 
 allClass.post('/edit', async (req, res) => {
   const { body } = req
-  let sql = `update class_list set collegeid='${body.collegeid}',classname='${body.classname}',needwordnum='${body.needwordnum}' where classid = '${body.classid}'`
+  let sql = `update class_list set collegeid='${body.collegeid}',classname='${body.classname}' where classid = '${body.classid}'`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({

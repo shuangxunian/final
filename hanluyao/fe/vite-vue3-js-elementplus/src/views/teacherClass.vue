@@ -43,14 +43,14 @@ async function addClass() {
     ElMessage.error('课程名不能为空')
     return
   }
-  if (form.value.needwordnum === '') {
-    ElMessage.error('所需文档数量不能为空')
-    return
-  }
-  if (form.value.needwordnum === 0) {
-    ElMessage.error('所需文档数量不能为0')
-    return
-  }
+  // if (form.value.needwordnum === '') {
+  //   ElMessage.error('所需文档数量不能为空')
+  //   return
+  // }
+  // if (form.value.needwordnum === 0) {
+  //   ElMessage.error('所需文档数量不能为0')
+  //   return
+  // }
   // console.log(form.value)
   const { data } = await axios.post('http://localhost:3000/class/add', {
     ...form.value,
@@ -136,7 +136,7 @@ onMounted(async() => {
       <el-table :data="tableData" border style="width: 100%" max-height="600">
         <!-- <el-table-column prop="collegename" label="所属学院" /> -->
         <el-table-column prop="classname" label="课程名"/>
-        <el-table-column prop="needwordnum" label="所需文档数量" />
+        <!-- <el-table-column prop="needwordnum" label="所需文档数量" /> -->
         <el-table-column fixed="right" label="操作" width="200">
           <template #default="scoped">
             <el-button link type="primary" size="small" @click="editData(scoped.row)">编辑</el-button>
@@ -155,9 +155,6 @@ onMounted(async() => {
         <el-form-item label="课程名" label-width="100">
           <el-input v-model="form.classname" placeholder="请填写课程名"/>
         </el-form-item>
-        <el-form-item label="所需文档数量" label-width="100">
-          <el-input-number v-model="form.needwordnum" placeholder="请填写所需文档数量"/>
-        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -172,9 +169,9 @@ onMounted(async() => {
         <el-form-item label="课程名" label-width="100">
           <el-input v-model="form.classname" placeholder="请填写课程名"/>
         </el-form-item>
-        <el-form-item label="所需文档数量" label-width="100">
+        <!-- <el-form-item label="所需文档数量" label-width="100">
           <el-input-number v-model="form.needwordnum" placeholder="请填写所需文档数量"/>
-        </el-form-item>
+        </el-form-item> -->
       </el-form>
       <template #footer>
         <div class="dialog-footer">

@@ -3,13 +3,11 @@ import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
-const findData = ref('')
-const findCollege = ref('')
-const findClass = ref('')
-const findNeedName = ref('')
+const findData1 = ref('')
+const findData2 = ref('')
 const form = ref({
-  classname: '',
-  collegeid: '',
+  classid: '',
+  needname: '',
   needwordnum: 0
 })
 const tableData = ref([])
@@ -20,18 +18,20 @@ const needList = ref([])
 const collegeList = ref([])
 const addClassDialog = ref(false)
 const editClassDialog = ref(false)
+const userid = ref('')
+const collegeid = ref('')
 
 function refreshFrom() {
   form.value = {
-    classname: '',
-    collegeid: '',
+    classid: '',
+    needname: '',
     needwordnum: 0
   }
 }
 
 function getList() {
   const list = classList.value.filter(item => {
-    return item.classname.includes(findClass.value) && item.collegename.includes(findCollege.value) && item.needname.includes(findNeedName.value) 
+    return item.classname.includes(findData1.value) && item.needwordnum.toString().includes(findData2.value)
   })
   tableData.value = list
 }
@@ -43,12 +43,12 @@ function editData(row) {
 }
 
 async function addClass() {
-  if (form.value.classname === '') {
-    ElMessage.error('课程名不能为空')
+  if (form.value.classid === '') {
+    ElMessage.error('请选择课程')
     return
   }
-  if (form.value.collegeid === '') {
-    ElMessage.error('学院名不能为空')
+  if (form.value.needname === '') {
+    ElMessage.error('教学计划名不能为空')
     return
   }
   if (form.value.needwordnum === '') {
@@ -60,11 +60,13 @@ async function addClass() {
     return
   }
   // console.log(form.value)
-  const { data } = await axios.post('http://localhost:3000/class/add', form.value)
+  const { data } = await axios.post('http://localhost:3000/need/add', {
+    ...form.value,
+  })
   if (data.code === 2) {
     addClassDialog.value = false
     ElMessage.success('添加成功')
-    getClassList()
+    getNeedList()
   } else {
     ElMessage.error(data.msg)
   }
@@ -72,11 +74,11 @@ async function addClass() {
 
 async function editClass() {
   // console.log(form.value)
-  const { data } = await axios.post('http://localhost:3000/class/edit', form.value)
+  const { data } = await axios.post('http://localhost:3000/need/edit', form.value)
   if (data.code === 2) {
     editClassDialog.value = false
     ElMessage.success('编辑成功')
-    getClassList()
+    getNeedList()
   } else {
     ElMessage.error(data.msg)
   }
@@ -84,10 +86,10 @@ async function editClass() {
 
 
 async function makeSureDel(row) {
-  const { data } = await axios.post('http://localhost:3000/class/del', { classid: row.classid })
+  const { data } = await axios.post('http://localhost:3000/need/del', { needid: row.needid })
   if (data.code === 2) {
     ElMessage.success('删除成功')
-    getClassList()
+    getNeedList()
   }
 }
 
@@ -105,7 +107,15 @@ async function getCollegeList() {
 async function getClassList() {
   const { data } = await axios.post('http://localhost:3000/class/allData', {})
   if (data.code === 2) {
-    classList.value = data.body
+    const arr = []
+    for (let i = 0; i < data.body.length; i++) {
+      if (data.body[i].collegeid === collegeid.value) {
+        arr.push({
+          ...data.body[i],
+        })
+      }
+    }
+    classList.value = arr
   }
 }
 
@@ -113,15 +123,18 @@ async function getNeedList() {
   const { data } = await axios.post('http://localhost:3000/need/allData', {})
   if (data.code === 2) {
     const arr = []
+    console.log(classList.value)
     for (let i = 0; i < data.body.length; i++) {
+      console.log(data.body[i])
       classList.value.find(item => {
         if (item.classid === data.body[i].classid) {
+          data.body[i].classname = item.classname
           arr.push({
-            ...item,
             ...data.body[i],
           })
         }
       })
+
     }
     needList.value = arr
     tableData.value = arr
@@ -129,6 +142,8 @@ async function getNeedList() {
 }
 
 onMounted(async() => {
+  userid.value = window.sessionStorage.getItem('id')
+  collegeid.value = window.sessionStorage.getItem('collegeid')
   await getClassList()
   await getNeedList()
 })
@@ -139,33 +154,21 @@ onMounted(async() => {
   <div class="admin-class">
     <div class="header">
       <div class="left">
-        <el-row :gutter="20">
-          <el-col :span="4">所属学院：</el-col>
-          <el-col :span="8">
-            <el-input v-model="findCollege" style="width: 240px" placeholder="请输入内容" />
-          </el-col>
-          <el-col :span="4">课程名称：</el-col>
-          <el-col :span="8">
-            <el-input v-model="findClass" style="width: 240px" placeholder="请输入内容" />
-          </el-col>
-          <el-col :span="4">教学计划</el-col>
-          <el-col :span="8">
-            <el-input v-model="findNeedName" style="width: 240px" placeholder="请输入内容" />
-          </el-col>
-        </el-row>
+        <el-input v-model="findData1" style="width: 240px" placeholder="请输入课程名" />
+        <el-input v-model="findData2" style="width: 240px" placeholder="请输入教学计划名" />
+        <el-button @click="getList">筛选</el-button>
       </div>
       <div class="right">
-        <el-button @click="getList">筛选</el-button>
-        <!-- <el-button type="primary" @click="addClassDialog = true">新建课程</el-button> -->
+        <el-button type="primary" @click="addClassDialog = true">新建教学计划</el-button>
       </div>
     </div>
     <div class="body">
       <el-table :data="tableData" border style="width: 100%" max-height="600">
-        <el-table-column prop="collegename" label="所属学院" />
-        <el-table-column prop="classname" label="课程名" width="300" />
-        <el-table-column prop="needname" label="教学计划" />
+        <!-- <el-table-column prop="collegename" label="所属学院" /> -->
+        <el-table-column prop="classname" label="课程名"/>
+        <el-table-column prop="needname" label="教学计划名"/>
         <el-table-column prop="needwordnum" label="所需文档数量" />
-        <!-- <el-table-column fixed="right" label="操作" width="200">
+        <el-table-column fixed="right" label="操作" width="200">
           <template #default="scoped">
             <el-button link type="primary" size="small" @click="editData(scoped.row)">编辑</el-button>
             <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scoped.row)">
@@ -174,19 +177,19 @@ onMounted(async() => {
               </template>
             </el-popconfirm>
           </template>
-        </el-table-column> -->
+        </el-table-column>
       </el-table>
     </div>
 
-    <el-dialog v-model="addClassDialog" title="添加课程" width="500" @close="refreshFrom">
+    <el-dialog v-model="addClassDialog" title="添加教学计划" width="500" @close="refreshFrom">
       <el-form :model="form">
-        <el-form-item label="课程名" label-width="100">
-          <el-input v-model="form.classname" placeholder="请填写课程名"/>
-        </el-form-item>
-        <el-form-item label="所属学院" label-width="100">
-          <el-select v-model="form.collegeid" filterable placeholder="请选择学院" @click="getCollegeList">
-            <el-option v-for="item in collegeList" :key="item.collegeid" :label="item.name" :value="item.collegeid" />
+        <el-form-item label="所属课程" label-width="100">
+          <el-select v-model="form.classid" filterable placeholder="请选择课程">
+            <el-option v-for="item in classList" :key="item.classid" :label="item.classname" :value="item.classid" />
           </el-select>
+        </el-form-item>
+        <el-form-item label="教学计划名" label-width="100">
+          <el-input v-model="form.needname" placeholder="请填写教学计划"/>
         </el-form-item>
         <el-form-item label="所需文档数量" label-width="100">
           <el-input-number v-model="form.needwordnum" placeholder="请填写所需文档数量"/>
@@ -202,13 +205,13 @@ onMounted(async() => {
 
     <el-dialog v-model="editClassDialog" title="编辑课程" width="500" @close="refreshFrom">
       <el-form :model="form">
-        <el-form-item label="课程名" label-width="100">
-          <el-input v-model="form.classname" placeholder="请填写课程名"/>
-        </el-form-item>
-        <el-form-item label="所属学院" label-width="100">
-          <el-select v-model="form.collegeid" filterable placeholder="请选择学院" @click="getCollegeList">
-            <el-option v-for="item in collegeList" :key="item.collegeid" :label="item.name" :value="item.collegeid" />
+        <el-form-item label="所属课程" label-width="100">
+          <el-select v-model="form.classid" filterable placeholder="请选择课程">
+            <el-option v-for="item in classList" :key="item.classid" :label="item.classname" :value="item.classid" />
           </el-select>
+        </el-form-item>
+        <el-form-item label="教学计划名" label-width="100">
+          <el-input v-model="form.needname" placeholder="请填写教学计划"/>
         </el-form-item>
         <el-form-item label="所需文档数量" label-width="100">
           <el-input-number v-model="form.needwordnum" placeholder="请填写所需文档数量"/>
@@ -230,14 +233,11 @@ onMounted(async() => {
   width: 100%;
   background-color: #fff;
   .header {
-    height: 120px;
+    height: 60px;
     display: flex;
     justify-content: space-between;
     padding: 0 10px;
     line-height: 60px;
-    .left {
-      width: 80%;
-    }
   }
   .body {
     padding: 0 10px;

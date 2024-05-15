@@ -11,6 +11,8 @@ const form = ref({
 const tableData = ref([])
 const collegeList = ref([])
 const wordList = ref([])
+const classList = ref([])
+const needList = ref([])
 const addClassDialog = ref(false)
 const editClassDialog = ref(false)
 const userid = ref('')
@@ -94,10 +96,39 @@ async function getWordList() {
     userid: userid.value
   })
   if (data.code === 2) {
+    const classMap = {}
+    classList.value.forEach(item => {
+      classMap[item.classid] = item.classname
+    })
+    const needMap = {}
+    needList.value.forEach(item => {
+      needMap[item.needid] = item
+    })
+    console.log(classMap)
+    data.body.forEach(item => {
+      console.log(item)
+      item.needname = needMap[item.needid].needname
+      item.classname = classMap[needMap[item.needid].classid]
+    })
     wordList.value = data.body
     tableData.value = data.body
   }
 }
+
+async function getClassList() {
+  const { data } = await axios.post('http://localhost:3000/class/allData', {})
+  if (data.code === 2) {
+    classList.value = data.body
+  }
+}
+
+async function getNeedList() {
+  const { data } = await axios.post('http://localhost:3000/need/allData', {})
+  if (data.code === 2) {
+    needList.value = data.body
+  }
+}
+
 
 const download = async(row) => {
     let a = document.createElement('a'); 
@@ -113,6 +144,8 @@ const download = async(row) => {
 onMounted(async() => {
   userid.value = window.sessionStorage.getItem('id')
   collegeid.value = window.sessionStorage.getItem('collegeid')
+  await getClassList()
+  await getNeedList()
   await getWordList()
 })
 
@@ -147,6 +180,7 @@ onMounted(async() => {
           </template>
         </el-table-column>
         <el-table-column prop="classname" label="所属课程" width="300" />
+        <el-table-column prop="needname" label="所属教学任务" width="300" />
         <el-table-column prop="wordname" label="文档名称" />
         <el-table-column fixed="right" label="操作" width="200">
           <template #default="scoped">

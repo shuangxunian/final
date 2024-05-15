@@ -11,6 +11,7 @@ const form = ref({
   url: ''
 })
 const wordList = ref([])
+const needList = ref([])
 const tableData = ref([])
 const dialogFormVisible = ref(false)
 const userList = ref([])
@@ -37,7 +38,8 @@ function getList() {
 
 function editData(row) {
   editClassDialog.value = true
-  form.value.classid = row.classid
+  console.log(row)
+  form.value.needid = row.needid
   form.value.classname = row.classname
 }
 
@@ -110,7 +112,7 @@ async function getClassList() {
       }
     }
     classList.value = arr
-    tableData.value = arr
+    // tableData.value = arr
   }
 }
 
@@ -123,11 +125,31 @@ async function getWordList() {
   }
 }
 
+async function getNeedList() {
+  const { data } = await axios.post('http://localhost:3000/need/allData', {})
+  if (data.code === 2) {
+    const arr = []
+    for (let i = 0; i < data.body.length; i++) {
+      classList.value.find(item => {
+        if (item.classid === data.body[i].classid && classList.value[i].collegeid === collegeid.value) {
+          data.body[i].classname = item.classname
+          arr.push({
+            ...data.body[i],
+          })
+        }
+      })
+    }
+    needList.value = arr
+    tableData.value = arr
+  }
+}
+
 onMounted(async() => {
   userid.value = window.sessionStorage.getItem('id')
   collegeid.value = window.sessionStorage.getItem('collegeid')
   await getWordList()
   await getClassList()
+  await getNeedList()
 })
 
 </script>
@@ -144,8 +166,9 @@ onMounted(async() => {
       <el-table :data="tableData" border style="width: 100%" max-height="600">
         <!-- <el-table-column prop="collegename" label="所属学院" /> -->
         <el-table-column prop="classname" label="课程名" width="300" />
+        <el-table-column prop="needname" label="教学任务名" width="300" />
         <el-table-column prop="needwordnum" label="所需文档数量" />
-        <el-table-column prop="mywordnum" label="我已提交的数量" />
+        <!-- <el-table-column prop="mywordnum" label="我已提交的数量" /> -->
         <el-table-column fixed="right" label="操作" width="200">
           <template #default="scoped">
             <el-button link type="primary" size="small" @click="editData(scoped.row)">提交文档</el-button>
