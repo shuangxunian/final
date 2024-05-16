@@ -83,7 +83,7 @@ async function editClass() {
 
 
 async function makeSureDel(row) {
-  const { data } = await axios.post('http://localhost:3000/word/del', { classid: row.classid })
+  const { data } = await axios.post('http://localhost:3000/word/del', { wordid: row.wordid })
   if (data.code === 2) {
     ElMessage.success('删除成功')
     getClassList()

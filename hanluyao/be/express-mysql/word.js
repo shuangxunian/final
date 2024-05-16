@@ -42,7 +42,7 @@ word.post('/myData', async (req, res) => {
 
 word.post('/add', async (req, res) => {
   const { body } = req
-  let sql = `insert into word_list (wordid,wordname,userid,classid,url) values ('${new Date().getTime()}','${body.wordname}','${body.userid}','${body.classid}','${body.url}')`
+  let sql = `insert into word_list (wordid,wordname,userid,url) values ('${new Date().getTime()}','${body.wordname}','${body.userid}','${body.url}')`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({
