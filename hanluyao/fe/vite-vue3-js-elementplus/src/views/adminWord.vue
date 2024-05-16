@@ -151,44 +151,35 @@ async function getNeedList() {
         }
       }
     })
-    console.log(allNeedList.value)
   }
 }
 
 async function getWordList() {
   const { data } = await axios.post('http://localhost:3000/word/allData', {})
   if (data.code === 2) {
-    wordList.value = data.body
-    const userMap = {}
-    userList.value.forEach(item => {
-      userMap[item.id] = item.name
-    })
-    const ans = []
-    finishAllList.value = []
+    const everyData = []
+    for (let i = 0; i < allNeedList.value.length; i++) {
+      for (let j = 0; j < userList.value.length; j++) {
+        if (allNeedList.value[i].collegeid === userList.value[j].collegeid) {
+          everyData.push({
+            ...userList.value[j],
+            ...allNeedList.value[i],
+            finish: []
+          })
+        }
+      }
+    }
     data.body.forEach(item => {
-      for (let i = 0; i < allNeedList.value.length; i++) {
-        if (item.needid === allNeedList.value[i].needid) {
-          if (ans.indexOf(item.userid) === -1) {
-            ans.push(item.userid)
-            finishAllList.value.push({
-              ...item,
-              ...allNeedList.value[i],
-              username: userMap[item.userid],
-              finish: [item]
-            })
-          } else {
-            for (let j = 0; j < finishAllList.value.length; j++) {
-              if (finishAllList.value[j].userid === item.userid) {
-                finishAllList.value[j].finish.push(item)
-                break
-              }
-            }
-          }
+      for (let i = 0; i < everyData.length; i++) {
+        if (item.userid === everyData[i].id) {
+          if (everyData[i].finish) everyData[i].finish.push(item)
+          else everyData[i].finish = [item]
           break
         }
       }
     })
-    tableData.value = finishAllList.value
+    finishAllList.value = everyData
+    tableData.value = everyData
   }
 }
 
