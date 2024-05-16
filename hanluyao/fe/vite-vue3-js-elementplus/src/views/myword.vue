@@ -39,8 +39,8 @@ function getList() {
 
 function editData(row) {
   editClassDialog.value = true
+  console.log(row)
   form.value = row
-  // console.log(scoped)
 }
 
 async function addClass() {
@@ -71,12 +71,11 @@ async function addClass() {
 }
 
 async function editClass() {
-  // console.log(form.value)
-  const { data } = await axios.post('http://localhost:3000/class/edit', form.value)
+  const { data } = await axios.post('http://localhost:3000/word/edit', form.value)
   if (data.code === 2) {
     editClassDialog.value = false
     ElMessage.success('编辑成功')
-    getClassList()
+    getWordList()
   } else {
     ElMessage.error(data.msg)
   }
@@ -84,7 +83,7 @@ async function editClass() {
 
 
 async function makeSureDel(row) {
-  const { data } = await axios.post('http://localhost:3000/class/del', { classid: row.classid })
+  const { data } = await axios.post('http://localhost:3000/word/del', { wordid: row.wordid })
   if (data.code === 2) {
     ElMessage.success('删除成功')
     getClassList()
@@ -165,11 +164,9 @@ onMounted(async() => {
             <el-input v-model="findWord" style="width: 240px" placeholder="请输入内容" />
           </el-col>
         </el-row>
-        <!-- <el-input v-model="findData" style="width: 240px" placeholder="请输入内容" /> -->
       </div>
       <div class="right">
         <el-button @click="getList">筛选</el-button>
-        <!-- <el-button type="primary" @click="addClassDialog = true">新建课程</el-button> -->
       </div>
     </div>
     <div class="body">
@@ -181,10 +178,9 @@ onMounted(async() => {
         </el-table-column>
         <el-table-column prop="classname" label="所属课程" width="300" />
         <el-table-column prop="needname" label="所属教学任务" width="300" />
-        <el-table-column prop="wordname" label="文档名称" />
+        <el-table-column prop="wordname" label="文档名称"  width="400"/>
         <el-table-column fixed="right" label="操作" width="200">
           <template #default="scoped">
-            <!-- <el-link size="small">下载文档</el-link> -->
             <el-button link type="primary" size="small" @click="download(scoped.row)">下载文档</el-button>
             <el-button link type="primary" size="small" @click="editData(scoped.row)">编辑</el-button>
             <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scoped.row)">
@@ -196,6 +192,27 @@ onMounted(async() => {
         </el-table-column>
       </el-table>
     </div>
+
+    <el-dialog v-model="editClassDialog" title="编辑课程" width="500" @close="refreshFrom">
+      <el-form :model="form">
+        <el-form-item label="所属课程" label-width="100">
+          <span>{{ form.classname }}</span>
+        </el-form-item>
+        <el-form-item label="所属教学任务" label-width="100">
+          <span>{{ form.needname }}</span>
+        </el-form-item>
+        <el-form-item label="文档名称" label-width="100">
+          <el-input v-model="form.wordname" placeholder="请填写课程名"/>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="editClassDialog = false">取消</el-button>
+          <el-button type="primary" @click="editClass">保存</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
   </div>
 </template>
 

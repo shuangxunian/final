@@ -42,7 +42,7 @@ word.post('/myData', async (req, res) => {
 
 word.post('/add', async (req, res) => {
   const { body } = req
-  let sql = `insert into word_list (wordid,wordname,userid,classid,url) values ('${new Date().getTime()}','${body.wordname}','${body.userid}','${body.classid}','${body.url}')`
+  let sql = `insert into word_list (wordid,wordname,userid,url) values ('${new Date().getTime()}','${body.wordname}','${body.userid}','${body.url}')`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({
@@ -53,7 +53,7 @@ word.post('/add', async (req, res) => {
 
 word.post('/del', async (req, res) => {
   const { body } = req
-  let sql = `delete from class_list where classid='${body.classid}'`
+  let sql = `delete from word_list where wordid='${body.wordid}'`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({
@@ -63,7 +63,7 @@ word.post('/del', async (req, res) => {
 
 word.post('/edit', async (req, res) => {
   const { body } = req
-  let sql = `update class_list set collegeid='${body.collegeid}',classname='${body.classname}',needwordnum='${body.needwordnum}' where classid = '${body.classid}'`
+  let sql = `update word_list set wordname='${body.wordname}' where wordid = '${body.wordid}'`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({
