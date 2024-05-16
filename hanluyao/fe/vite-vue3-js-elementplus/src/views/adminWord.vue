@@ -172,8 +172,14 @@ async function getWordList() {
     data.body.forEach(item => {
       for (let i = 0; i < everyData.length; i++) {
         if (item.userid === everyData[i].id) {
-          if (everyData[i].finish) everyData[i].finish.push(item)
-          else everyData[i].finish = [item]
+          if (everyData[i].finish) everyData[i].finish.push({
+            name: everyData[i].name,
+            ...item
+          })
+          else everyData[i].finish = [{
+            name: everyData[i].name,
+            ...item
+          }]
           break
         }
       }
@@ -236,6 +242,7 @@ onMounted(async() => {
                 </template>
               </el-table-column>
               <el-table-column prop="wordname" label="文档名称" />
+              <el-table-column prop="name" label="负责教师" />
               <el-table-column fixed="right" label="操作" width="200">
                 <template #default="scoped">
                   <el-button link type="primary" size="small" @click="download(scoped.row)">下载文档</el-button>
@@ -246,7 +253,7 @@ onMounted(async() => {
           </template>
         </el-table-column>
         <el-table-column prop="collegename" label="学院名" width="300" />
-        <el-table-column prop="username" label="教师名" />
+        <el-table-column prop="name" label="教师名" />
         <el-table-column prop="classname" label="所属课程名称" />
         <el-table-column prop="needname" label="所属教学任务名称" />
         <el-table-column prop="percent" label="教学任务完成度">

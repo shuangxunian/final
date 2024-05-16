@@ -130,8 +130,8 @@ async function getNeedList() {
   if (data.code === 2) {
     const arr = []
     for (let i = 0; i < data.body.length; i++) {
-      classList.value.find(item => {
-        if (item.classid === data.body[i].classid && classList.value[i].collegeid === collegeid.value) {
+      classList.value.find(item => {        
+        if (item.classid === data.body[i].classid) {
           data.body[i].classname = item.classname
           arr.push({
             ...data.body[i],
