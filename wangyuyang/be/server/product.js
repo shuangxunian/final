@@ -15,8 +15,8 @@ product.post('/allData', async (req, res) => {
 
 product.post('/add', async (req, res) => {
   const { body } = req
-  let sql = 'INSERT INTO `product_info` (`productName`, `brand`, `kind`, `isOil`, `isAllergy`, `isPigmentation`, `isWrinkle`, `id`) VALUES (?,?,?,?,?,?,?,?);'
-  let data = [body.productName,body.brand,body.kind,body.isOil,body.isAllergy,body.isPigmentation,body.isWrinkle,body.id]
+  let sql = 'INSERT INTO `product_info` (`productName`, `brand`, `kind`, `isOil`, `isAllergy`, `isAge`, `isPigmentation`, `isWrinkle`, `id`) VALUES (?,?,?,?,?,?,?,?,?);'
+  let data = [body.productName,body.brand,body.kind,body.isOil,body.isAllergy,body.isAge,body.isPigmentation,body.isWrinkle,body.id]
   const database = new DataBase()
   await database.getSqlData(sql, data)
   res.send({
@@ -27,8 +27,8 @@ product.post('/add', async (req, res) => {
 
 product.post('/fix', async (req, res) => {
   const { body } = req
-  let sql = 'update `product_info` set `productName`=?, `brand`=?, `kind`=?, `isOil`=?, `isAllergy`=?, `isPigmentation`=?, `isWrinkle`=? where `id`=?'
-  let data = [body.productName,body.brand,body.kind,body.isOil,body.isAllergy,body.isPigmentation,body.isWrinkle,body.id]
+  let sql = 'update `product_info` set `productName`=?, `brand`=?, `kind`=?, `isOil`=?, `isAllergy`=?, `isAge`=?, `isPigmentation`=?, `isWrinkle`=? where `id`=?'
+  let data = [body.productName,body.brand,body.kind,body.isOil,body.isAllergy,body.isAge,body.isPigmentation,body.isWrinkle,body.id]
   const database = new DataBase()
   await database.getSqlData(sql, data)
   res.send({

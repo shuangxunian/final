@@ -15,6 +15,7 @@ const form = ref({
   kind: '',
   isOil: '',
   isAllergy: '',
+  isAge: '',
   isPigmentation: '',
   isWrinkle: ''
 })
@@ -51,6 +52,7 @@ function refreshForm() {
   form.value.kind = ''
   form.value.isOil = ''
   form.value.isAllergy = ''
+  form.value.isAge = ''
   form.value.isPigmentation = ''
   form.value.isWrinkle = ''
 }
@@ -73,6 +75,8 @@ async function addProduct () {
     ElMessage.error('适合干皮油皮不能为空！')
   } else if(form.value.isAllergy === '') {
     ElMessage.error('是否易致敏不能为空！')
+  } else if(form.value.isAge === '') {
+    ElMessage.error('年龄不能为空！')
   } else if(form.value.isPigmentation === '') {
     ElMessage.error('是否能治疗色素沉着性皮肤不能为空！')
   } else if(form.value.isWrinkle === '') {
@@ -98,6 +102,7 @@ async function addProduct () {
         form.value.kind = ''
         form.value.isOil = ''
         form.value.isAllergy = ''
+        form.value.isAge = ''
         form.value.isPigmentation = ''
         form.value.isWrinkle = ''
         dialogFormVisible.value = false
@@ -130,6 +135,7 @@ async function editProduct () {
   form.value.kind = ''
   form.value.isOil = ''
   form.value.isAllergy = ''
+  form.value.isAge = ''
   form.value.isPigmentation = ''
   form.value.isWrinkle = ''
   dialogEditVisible.value = false
@@ -142,6 +148,7 @@ function notEditProduct () {
   form.value.kind = ''
   form.value.isOil = ''
   form.value.isAllergy = ''
+  form.value.isAge = ''
   form.value.isPigmentation = ''
   form.value.isWrinkle = ''
   dialogEditVisible.value = false
@@ -181,6 +188,7 @@ onMounted(() => {
           <el-table-column prop="kind" label="所属种类" width="100" />
           <el-table-column prop="isOil" label="适合干皮油皮" width="120" />
           <el-table-column prop="isAllergy" label="是否易致敏" width="120" />
+          <el-table-column prop="isAge" label="适合年龄" width="120" />
           <el-table-column prop="isPigmentation" label="是否能治疗色素沉着性皮肤" width="220" />
           <el-table-column prop="isWrinkle" label="适合皱纹性皮肤/紧致性皮肤" width="200" />
           <!-- 卸妆 洁面 化妆水 乳液 面霜 美容液 防晒霜 ME -->
@@ -228,6 +236,13 @@ onMounted(() => {
           <el-radio-group v-model="form.isAllergy">
             <el-radio label="易致敏" />
             <el-radio label="不易致敏" />
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="适合青年老年">
+          <el-radio-group v-model="form.isAge">
+            <el-radio label="青年" />
+            <el-radio label="老年" />
+            <el-radio label="全部" />
           </el-radio-group>
         </el-form-item>
         <el-form-item label="是否能治疗色素沉着性皮肤">
@@ -287,6 +302,13 @@ onMounted(() => {
           <el-radio-group v-model="form.isAllergy">
             <el-radio label="易致敏" />
             <el-radio label="不易致敏" />
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="适合青年老年">
+          <el-radio-group v-model="form.isAge">
+            <el-radio label="青年" />
+            <el-radio label="老年" />
+            <el-radio label="全部" />
           </el-radio-group>
         </el-form-item>
         <el-form-item label="是否能治疗色素沉着性皮肤">
