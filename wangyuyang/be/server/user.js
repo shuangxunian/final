@@ -79,6 +79,27 @@ user.post('/fixpwd', async (req, res) => {
   })
 })
 
+user.post('/fixPassword', async (req, res) => {
+  const { body } = req
+  let sql = `select * from user_info where id='${body.id}' and password='${body.oldPwd}'`
+  const findDatabase = new DataBase()
+  const info = await findDatabase.getSqlData(sql)
+  if (info.length) {
+    sql = `update user_info set password='${body.newPwd}' where id = '${body.id}'`
+    const fixDatabase = new DataBase()
+    await fixDatabase.getSqlData(sql)
+    res.send({
+      code: 2,
+      msg: '密码修改成功！'
+    })
+  } else {
+    res.send({
+      code: 4,
+      msg: '旧密码不正确！'
+    })
+  }
+})
+
 user.post('/getPostObjectParams', async (req, res) => {
   const mpHelper = new MpUploadOssHelper({
     // 从环境变量中获取访问凭证。运行本代码示例之前，请确保已设置环境变量OSS_ACCESS_KEY_ID和OSS_ACCESS_KEY_SECRET。
