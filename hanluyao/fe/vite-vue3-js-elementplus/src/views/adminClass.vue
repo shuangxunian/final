@@ -30,7 +30,8 @@ function refreshFrom() {
 }
 
 function getList() {
-  const list = classList.value.filter(item => {
+  const list = needList.value.filter(item => {
+  // debugger
     return item.classname.includes(findClass.value) && item.collegename.includes(findCollege.value) && item.needname.includes(findNeedName.value) 
   })
   tableData.value = list

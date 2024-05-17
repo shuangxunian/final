@@ -50,7 +50,7 @@ function getList() {
   const list = finishAllList.value.filter(item => {
     return (
       item.collegename.includes(findCollege.value) &&
-      item.username.includes(findName.value) &&
+      item.name.includes(findName.value) &&
       item.classname.includes(findClass.value)
     )
   })
@@ -272,7 +272,7 @@ onMounted(async() => {
   width: 100%;
   background-color: #fff;
   .header {
-    height: 20%;
+    // height: 20%;
     display: flex;
     justify-content: space-between;
     padding: 0 10px;
@@ -282,7 +282,7 @@ onMounted(async() => {
     }
   }
   .body {
-    height: 80%;
+    // height: 80%;
     padding: 0 10px;
   }
 }
