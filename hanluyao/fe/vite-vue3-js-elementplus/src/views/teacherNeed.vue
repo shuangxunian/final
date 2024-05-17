@@ -30,8 +30,9 @@ function refreshFrom() {
 }
 
 function getList() {
-  const list = classList.value.filter(item => {
-    return item.classname.includes(findData1.value) && item.needwordnum.toString().includes(findData2.value)
+  const list = needList.value.filter(item => {
+    console.log(item)
+    return item.classname.includes(findData1.value) && item.needname.includes(findData2.value)
   })
   tableData.value = list
 }

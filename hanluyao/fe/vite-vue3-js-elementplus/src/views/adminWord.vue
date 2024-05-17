@@ -48,10 +48,12 @@ const download = async(row) => {
 function getList() {
   console.log(finishAllList.value)
   const list = finishAllList.value.filter(item => {
+    console.log(item)
     return (
       item.collegename.includes(findCollege.value) &&
       item.name.includes(findName.value) &&
-      item.classname.includes(findClass.value)
+      item.classname.includes(findClass.value) && 
+      item.needname.includes(findNeedName.value)
     )
   })
   if (findWord.value !== '') {

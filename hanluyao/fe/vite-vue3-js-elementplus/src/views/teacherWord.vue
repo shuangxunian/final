@@ -51,7 +51,8 @@ function getList() {
     return (
       item.collegename.includes(findCollege.value) &&
       item.name.includes(findName.value) &&
-      item.classname.includes(findClass.value)
+      item.classname.includes(findClass.value) &&
+      item.needname?.includes(findNeedName.value)
     )
   })
   if (findWord.value !== '') {

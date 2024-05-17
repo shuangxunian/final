@@ -42,11 +42,12 @@ function clearForm() {
 
 function getList() {
   const list = userList.value.filter(item => {
+    console.log(item)
     return (
       item.id.includes(findID.value) &&
       item.name.includes(findName.value) &&
       item.standing.includes(findStanding.value) &&
-      item.collegename.includes(findCollege.value)
+      item.collegename?.includes(findCollege.value)
     )
   })
   tableData.value = list
