@@ -7,6 +7,7 @@ import Papa from 'papaparse'
 
 const tableData = ref([])
 const userList = ref([])
+const allUserList = ref([])
 const addUserDialog = ref(false)
 const editUserDialog = ref(false)
 const formLabelWidth = ref(140)
@@ -97,6 +98,7 @@ const makeSureDel = async function(row) {
 const getUserList = async function() {
   const { data } = await axios.post('http://localhost:3000/user/alldata',{})
   if (data.code === 2) {
+    allUserList.value = data.body
     tableData.value = []
     data.body.forEach(item => {
       if (item.roleType === '2') {
@@ -124,9 +126,9 @@ const handleChange = function(uploadFile, uploadFiles) {
         fileList.value = []
         csvRecordsArray.forEach(item => {
           const arr = item.split(',')
-          for(let i = 0; i < userList.value.length; i++) {
-            if (userList.value[i].userid === arr[1]) break
-            if (i === userList.value.length - 1) {
+          for(let i = 0; i < allUserList.value.length; i++) {
+            if (allUserList.value[i].userid === arr[1]) break
+            if (i === allUserList.value.length - 1) {
               fileList.value.push({
                 username: arr[0],
                 userid: arr[1],
