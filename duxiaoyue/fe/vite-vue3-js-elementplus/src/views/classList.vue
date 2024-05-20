@@ -208,7 +208,7 @@ const getCourseList = async function() {
 
 const gotoFind = function() {
   if (findString.value === '') {
-    getClassList()
+    getCourseList()
     return
   }
   tableData.value = []

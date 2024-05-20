@@ -98,7 +98,6 @@ const getUserList = async function() {
   const { data } = await axios.post('http://localhost:3000/user/alldata',{})
   if (data.code === 2) {
     tableData.value = []
-    userList.value = data.body
     data.body.forEach(item => {
       if (item.roleType === '2') {
         let role = '学生'
@@ -108,6 +107,7 @@ const getUserList = async function() {
         })
       }
     })
+    userList.value = tableData.value
   }
 }
 
