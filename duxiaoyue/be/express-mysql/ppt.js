@@ -77,14 +77,23 @@ user.post('/edit', async (req, res) => {
 
 user.post('/add', async (req, res) => {
   const { body } = req
-  // '${new Date().getTime()}',
-  let sql = `insert into ppt_list (id,name,docUrl,mp4Url,courseid,know) values ('${new Date().getTime()}','${body.name}','${body.docUrl}','${body.mp4Url}','${body.courseid}','${body.know}')`
-  const database = new DataBase()
-  await database.getSqlData(sql)
-  res.send({
-    code: 2,
-    msg: ''
-  })
+  let sql = `select * from ppt_list where name='${body.name}'`
+  const findDatabase = new DataBase()
+  const info = await findDatabase.getSqlData(sql)
+  if (info.length) {
+    res.send({
+      code: 4,
+      msg: '此课程名已存在！'
+    })
+  } else {
+    sql = `insert into ppt_list (id,name,docUrl,mp4Url,courseid,know) values ('${new Date().getTime()}','${body.name}','${body.docUrl}','${body.mp4Url}','${body.courseid}','${body.know}')`
+    const database = new DataBase()
+    await database.getSqlData(sql)
+    res.send({
+      code: 2,
+      msg: ''
+    })
+  }
 })
 
 user.post('/addList', async (req, res) => {

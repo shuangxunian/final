@@ -97,6 +97,8 @@ const toAddPPT = async function() {
     addPPTDialog.value = false
     await getPPTList()
     if(detailPPTDialog.value) getDetail(nowSelectRow.value)
+  } else {
+    ElMessage.error(data.msg)
   }
 }
 
