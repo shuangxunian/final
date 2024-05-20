@@ -32,6 +32,8 @@ const addClass = async function() {
     })
     addCourseDialog.value = false
     await getClassList()
+  } else {
+    ElMessage.error(data.msg)
   }
 }
 

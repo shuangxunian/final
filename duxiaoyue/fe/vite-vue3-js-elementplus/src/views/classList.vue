@@ -143,6 +143,7 @@ const makeSureDelDetail = async function(row) {
 }
 
 const addClass = async function() {
+  if (form.value.className === '') return ElMessage.error('请输入案例名称')
   const { data } = await axios.post('http://localhost:3000/course/add', {
     ...form.value,
     switchShow: 'false',
@@ -155,6 +156,8 @@ const addClass = async function() {
     })
     addCourseDialog.value = false
     await getCourseList()
+  } else {
+    ElMessage.error(data.msg)
   }
 }
 

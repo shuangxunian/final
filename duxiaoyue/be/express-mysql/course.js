@@ -48,13 +48,23 @@ course.post('/accept', async (req, res) => {
 
 course.post('/add', async (req, res) => {
   const { body } = req
-  let sql = `insert into course_list (id,className,statusType,studyNum,classCourse,classCourseNum,teacherid) values ('${new Date().getTime()}','${body.className}','${body.statusType}','0','0','0','${body.teacherid}')`
-  const database = new DataBase()
-  await database.getSqlData(sql)
-  res.send({
-    code: 2,
-    msg: ''
-  })
+  let sql = `select * from course_list where className='${body.className}' and teacherid='${body.teacherid}'`
+  const findDatabase = new DataBase()
+  const info = await findDatabase.getSqlData(sql)
+  if (info.length) {
+    res.send({
+      code: 4,
+      msg: '此案例名已存在！'
+    })
+  } else {
+    let sql = `insert into course_list (id,className,statusType,studyNum,classCourse,classCourseNum,teacherid) values ('${new Date().getTime()}','${body.className}','${body.statusType}','0','0','0','${body.teacherid}')`
+    const database = new DataBase()
+    await database.getSqlData(sql)
+    res.send({
+      code: 2,
+      msg: ''
+    })
+  }
 })
 
 course.post('/addList', async (req, res) => {
