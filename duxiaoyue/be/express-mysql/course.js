@@ -48,7 +48,7 @@ course.post('/accept', async (req, res) => {
 
 course.post('/add', async (req, res) => {
   const { body } = req
-  let sql = `insert into course_list (id,className,statusType,teacherid) values ('${new Date().getTime()}','${body.className}','${body.statusType}','${body.teacherid}')`
+  let sql = `insert into course_list (id,className,statusType,studyNum,classCourse,classCourseNum,teacherid) values ('${new Date().getTime()}','${body.className}','${body.statusType}','0','0','0','${body.teacherid}')`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({

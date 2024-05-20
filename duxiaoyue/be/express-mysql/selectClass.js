@@ -29,7 +29,7 @@ selectClass.post('/star', async (req, res) => {
   let sql = ''
   let sql1= ''
   if (body.flag) {
-    sql = `insert into select_class_list (id,userid,classid) values ('${new Date().getTime()}','${body.userid}','${body.classid}')`
+    sql = `insert into select_class_list (id,userid,classid,myselfClassCourse) values ('${new Date().getTime()}','${body.userid}','${body.classid}',0)`
     sql1 = `update course_list set studyNum=studyNum+1 where id='${body.classid}'`
   } else {
     sql = `delete from select_class_list where userid='${body.userid}' and classid='${body.classid}'`
