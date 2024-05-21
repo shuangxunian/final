@@ -38,6 +38,7 @@ const extraData = ref({
   token : '',
 })
 const flyList = ref([])
+const canFlyList = ref([])
 
 const refreshForm = () => {
   form.value = {
@@ -149,8 +150,9 @@ const getFlyData = async() => {
   const { data } = await axios.post('http://localhost:3000/fly/alldata', {})
   if (data.code === 2) {
     flyList.value = []
+    const needWeight = parseInt(form.value.weight.match(/\d+/)[0])
     data.body.forEach(item => {
-      if (item.status === 0) {
+      if (item.status === 0 && parseInt(item.maxWeight) > needWeight) {
         flyList.value.push(item)
       }
     })
