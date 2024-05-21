@@ -92,6 +92,15 @@ const fnUploadRequest = async (options) => {
 }
 
 const addOption = async () => {
+  if (
+    form.value.begin === '' ||
+    form.value.end === '' ||
+    form.value.item === '' ||
+    form.value.weight === '' ||
+    form.value.id === ''
+  ) {
+    return ElMessage.error('请填写完整')
+  }
   const { data } = await axios.post('http://localhost:3000/option/add', {
     ...form.value,
   })
@@ -152,7 +161,7 @@ const getFlyData = async() => {
     flyList.value = []
     const needWeight = parseInt(form.value.weight.match(/\d+/)[0])
     data.body.forEach(item => {
-      if (item.status === 0 && parseInt(item.maxWeight) > needWeight) {
+      if (item.status === 0 && parseInt(item.maxWeight) >= needWeight) {
         flyList.value.push(item)
       }
     })

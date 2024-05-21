@@ -2,7 +2,12 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
+import Papa from 'papaparse'
 
+const textData = ref([])
+const fileList = ref([])
+const uploadDialogVisible = ref(false)
+const findString = ref('')
 const tableData = ref([])
 const formLabelWidth = ref(120)
 const textList = ref(false)
@@ -17,6 +22,61 @@ const clearForm = () => {
   textForm.value = {
     china: '',
     pinyin: ''
+  }
+}
+
+const gotoFind = function() {
+  tableData.value = []
+  if (findString.value === '') {
+    tableData.value = textData.value
+  } else {
+    textData.value.forEach(item => {
+      if (item.china.includes(findString.value) || item.pinyin.includes(findString.value)) {
+        tableData.value.push(item)
+      }
+    })
+  }
+}
+
+const handleChange = function(uploadFile, uploadFiles) {
+  var reader = new FileReader()
+  reader.readAsDataURL(uploadFile.raw)
+  reader.onload = evt => {
+    Papa.parse(uploadFile.raw, {
+      complete: res => {
+        let data = res.data
+        const result = Papa.unparse(data)
+        const csvRecordsArray = result?.split(/\r\n|\n/).slice(1)
+        fileList.value = []
+        csvRecordsArray.forEach(item => {
+          const arr = item.split(',')
+          for(let i = 0; i < textData.value.length; i++) {
+            if (textData.value[i].china === arr[0]) break
+            if (i === textData.value.length - 1) {
+              fileList.value.push({
+                china: arr[0],
+                pinyin: arr[1],
+              })
+            }
+          }
+        })
+        uploadDialogVisible.value = true
+      }
+    })
+  }
+}
+
+const makeSureUpload = async function() {
+  const { data } = await axios.post('http://localhost:3000/text4/addList', {
+    list: fileList.value
+  })
+  if (data.code === 2) {
+    ElMessage({
+      message: '批量添加成功！',
+      type: 'success',
+    })
+    uploadDialogVisible.value = false
+    await getTextList()
   }
 }
 
@@ -39,6 +99,7 @@ const goAddText = async () => {
 const getTextList = async () => {
   const { data } = await axios.post('http://localhost:3000/text4/allData', {})
   if (data.code === 2) {
+    textData.value = data.info
     tableData.value = data.info
   }
 }
@@ -99,8 +160,25 @@ onMounted(async() => {
 <template>
   <div class="data-list">
     <div class="header">
-      <div class="test-button">
-        <el-button type="primary" @click="textDialog = true">新建数据</el-button>
+      <div class="left">
+        <div class="find-string">
+          <el-input v-model="findString" placeholder="请输入筛选内容" style="width: 160px"/>
+        </div>
+        <div class="find-button">
+          <el-button type="primary" @click="gotoFind">筛选</el-button>
+          <el-button type="primary" @click="textDialog = true">新建数据</el-button>
+        </div>
+      </div>
+      <div class="right">
+        <el-upload
+          class="upload-demo"
+          :on-change="handleChange"
+          :auto-upload="false"
+          :show-file-list="false"
+          :limit="1"
+        >
+          <el-button type="primary">导入识字规则</el-button>
+        </el-upload>
       </div>
     </div>
     <div class="body">
@@ -162,6 +240,21 @@ onMounted(async() => {
         </div>
       </template>
     </el-dialog>
+    <el-dialog
+      v-model="uploadDialogVisible"
+      title="Tips"
+      width="500"
+    >
+      <span>一共{{ fileList.length }}条有效数据，确定上传吗？</span>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="uploadDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="makeSureUpload">
+            确定
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -171,17 +264,20 @@ onMounted(async() => {
   height: 100%;
   background-color: #fff;
   .header {
-    width: 100%;
-    height: 60px;
     display: flex;
-    .is-test {
-      width: 140px;
-      margin-left: 10px;
-      line-height: 60px;
-    }
-    .test-button {
-      margin-left: 10px;
-      line-height: 60px;
+    justify-content: space-between;
+    height: 40px;
+    padding: 10px;
+    width: calc(100% - 20px);
+    .left {
+      display: flex;
+      width: 360px;
+      .find-string {
+        width: 200px;
+      }
+      .find-type {
+        width: 200px;
+      }
     }
   }
   .body {

@@ -74,7 +74,7 @@ option.post('/fix', async (req, res) => {
   const database = new DataBase()
   await database.getSqlData(sql)
   if (body.status === '已结束') {
-    sql = `update fly_list set status=0, workTime+=1 where id='${body.IDCard}'`
+    sql = `update fly_list set status=0, workTime=workTime+1 where id='${body.IDCard}'`
     const fixDatabase = new DataBase()
     await fixDatabase.getSqlData(sql)
   }

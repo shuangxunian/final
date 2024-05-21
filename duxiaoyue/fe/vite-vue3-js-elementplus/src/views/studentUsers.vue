@@ -295,7 +295,6 @@ onMounted(async() => {
           width: 200px;
         }
       }
-      // margin-top: 20px;
     }
     .table {
       margin: 0 10px;

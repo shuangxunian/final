@@ -57,10 +57,6 @@ text2.post('/find', async (req, res) => {
   let data = [body.requireWord]
   const addTextDatabase = new DataBase()
   const info = await addTextDatabase.getSqlData(sql, data)
-  // sql = 'INSERT INTO `option_list` (`id`, `userid`, `username`, `optionType`, `requireWord`, `wherefrom`) VALUES (?,?,?,?,?,?);'
-  // data = [new Date().getTime() + '',body.userid,body.username,body.optionType,body.requireWord,body.wherefrom]
-  // const addOptionDatabase = new DataBase()
-  // await addOptionDatabase.getSqlData(sql, data)
   if (info.length) {
     res.send({
       code: 2,
@@ -72,6 +68,21 @@ text2.post('/find', async (req, res) => {
       msg: '该单词不存在！'
     })
   }
+})
+
+
+text2.post('/addList', async (req, res) => {
+  const { body } = req
+  const list = body.list
+  for (let i = 0; i < list.length; i++) {
+    let sql = `insert into text2_list (id,china,pinyin) values ('${new Date().getTime() + ''}','${list[i].china}','${list[i].pinyin}')`
+    const database = new DataBase()
+    await database.getSqlData(sql)
+  }
+  res.send({
+    code: 2,
+    msg: ''
+  })
 })
 
 module.exports = text2

@@ -74,4 +74,18 @@ text1.post('/find', async (req, res) => {
   }
 })
 
+text1.post('/addList', async (req, res) => {
+  const { body } = req
+  const list = body.list
+  for (let i = 0; i < list.length; i++) {
+    let sql = `insert into text1_list (id,china,pinyin) values ('${new Date().getTime() + ''}','${list[i].china}','${list[i].pinyin}')`
+    const database = new DataBase()
+    await database.getSqlData(sql)
+  }
+  res.send({
+    code: 2,
+    msg: ''
+  })
+})
+
 module.exports = text1
