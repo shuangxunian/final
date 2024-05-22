@@ -14,6 +14,7 @@ import teacherNeed from '../views/teacherNeed.vue'
 import teacherWord from '../views/teacherWord.vue'
 import student from '../views/student.vue'
 import myword from '../views/myword.vue'
+import allword from '../views/allword.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -36,7 +37,8 @@ const router = createRouter({
         { path: '/users', component: Users },
         { path: '/info', component: info },
         { path: '/student', component: student },
-        { path: '/myword', component: myword }
+        { path: '/myword', component: myword },
+        { path: '/allword', component: allword }
       ]
     },
   ]

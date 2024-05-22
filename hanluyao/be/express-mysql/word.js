@@ -42,7 +42,7 @@ word.post('/myData', async (req, res) => {
 
 word.post('/add', async (req, res) => {
   const { body } = req
-  let sql = `insert into word_list (wordid,wordname,needid,userid,url) values ('${new Date().getTime()}','${body.wordname}','${body.needid}','${body.userid}','${body.url}')`
+  let sql = `insert into word_list (wordid,wordname,needid,userid,url,status) values ('${new Date().getTime()}','${body.wordname}','${body.needid}','${body.userid}','${body.url}','未更新')`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({
@@ -63,7 +63,12 @@ word.post('/del', async (req, res) => {
 
 word.post('/edit', async (req, res) => {
   const { body } = req
-  let sql = `update word_list set wordname='${body.wordname}' where wordid = '${body.wordid}'`
+  let sql = ''
+  if (body.status === '已更新') {
+    sql = `update word_list set wordname='${body.wordname}', url='${body.url}', status='${body.status}' where wordid = '${body.wordid}'`
+  } else {
+    sql = `update word_list set wordname='${body.wordname}', url='${body.url}' where wordid = '${body.wordid}'`
+  }
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({
@@ -71,4 +76,13 @@ word.post('/edit', async (req, res) => {
   })
 })
 
+word.post('/addtalk', async (req, res) => {
+  const { body } = req
+  let sql = `update word_list set talking='${body.talking}' where wordid = '${body.wordid}'`
+  const database = new DataBase()
+  await database.getSqlData(sql)
+  res.send({
+    code: 2
+  })
+})
 module.exports = word

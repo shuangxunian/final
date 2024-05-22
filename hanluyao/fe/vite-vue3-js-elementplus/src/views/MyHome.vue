@@ -64,7 +64,7 @@ onMounted(async () => {
         icon: "Service"
       },
     ]
-  } else {
+  } else if (roletype.value === '2') {
     routerList.value = [
       {
         index: "student",
@@ -82,7 +82,19 @@ onMounted(async () => {
         icon: "Service"
       },
     ]
-    // await getStudentList()
+  } else if (roletype.value === '3') {
+    routerList.value = [
+      {
+        index: "allword",
+        name: "文档列表",
+        icon: "Menu"
+      },
+      {
+        index: "info",
+        name: "个人信息",
+        icon: "Service"
+      },
+    ]
   }
   router.push('/' + routerList.value[0].index)
 })

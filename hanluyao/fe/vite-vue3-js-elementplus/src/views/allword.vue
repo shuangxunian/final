@@ -2,7 +2,6 @@
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
-import OSS from 'ali-oss'
 
 const findData = ref('')
 const form = ref({
@@ -14,20 +13,18 @@ const collegeList = ref([])
 const wordList = ref([])
 const classList = ref([])
 const needList = ref([])
+const userList = ref([])
 const addClassDialog = ref(false)
 const editClassDialog = ref(false)
 const userid = ref('')
 const collegeid = ref('')
 const findClass = ref('')
 const findWord = ref('')
-const wordStatus = ref('未更新')
-
+const talking = ref('')
+const selectWord = ref({})
 
 function refreshFrom() {
-  form.value = {
-    classname: '',
-    needwordnum: 0
-  }
+  talking.value = ''
 }
 
 function getList() {
@@ -42,8 +39,7 @@ function getList() {
 
 function editData(row) {
   editClassDialog.value = true
-  console.log(row)
-  form.value = row
+  selectWord.value = row
 }
 
 async function addClass() {
@@ -74,11 +70,13 @@ async function addClass() {
 }
 
 async function editClass() {
-  const { data } = await axios.post('http://localhost:3000/word/edit', {
-    ...form.value,
-    status: wordStatus.value
+  if (talking.value === '') return ElMessage.error('请填写评论')
+  console.log(selectWord.value)
+  console.log(talking.value)
+  const { data } = await axios.post('http://localhost:3000/word/addtalk', {
+    wordid: selectWord.value.wordid,
+    talking: talking.value
   })
-  wordStatus.value = '未更新'
   if (data.code === 2) {
     editClassDialog.value = false
     ElMessage.success('编辑成功')
@@ -98,9 +96,7 @@ async function makeSureDel(row) {
 }
 
 async function getWordList() {
-  const { data } = await axios.post('http://localhost:3000/word/myData', {
-    userid: userid.value
-  })
+  const { data } = await axios.post('http://localhost:3000/word/allData', {})
   if (data.code === 2) {
     const classMap = {}
     classList.value.forEach(item => {
@@ -110,11 +106,16 @@ async function getWordList() {
     needList.value.forEach(item => {
       needMap[item.needid] = item
     })
-    console.log(classMap)
     data.body.forEach(item => {
-      console.log(item)
       item.needname = needMap[item.needid].needname
       item.classname = classMap[needMap[item.needid].classid]
+    })
+    const userMap = {}
+    userList.value.forEach(item => {
+      userMap[item.id] = item
+    })
+    data.body.forEach(item => {
+      item.name = userMap[item.userid]?.name
     })
     wordList.value = data.body
     tableData.value = data.body
@@ -135,6 +136,15 @@ async function getNeedList() {
   }
 }
 
+async function getUserList() {
+  const { data } = await axios.post('http://localhost:3000/user/allData', {})
+  if (data.code === 2) {
+    data.body.forEach(item => {
+      item.standing = item.roletype === 0 ? '管理员' : item.roletype === 1 ? '系主任' : item.roletype === 2 ? '老师' : '督导'
+    })
+    userList.value = data.body
+  }
+}
 
 const download = async(row) => {
     let a = document.createElement('a'); 
@@ -146,31 +156,18 @@ const download = async(row) => {
     document.body.removeChild(a);
 }
 
-const fnUploadRequest = async function (options) {
-  const client= new OSS({
-    accessKeyId: import.meta.env.VITE_OSSId,  // 查看你自己的阿里云KEY
-    accessKeySecret: import.meta.env.VITE_OSSSecret, // 查看自己的阿里云KEYSECRET
-    bucket: 'sxntest', // 你的 OSS bucket 名称
-    region: 'oss-cn-beijing', // bucket 所在地址，我的是 华北2 北京
-  })
-
-  let file = options.file; // 拿到 file
-  let fileName = file.name
-  let date = new Date().getTime()
-  let fileNames = `${date}_${fileName}` // 拼接文件名，保证唯一，这里使用时间戳+原文件名
-  console.log(fileNames)
-  // 上传文件,这里是上传到OSS的 uploads文件夹下
-  client.put("uploads/"+fileNames, file).then(res=>{
-    if (res.res.statusCode === 200) {
-      wordStatus.value = '已更新'
-      form.value.url = res.url
-    }else {}
-  })
+const toTalking = async(row) => {
+  console.log(row)
+  selectWord.value = row
+  editClassDialog.value = true
 }
+
+
 
 onMounted(async() => {
   userid.value = window.sessionStorage.getItem('id')
   collegeid.value = window.sessionStorage.getItem('collegeid')
+  await getUserList()
   await getClassList()
   await getNeedList()
   await getWordList()
@@ -205,43 +202,24 @@ onMounted(async() => {
           </template>
         </el-table-column>
         <el-table-column prop="classname" label="所属课程" width="300" />
+        <el-table-column prop="name" label="教师名"  width="400"/>
         <el-table-column prop="needname" label="所属教学任务" width="300" />
         <el-table-column prop="wordname" label="文档名称"  width="400"/>
-        <el-table-column prop="talking" label="督导评论"  width="400"/>
+        <el-table-column prop="talking" label="评论"  width="400"/>
         <el-table-column prop="status" label="是否更新"  width="200"/>
         <el-table-column fixed="right" label="操作" width="200">
           <template #default="scoped">
             <el-button link type="primary" size="small" @click="download(scoped.row)">下载文档</el-button>
-            <el-button link type="primary" size="small" @click="editData(scoped.row)">编辑</el-button>
-            <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scoped.row)">
-              <template #reference>
-                <el-button link type="danger" size="small">删除</el-button>
-              </template>
-            </el-popconfirm>
+            <el-button link type="primary" size="small" @click="toTalking(scoped.row)">发表评论</el-button>
           </template>
         </el-table-column>
       </el-table>
     </div>
 
-    <el-dialog v-model="editClassDialog" title="编辑课程" width="500" @close="refreshFrom">
+    <el-dialog v-model="editClassDialog" title="发表意见" width="500" @close="refreshFrom">
       <el-form :model="form">
-        <el-form-item label="所属课程" label-width="100">
-          <span>{{ form.classname }}</span>
-        </el-form-item>
-        <el-form-item label="所属教学任务" label-width="100">
-          <span>{{ form.needname }}</span>
-        </el-form-item>
-        <el-form-item label="文档名称" label-width="100">
-          <el-input v-model="form.wordname" placeholder="请填写课程名"/>
-        </el-form-item>
-        <el-form-item label="" label-width="100">
-          <el-upload
-              class=""
-              action=""
-              :show-file-list="false"
-              :http-request="fnUploadRequest">
-            <el-button type="primary">重新上传</el-button>
-          </el-upload>
+        <el-form-item label="发表意见" label-width="100">
+          <el-input v-model="talking" placeholder="请填写意见"/>
         </el-form-item>
       </el-form>
       <template #footer>

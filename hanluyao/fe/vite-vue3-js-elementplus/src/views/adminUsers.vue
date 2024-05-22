@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
+import * as echarts from 'echarts'
 
 const findData = ref('')
 const userList = ref([])
@@ -28,6 +29,10 @@ const standingList = ref([
     label: '老师',
     value: 2
   },
+  {
+    label: '督导',
+    value: 3
+  },
 ])
 const uploadRef = ref(null)
 const fileList = ref([])
@@ -51,13 +56,14 @@ function getList() {
     )
   })
   tableData.value = list
+  init()
 }
 
 async function addUser() {
   if (form.value.id === '') return ElMessage.error('请输入工号')
   if (form.value.name === '') return ElMessage.error('请输入用户姓名')
   if (form.value.roletype === '') return ElMessage.error('请选择用户身份')
-  if (form.value.collegeid === '') return ElMessage.error('请选择用户所属学院')
+  if (form.value.collegeid === '' && form.value.roletype !== 3) return ElMessage.error('请选择用户所属学院')
   const { data } = await axios.post('http://localhost:3000/user/add', form.value)
   if (data.code === 2) {
     addUserDialog.value = false
@@ -126,7 +132,7 @@ async function getUserList() {
   const { data } = await axios.post('http://localhost:3000/user/allData', {})
   if (data.code === 2) {
     data.body.forEach(item => {
-      item.standing = item.roletype === 0 ? '管理员' : item.roletype === 1 ? '系主任' : '老师'
+      item.standing = item.roletype === 0 ? '管理员' : item.roletype === 1 ? '系主任' : item.roletype === 2 ? '老师' : '督导'
     })
     userList.value = data.body
     tableData.value = data.body
@@ -137,13 +143,77 @@ async function getCollegeList() {
   const { data } = await axios.post('http://localhost:3000/college/allData', {})
   if (data.code === 2) {
     collegeList.value = data.body
-    console.log(collegeList.value)
   }
+}
+
+
+const init = () => {
+  // 基于准备好的dom，初始化echarts实例
+  let Chart = echarts.init(document.getElementById("myEcharts"));
+  console.log(tableData.value)
+  const locationMap = {}
+  tableData.value.forEach(item => {
+    if (item.collegename !== undefined){
+      if (locationMap[item.collegename]) {
+        locationMap[item.collegename] += 1
+      } else {
+        locationMap[item.collegename] = 1
+      }
+    }
+  })
+  const seriesData = []
+  for (const key in locationMap) {
+    seriesData.push({
+      name: key,
+      value: locationMap[key]
+    })
+  }
+
+  // 绘制图表
+  let option = {
+    title: {
+      text: '各学院人数',
+      left: 'center'
+    },
+    tooltip: {
+      trigger: 'item'
+    },
+    legend: {
+      top: '8%',
+      left: 'center'
+    },
+    series: [
+      {
+        name: '所在地',
+        type: 'pie',
+        radius: ['40%', '70%'],
+        avoidLabelOverlap: false,
+        label: {
+          show: false,
+          position: 'center'
+        },
+        emphasis: {
+          label: {
+            show: true,
+            fontSize: 24,
+            fontWeight: 'bold'
+          }
+        },
+        labelLine: {
+          show: false
+        },
+        data: seriesData
+      }
+    ]
+  };
+  // 渲染图表
+  Chart.setOption(option);
 }
 
 onMounted(async() => {
   await getUserList()
   await getCollegeList()
+  init()
 })
 
 </script>
@@ -177,22 +247,27 @@ onMounted(async() => {
       </div>
     </div>
     <div class="body">
-      <el-table :data="tableData" border style="width: 100%" max-height="600">
-        <el-table-column prop="id" label="工号" width="300" />
-        <el-table-column prop="name" label="用户昵称" width="300" />
-        <el-table-column prop="standing" label="身份"/>
-        <el-table-column prop="collegename" label="所属学院"/>
-        <el-table-column fixed="right" label="操作" width="200">
-          <template #default="scoped">
-            <el-button v-if="scoped.row.id !== 'admin'" link type="primary" size="small" @click="editData(scoped.row)">编辑</el-button>
-            <el-popconfirm v-if="scoped.row.id !== 'admin'" confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scoped.row)">
-              <template #reference>
-                <el-button link type="danger" size="small">删除</el-button>
-              </template>
-            </el-popconfirm>
-          </template>
-        </el-table-column>
-      </el-table>
+      <div>
+        <el-table :data="tableData" border style="width: 100%" height="400">
+          <el-table-column prop="id" label="工号" width="300" />
+          <el-table-column prop="name" label="用户昵称" width="300" />
+          <el-table-column prop="standing" label="身份"/>
+          <el-table-column prop="collegename" label="所属学院"/>
+          <el-table-column fixed="right" label="操作" width="200">
+            <template #default="scoped">
+              <el-button v-if="scoped.row.id !== 'admin'" link type="primary" size="small" @click="editData(scoped.row)">编辑</el-button>
+              <el-popconfirm v-if="scoped.row.id !== 'admin'" confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDel(scoped.row)">
+                <template #reference>
+                  <el-button link type="danger" size="small">删除</el-button>
+                </template>
+              </el-popconfirm>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+      <div class="chart">
+        <div id="myEcharts" :style="{ width: '100%', height: '100%' }"></div>
+      </div>
     </div>
     <el-dialog v-model="addUserDialog" title="添加用户" width="500" @close="clearForm">
       <el-form :model="form">
@@ -215,7 +290,7 @@ onMounted(async() => {
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="所属学院" label-width="100">
+        <el-form-item v-if="form.roletype !== 3" label="所属学院" label-width="100">
           <el-select
             v-model="form.collegeid"
             placeholder="请选择"
@@ -297,6 +372,9 @@ onMounted(async() => {
   .body {
     height: 80%;
     padding: 0 10px;
+    .chart {
+      height: 300px;
+    }
   }
 }
 </style>
