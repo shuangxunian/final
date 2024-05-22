@@ -282,7 +282,7 @@ onMounted(async() => {
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="addUserDialog = false">取消</el-button>
+          <el-button @click="editUserDialog = false">取消</el-button>
           <el-button type="primary" @click="editUser">编辑</el-button>
         </div>
       </template>
