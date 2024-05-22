@@ -100,6 +100,8 @@ async function makeSureDel(row) {
   if (data.code === 2) {
     ElMessage.success('删除成功')
     getUserList()
+  } else {
+    ElMessage.error(data.msg)
   }
 }
 
