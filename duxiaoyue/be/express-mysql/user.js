@@ -33,6 +33,10 @@ user.post('/login', async (req, res) => {
 
 user.post('/del', async (req, res) => {
   const { body } = req
+  if (body.userid === 'admin') return res.send({
+    code: 4,
+    msg: '管理员账号无法删除！'
+  })
   let sql = `delete from user_info where userid='${body.userid}'`
   const database = new DataBase()
   await database.getSqlData(sql)
