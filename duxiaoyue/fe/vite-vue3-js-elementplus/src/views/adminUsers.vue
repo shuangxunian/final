@@ -41,6 +41,10 @@ const gotoFind = function() {
 }
 
 const addUser = async function() {
+  if (form.value.userid === '') {
+    ElMessage.error('请输入用户名！')
+    return
+  }
   if (form.value.username === '') {
     ElMessage.error('请输入用户名！')
     return
@@ -79,6 +83,22 @@ const editData = async function(row) {
 }
 
 const editUser = async function() {
+  if (form.value.userid === '') {
+    ElMessage.error('请输入用户名！')
+    return
+  }
+  if (form.value.username === '') {
+    ElMessage.error('请输入用户名！')
+    return
+  }
+  if (form.value.roleType === '') {
+    ElMessage.error('请选择用户类型！')
+    return
+  }
+  if (form.value.password === '') {
+    ElMessage.error('请输入密码！')
+    return
+  }
   const { data } = await axios.post('http://localhost:3000/user/edit', form.value)
   if (data.code === 2) {
     ElMessage({
