@@ -56,6 +56,7 @@ const handleEdit = function(row) {
   pptForm.value = {
     ...row
   }
+  pptForm.value.coursename = row.className || nowSelectRow.value.className
   editPPTDialog.value = true
   // console.log(index, scope)
 }
