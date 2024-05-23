@@ -77,7 +77,7 @@ user.post('/edit', async (req, res) => {
 
 user.post('/add', async (req, res) => {
   const { body } = req
-  let sql = `select * from ppt_list where name='${body.name}'`
+  let sql = `select * from ppt_list where name='${body.name}' and courseid='${body.courseid}'`
   const findDatabase = new DataBase()
   const info = await findDatabase.getSqlData(sql)
   if (info.length) {

@@ -104,11 +104,11 @@ const addPPT = function(row = {}) {
 }
 
 const toAddPPT = async function() {
-  if (form.value.name === '') return ElMessage.error('请输入项目名')
-  if (form.value.docUrl === '') return ElMessage.error('请输入课程链接')
-  if (form.value.mp4Url === '') return ElMessage.error('请输入视频链接')
-  if (form.value.coursename === '') return ElMessage.error('请输入关联课程')
-  if (form.value.know === '') return ElMessage.error('请输入知识点')
+  if (pptForm.value.name === '') return ElMessage.error('请输入项目名')
+  if (pptForm.value.docUrl === '') return ElMessage.error('请输入课程链接')
+  if (pptForm.value.mp4Url === '') return ElMessage.error('请输入视频链接')
+  if (pptForm.value.coursename === '') return ElMessage.error('请输入关联课程')
+  if (pptForm.value.know === '') return ElMessage.error('请输入知识点')
 
   const { data } = await axios.post('http://localhost:3000/ppt/add', pptForm.value)
   if (data.code === 2) {
@@ -125,11 +125,11 @@ const toAddPPT = async function() {
 }
 
 const toEditPPT = async function() {
-  if (form.value.name === '') return ElMessage.error('请输入项目名')
-  if (form.value.docUrl === '') return ElMessage.error('请输入课程链接')
-  if (form.value.mp4Url === '') return ElMessage.error('请输入视频链接')
-  if (form.value.coursename === '') return ElMessage.error('请输入关联课程')
-  if (form.value.know === '') return ElMessage.error('请输入知识点')
+  if (pptForm.value.name === '') return ElMessage.error('请输入项目名')
+  if (pptForm.value.docUrl === '') return ElMessage.error('请输入课程链接')
+  if (pptForm.value.mp4Url === '') return ElMessage.error('请输入视频链接')
+  if (pptForm.value.coursename === '') return ElMessage.error('请输入关联课程')
+  if (pptForm.value.know === '') return ElMessage.error('请输入知识点')
 
   const { data } = await axios.post('http://localhost:3000/ppt/edit', pptForm.value)
   if (data.code === 2) {
