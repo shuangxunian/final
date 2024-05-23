@@ -123,12 +123,11 @@ const getUserList = async function() {
   const { data } = await axios.post('http://localhost:3000/user/alldata',{})
   if (data.code === 2) {
     userList.value = data.body
-    // data.body.forEach(item => {
-    //   if (item.roleType ===  '1') {
-    //     userList.value.push(item)
-    //   }
-    // })
-    // console.log(userList.value)
+    data.body.forEach(item => {
+      if (item.roleType ===  '1' || item.roleType ===  '2') {
+        userList.value.push(item)
+      }
+    })
   }
 }
 
