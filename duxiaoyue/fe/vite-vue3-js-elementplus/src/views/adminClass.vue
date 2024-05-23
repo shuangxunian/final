@@ -63,7 +63,7 @@ const gotoFind = function() {
   courseList.value.forEach(item => {
     if (
       item.className?.includes(findString.value) ||
-      item.teacherName?.includes(findString.value) ||
+      item.belongTeacher?.includes(findString.value) ||
       item.status?.includes(findString.value)
     ) {
       tableData.value.push(item)
