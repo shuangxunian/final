@@ -122,7 +122,6 @@ const toEditClass = async function() {
 const getUserList = async function() {
   const { data } = await axios.post('http://localhost:3000/user/alldata',{})
   if (data.code === 2) {
-    userList.value = data.body
     data.body.forEach(item => {
       if (item.roleType ===  '1' || item.roleType ===  '2') {
         userList.value.push(item)
@@ -225,7 +224,7 @@ onMounted(async() => {
             <el-option
               v-for="item in userList"
               :key="item.userid"
-              :label="item.username"
+              :label="item.userid + item.username"
               :value="item.userid"
             />
           </el-select>
