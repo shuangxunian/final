@@ -223,11 +223,10 @@ const gotoFind = function() {
   }
   tableData.value = []
   courseList.value.forEach(item => {
-    // console.log(item)
     if (
-      item.className.indexOf(findString.value) !== -1 ||
-      item.belongUser.indexOf(findString.value) !== -1 ||
-      item.status.indexOf(findString.value) !== -1
+      item.className?.includes(findString.value) ||
+      item.belongUser?.includes(findString.value) ||
+      item.status?.includes(findString.value)
     ) {
       tableData.value.push(item)
     }
