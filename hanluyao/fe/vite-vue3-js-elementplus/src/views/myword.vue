@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import OSS from 'ali-oss'
+import * as echarts from 'echarts'
 
 const findData = ref('')
 const form = ref({
@@ -42,7 +43,6 @@ function getList() {
 
 function editData(row) {
   editClassDialog.value = true
-  console.log(row)
   form.value = row
 }
 
@@ -59,7 +59,6 @@ async function addClass() {
     ElMessage.error('所需文档数量不能为0')
     return
   }
-  // console.log(form.value)
   const { data } = await axios.post('http://localhost:3000/class/add', {
     ...form.value,
     collegeid: collegeid.value
@@ -110,9 +109,7 @@ async function getWordList() {
     needList.value.forEach(item => {
       needMap[item.needid] = item
     })
-    console.log(classMap)
     data.body.forEach(item => {
-      console.log(item)
       item.needname = needMap[item.needid].needname
       item.classname = classMap[needMap[item.needid].classid]
     })
@@ -158,7 +155,6 @@ const fnUploadRequest = async function (options) {
   let fileName = file.name
   let date = new Date().getTime()
   let fileNames = `${date}_${fileName}` // 拼接文件名，保证唯一，这里使用时间戳+原文件名
-  console.log(fileNames)
   // 上传文件,这里是上传到OSS的 uploads文件夹下
   client.put("uploads/"+fileNames, file).then(res=>{
     if (res.res.statusCode === 200) {
@@ -168,12 +164,77 @@ const fnUploadRequest = async function (options) {
   })
 }
 
+
+const init = () => {
+  // 基于准备好的dom，初始化echarts实例
+  let Chart = echarts.init(document.getElementById("myEcharts"));
+  console.log(tableData.value)
+  const locationMap = {}
+  tableData.value.forEach(item => {
+    if (item.classname !== undefined){
+      if (locationMap[item.classname]) {
+        locationMap[item.classname] += 1
+      } else {
+        locationMap[item.classname] = 1
+      }
+    }
+  })
+  const seriesData = []
+  for (const key in locationMap) {
+    seriesData.push({
+      name: key,
+      value: locationMap[key]
+    })
+  }
+
+  // 绘制图表
+  let option = {
+    title: {
+      text: '各课程提交数',
+      left: 'center'
+    },
+    tooltip: {
+      trigger: 'item'
+    },
+    legend: {
+      top: '8%',
+      left: 'center'
+    },
+    series: [
+      {
+        name: '课程',
+        type: 'pie',
+        radius: ['40%', '70%'],
+        avoidLabelOverlap: false,
+        label: {
+          show: false,
+          position: 'center'
+        },
+        emphasis: {
+          label: {
+            show: true,
+            fontSize: 24,
+            fontWeight: 'bold'
+          }
+        },
+        labelLine: {
+          show: false
+        },
+        data: seriesData
+      }
+    ]
+  };
+  // 渲染图表
+  Chart.setOption(option);
+}
+
 onMounted(async() => {
   userid.value = window.sessionStorage.getItem('id')
   collegeid.value = window.sessionStorage.getItem('collegeid')
   await getClassList()
   await getNeedList()
   await getWordList()
+  init()
 })
 
 </script>
@@ -221,6 +282,9 @@ onMounted(async() => {
           </template>
         </el-table-column>
       </el-table>
+      <div class="chart">
+        <div id="myEcharts" :style="{ width: '100%', height: '100%' }"></div>
+      </div>
     </div>
 
     <el-dialog v-model="editClassDialog" title="编辑课程" width="500" @close="refreshFrom">
@@ -272,6 +336,9 @@ onMounted(async() => {
   }
   .body {
     padding: 0 10px;
+    .chart {
+      height: 300px;
+    }
   }
 }
 </style>

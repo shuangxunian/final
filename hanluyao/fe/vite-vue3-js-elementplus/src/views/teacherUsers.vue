@@ -22,6 +22,7 @@ const addUserDialog = ref(false)
 const editUserDialog = ref(false)
 const findID = ref('')
 const findName = ref('')
+const findBelongClass = ref('')
 
 function clearForm() {
   form.value = {
@@ -34,16 +35,19 @@ function getList() {
   const list = userList.value.filter(item => {
     return (
       item.id.includes(findID.value) &&
+      item.belongClass?.includes(findBelongClass.value) &&
       item.name.includes(findName.value)
     )
   })
   tableData.value = list
+  if (findID.value === '' && findName.value === '' && findBelongClass.value === '') tableData.value = userList.value
 }
 
 async function addUser() {
   if (form.value.id === '') return ElMessage.error('请输入学工号')
   if (form.value.name === '') return ElMessage.error('请输入用户姓名')
   if (form.value.roletype === '') return ElMessage.error('请选择用户身份')
+  if (form.value.belongClass === '') return ElMessage.error('请输入用户班级')
   const { data } = await axios.post('http://localhost:3000/user/add', {
     ...form.value,
     collegeid: collegeid.value,
@@ -161,6 +165,10 @@ onMounted(async() => {
           <el-col :span="8">
             <el-input v-model="findName" style="width: 240px" placeholder="请输入内容" />
           </el-col>
+          <el-col :span="4">所属班级</el-col>
+          <el-col :span="8">
+            <el-input v-model="findBelongClass" style="width: 240px" placeholder="请输入内容" />
+          </el-col>
         </el-row>
       </div>
       <div class="right">
@@ -172,6 +180,7 @@ onMounted(async() => {
       <el-table :data="tableData" border style="width: 100%" max-height="600">
         <el-table-column prop="id" label="工号"/>
         <el-table-column prop="name" label="姓名" />
+        <el-table-column prop="belongClass" label="所属班级" />
         <!-- <el-table-column prop="status" label="学习状态" width="300" /> -->
         <el-table-column fixed="right" label="操作" width="200">
           <template #default="scoped">
@@ -193,6 +202,9 @@ onMounted(async() => {
         </el-form-item>
         <el-form-item label="教师姓名" label-width="100">
           <el-input v-model="form.name" placeholder="请填写教师姓名"/>
+        </el-form-item>
+        <el-form-item label="所属班级" label-width="100">
+          <el-input v-model="form.belongClass" placeholder="请填写所属班级"/>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -233,7 +245,7 @@ onMounted(async() => {
   width: 100%;
   background-color: #fff;
   .header {
-    height: 60px;
+    // height: 60px;
     display: flex;
     justify-content: space-between;
     padding: 0 10px;

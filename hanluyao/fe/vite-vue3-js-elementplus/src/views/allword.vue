@@ -19,6 +19,9 @@ const editClassDialog = ref(false)
 const userid = ref('')
 const collegeid = ref('')
 const findClass = ref('')
+const findName = ref('')
+const findBelongClass = ref('')
+const findNeedname = ref('')
 const findWord = ref('')
 const talking = ref('')
 const selectWord = ref({})
@@ -31,6 +34,9 @@ function getList() {
   const list = wordList.value.filter(item => {
     return (
       item.classname.includes(findClass.value) &&
+      item.name.includes(findName.value) &&
+      item.belongClass.includes(findBelongClass.value) &&
+      item.needname.includes(findNeedname.value) &&
       item.wordname.includes(findWord.value)
     )
   })
@@ -116,6 +122,7 @@ async function getWordList() {
     })
     data.body.forEach(item => {
       item.name = userMap[item.userid]?.name
+      item.belongClass = userMap[item.userid]?.belongClass
     })
     wordList.value = data.body
     tableData.value = data.body
@@ -184,6 +191,18 @@ onMounted(async() => {
           <el-col :span="8">
             <el-input v-model="findClass" style="width: 240px" placeholder="请输入内容" />
           </el-col>
+          <el-col :span="4">教师名：</el-col>
+          <el-col :span="8">
+            <el-input v-model="findName" style="width: 240px" placeholder="请输入内容" />
+          </el-col>
+          <el-col :span="4">所属班级：</el-col>
+          <el-col :span="8">
+            <el-input v-model="findBelongClass" style="width: 240px" placeholder="请输入内容" />
+          </el-col>
+          <el-col :span="4">所属教学任务：</el-col>
+          <el-col :span="8">
+            <el-input v-model="findNeedname" style="width: 240px" placeholder="请输入内容" />
+          </el-col>
           <el-col :span="4">文档名称：</el-col>
           <el-col :span="8">
             <el-input v-model="findWord" style="width: 240px" placeholder="请输入内容" />
@@ -195,7 +214,7 @@ onMounted(async() => {
       </div>
     </div>
     <div class="body">
-      <el-table :data="tableData" border style="width: 100%" max-height="600">
+      <el-table :data="tableData" border style="width: 100%" height="500">
         <el-table-column label="添加时间" width="300">
           <template #default="scoped">
             {{ new Date(Number(scoped.row.wordid)).toLocaleString() }}
@@ -203,6 +222,7 @@ onMounted(async() => {
         </el-table-column>
         <el-table-column prop="classname" label="所属课程" width="300" />
         <el-table-column prop="name" label="教师名"  width="400"/>
+        <el-table-column prop="belongClass" label="所属班级"  width="400"/>
         <el-table-column prop="needname" label="所属教学任务" width="300" />
         <el-table-column prop="wordname" label="文档名称"  width="400"/>
         <el-table-column prop="talking" label="评论"  width="400"/>
@@ -239,7 +259,7 @@ onMounted(async() => {
   width: 100%;
   background-color: #fff;
   .header {
-    height: 60px;
+    // height: 60px;
     display: flex;
     justify-content: space-between;
     padding: 0 10px;

@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
+import * as echarts from 'echarts'
 
 const findData = ref('')
 const findCollege = ref('')
@@ -10,6 +11,7 @@ const findClass = ref('')
 const findWord = ref('')
 const findNeedName = ref('')
 const collegeid = ref('')
+const findBelongClass = ref('')
 const form = ref({
   name: '',
   teacherid: '',
@@ -76,7 +78,30 @@ function getList() {
     } else {
       tableData.value = tableArr
     }
-  } else {
+  }
+  if (findBelongClass.value !== '') {
+    const tableArr = []
+    for (let i = 0; i < list.length; i++) {
+      const finishArr = [] 
+      for (let j = 0; j < list[i].finish.length; j++) {
+        if (list[i].finish[j].belongClass.includes(findBelongClass.value)) {
+          finishArr.push(list[i].finish[j])
+        }
+      }
+      if (finishArr.length > 0) {
+        tableArr.push({
+          ...list[i],
+          finish: finishArr
+        })
+      }
+    }
+    if (tableArr.length === 0) {
+      tableData.value = []
+    } else {
+      tableData.value = tableArr
+    }
+  }
+  if(findWord.value === ''&& findBelongClass.value === '') {
     tableData.value = list
   }
 }
@@ -177,10 +202,12 @@ async function getWordList() {
         if (item.userid === everyData[i].id) {
           if (everyData[i].finish) everyData[i].finish.push({
             name: everyData[i].name,
+            belongClass: everyData[i].belongClass,
             ...item
           })
           else everyData[i].finish = [{
             name: everyData[i].name,
+            belongClass: everyData[i].belongClass,
             ...item
           }]
           break
@@ -192,12 +219,77 @@ async function getWordList() {
   }
 }
 
+
+const init = () => {
+  // 基于准备好的dom，初始化echarts实例
+  let Chart = echarts.init(document.getElementById("myEcharts"));
+  console.log(userList.value)
+  const locationMap = {}
+  tableData.value.forEach(item => {
+    if (item.name !== undefined){
+      if (locationMap[item.name]) {
+        locationMap[item.name] += item.finish.length
+      } else {
+        locationMap[item.name] = item.finish.length
+      }
+    }
+  })
+  const seriesData = []
+  for (const key in locationMap) {
+    seriesData.push({
+      name: key,
+      value: locationMap[key]
+    })
+  }
+
+  // 绘制图表
+  let option = {
+    title: {
+      text: '各老师提交数',
+      left: 'center'
+    },
+    tooltip: {
+      trigger: 'item'
+    },
+    legend: {
+      top: '8%',
+      left: 'center'
+    },
+    series: [
+      {
+        name: '老师姓名',
+        type: 'pie',
+        radius: ['40%', '70%'],
+        avoidLabelOverlap: false,
+        label: {
+          show: false,
+          position: 'center'
+        },
+        emphasis: {
+          label: {
+            show: true,
+            fontSize: 24,
+            fontWeight: 'bold'
+          }
+        },
+        labelLine: {
+          show: false
+        },
+        data: seriesData
+      }
+    ]
+  };
+  // 渲染图表
+  Chart.setOption(option);
+}
+
 onMounted(async() => {
   collegeid.value = window.sessionStorage.getItem('collegeid')
   await getUserList()
   await getClassList()
   await getNeedList()
   await getWordList()
+  init()
 })
 
 </script>
@@ -227,6 +319,10 @@ onMounted(async() => {
           <el-col :span="8">
             <el-input v-model="findNeedName" style="width: 240px" placeholder="请输入内容" />
           </el-col>
+          <el-col :span="4">所属班级：</el-col>
+          <el-col :span="8">
+            <el-input v-model="findBelongClass" style="width: 240px" placeholder="请输入内容" />
+          </el-col>
         </el-row>
       </div>
       <div class="right">
@@ -234,7 +330,7 @@ onMounted(async() => {
       </div>
     </div>
     <div class="body">
-      <el-table :data="tableData" border style="width: 100%" max-height="600">
+      <el-table :data="tableData" border style="width: 100%" height="400">
         <el-table-column type="expand">
           <template #default="props">
             <div style="padding: 10px;">
@@ -246,6 +342,7 @@ onMounted(async() => {
               </el-table-column>
               <el-table-column prop="wordname" label="文档名称" />
               <el-table-column prop="name" label="负责教师" />
+              <el-table-column prop="belongClass" label="所属班级" />
               <el-table-column fixed="right" label="操作" width="200">
                 <template #default="scoped">
                   <el-button link type="primary" size="small" @click="download(scoped.row)">下载文档</el-button>
@@ -265,6 +362,9 @@ onMounted(async() => {
           </template>
         </el-table-column>
       </el-table>
+      <div class="chart">
+        <div id="myEcharts" :style="{ width: '100%', height: '100%' }"></div>
+      </div>
     </div>
   </div>
 </template>
@@ -285,8 +385,10 @@ onMounted(async() => {
     }
   }
   .body {
-    // height: 80%;
     padding: 0 10px;
+    .chart {
+      height: 300px;
+    }
   }
 }
 </style>

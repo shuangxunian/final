@@ -14,6 +14,7 @@ const findID = ref('')
 const findName = ref('')
 const findStanding = ref('')
 const findCollege = ref('')
+const findBelongClass = ref('')
 const form = ref({
   id: '',
   name: '',
@@ -52,6 +53,7 @@ function getList() {
       item.id.includes(findID.value) &&
       item.name.includes(findName.value) &&
       item.standing.includes(findStanding.value) &&
+      item.belongClass?.includes(findBelongClass.value) &&
       item.collegename?.includes(findCollege.value)
     )
   })
@@ -64,6 +66,7 @@ async function addUser() {
   if (form.value.name === '') return ElMessage.error('请输入用户姓名')
   if (form.value.roletype === '') return ElMessage.error('请选择用户身份')
   if (form.value.collegeid === '' && form.value.roletype !== 3) return ElMessage.error('请选择用户所属学院')
+  if (form.value.belongClass === '' && form.value.roletype === 2) return ElMessage.error('请选择用户所属班级')
   const { data } = await axios.post('http://localhost:3000/user/add', form.value)
   if (data.code === 2) {
     addUserDialog.value = false
@@ -239,6 +242,10 @@ onMounted(async() => {
           <el-col :span="8">
             <el-input v-model="findCollege" style="width: 240px" placeholder="请输入内容" />
           </el-col>
+          <el-col :span="4">所属班级：</el-col>
+          <el-col :span="8">
+            <el-input v-model="findBelongClass" style="width: 240px" placeholder="请输入内容" />
+          </el-col>
         </el-row>
       </div>
       <div class="right">
@@ -253,6 +260,7 @@ onMounted(async() => {
           <el-table-column prop="name" label="用户昵称" width="300" />
           <el-table-column prop="standing" label="身份"/>
           <el-table-column prop="collegename" label="所属学院"/>
+          <el-table-column prop="belongClass" label="所属班级"/>
           <el-table-column fixed="right" label="操作" width="200">
             <template #default="scoped">
               <el-button v-if="scoped.row.id !== 'admin'" link type="primary" size="small" @click="editData(scoped.row)">编辑</el-button>
@@ -302,6 +310,9 @@ onMounted(async() => {
               :value="item.collegeid"
             />
           </el-select>
+        </el-form-item>
+        <el-form-item v-if="form.roletype === 2" label="所属班级" label-width="100">
+          <el-input v-model="form.belongClass" placeholder="请填写用户姓名"/>
         </el-form-item>
       </el-form>
       <template #footer>
