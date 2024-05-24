@@ -301,6 +301,16 @@ const getSelectClassList = async function() {
   }
 }
 
+const download = async(row) => {
+    let a = document.createElement('a'); 
+    a.style = 'display: none'; // 创建一个隐藏的a标签
+    a.download = row.wordname;
+    a.href = row.docUrl;
+    document.body.appendChild(a);
+    a.click(); // 触发a标签的click事件
+    document.body.removeChild(a);
+}
+
 onMounted(async () => {
   userid.value = window.sessionStorage.getItem('userid')
   console.log(userid.value)
@@ -431,16 +441,12 @@ onMounted(async () => {
       <el-table :data="detailPPTList" :border="true">
         <el-table-column prop="name" label="课程名称" />
         <el-table-column prop="know" label="知识点" />
-        <el-table-column prop="docUrl" label="关联内容链接" width="160">
+        <el-table-column prop="docUrl" label="课件文档" width="160">
           <template #default="scope">
-            <el-link type="primary" :href="scope.row.docUrl" target="_blank">文档访问</el-link>
+            <el-button link type="primary" size="small" @click="download(scope.row)">下载文档</el-button>
           </template>
         </el-table-column>
-        <el-table-column prop="mp4Url" label="关联视频">
-          <template #default="scope">
-            <el-link v-if="scope.row.mp4Url !== ''" type="primary" :href="scope.row.mp4Url" target="_blank">点此观看视频</el-link>
-          </template>
-        </el-table-column>
+        <el-table-column prop="mp4Url" label="课程描述" width="400"/>
         <el-table-column fixed="right" label="操作" width="200">
           <template #default="scope">
             <el-button link type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>

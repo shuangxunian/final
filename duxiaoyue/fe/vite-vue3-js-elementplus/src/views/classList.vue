@@ -24,6 +24,7 @@ const detailPPTList = ref([])
 const nowSelectRow = ({})
 const form = ref({
   className: '',
+  text: '',
   statusType: '1',
 })
 const pptForm = ref({
@@ -38,6 +39,7 @@ const pptForm = ref({
 const refreshForm = function() {
   form.value = {
     className: '',
+    text: '',
     statusType: '1',
   }
   pptForm.value = {
@@ -150,6 +152,7 @@ const makeSureDelDetail = async function(row) {
 
 const addClass = async function() {
   if (form.value.className === '') return ElMessage.error('请输入案例名称')
+  if (form.value.text === '') return element.message('请输入项目案例的描述')
   const { data } = await axios.post('http://localhost:3000/course/add', {
     ...form.value,
     switchShow: 'false',
@@ -252,7 +255,7 @@ const fnUploadRequest = async function (options) {
   client.put("uploads/"+fileNames, file).then(res=>{
     if (res.res.statusCode === 200) {
       ElMessage({
-        message: '修改成功！',
+        message: '上传成功！',
         type: 'success',
       })
       pptForm.value.docUrl = res.url
@@ -306,6 +309,7 @@ onMounted(async () => {
           <el-table-column prop="belongUser" label="负责人" />
           <el-table-column prop="know" label="知识点" />
           <el-table-column prop="status" label="状态" />
+          <el-table-column prop="text" label="描述" />
           <!-- <el-table-column prop="status" label="是否可见">
             <template #default="scope">
               <el-switch :disabled="scope.row.statusType === '1'" v-model="scope.row.switchShow" active-text="可见" inactive-text="不可见" />
@@ -332,6 +336,9 @@ onMounted(async () => {
       <el-form :model="form">
         <el-form-item label="项目案例名称" :label-width="formLabelWidth">
           <el-input v-model="form.className"/>
+        </el-form-item>
+        <el-form-item label="项目案例描述" :label-width="formLabelWidth">
+          <el-input v-model="form.text" placeholder="请输入项目案例名称"/>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -419,10 +426,6 @@ onMounted(async () => {
           </template>
         </el-table-column>
         <el-table-column prop="mp4Url" label="课程描述" width="400"/>
-          <!-- <template #default="scope">
-            <el-link v-if="scope.row.mp4Url !== ''" type="primary" :href="scope.row.mp4Url" target="_blank">点此观看视频</el-link>
-          </template>
-        </el-table-column> -->
         <el-table-column fixed="right" label="操作" width="200">
           <template #default="scope">
             <el-button link type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>

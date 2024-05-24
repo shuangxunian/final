@@ -4,6 +4,7 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
 import Papa from 'papaparse'
+import OSS from 'ali-oss'
 
 const tableData = ref([])
 const userList = ref([])
@@ -24,12 +25,14 @@ const detailPPTList = ref([])
 const nowSelectRow = ({})
 const form = ref({
   className: '',
+  text: '',
   statusType: '1',
 })
 const pptForm = ref({
   name: '',
   docUrl: '',
   mp4Url: '',
+  text: '',
   courseid: '',
   coursename: '',
   know: '',
@@ -38,12 +41,14 @@ const pptForm = ref({
 const refreshForm = function() {
   form.value = {
     className: '',
+    text: '',
     statusType: '1',
   }
   pptForm.value = {
     name: '',
     docUrl: '',
     courseid: '',
+    text: '',
     coursename: '',
     know: '',
   }
@@ -296,6 +301,41 @@ const sortTableCourse = function() {
   tableData.value = newData
 }
 
+const fnUploadRequest = async function (options) {
+  const client= new OSS({
+    accessKeyId: import.meta.env.VITE_OSSId,  // 查看你自己的阿里云KEY
+    accessKeySecret: import.meta.env.VITE_OSSSecret, // 查看自己的阿里云KEYSECRET
+    bucket: 'sxntest', // 你的 OSS bucket 名称
+    region: 'oss-cn-beijing', // bucket 所在地址，我的是 华北2 北京
+  })
+
+  let file = options.file; // 拿到 file
+  let fileName = file.name
+  let date = new Date().getTime()
+  let fileNames = `${date}_${fileName}` // 拼接文件名，保证唯一，这里使用时间戳+原文件名
+  console.log(fileNames)
+  // 上传文件,这里是上传到OSS的 uploads文件夹下
+  client.put("uploads/"+fileNames, file).then(res=>{
+    if (res.res.statusCode === 200) {
+      ElMessage({
+        message: '上传成功！',
+        type: 'success',
+      })
+      pptForm.value.docUrl = res.url
+    }else {}
+  })
+}
+
+const download = async(row) => {
+    let a = document.createElement('a'); 
+    a.style = 'display: none'; // 创建一个隐藏的a标签
+    a.download = row.wordname;
+    a.href = row.docUrl;
+    document.body.appendChild(a);
+    a.click(); // 触发a标签的click事件
+    document.body.removeChild(a);
+}
+
 onMounted(async () => {
   userid.value = window.sessionStorage.getItem('userid')
   console.log(userid.value)
@@ -330,6 +370,7 @@ onMounted(async () => {
           <el-table-column prop="belongUser" label="负责人" />
           <el-table-column prop="know" label="知识点" />
           <el-table-column prop="status" label="状态" />
+          <el-table-column prop="text" label="描述" />
           <!-- <el-table-column prop="status" label="是否可见">
             <template #default="scope">
               <el-switch :disabled="scope.row.statusType === '1'" v-model="scope.row.switchShow" active-text="可见" inactive-text="不可见" />
@@ -357,6 +398,9 @@ onMounted(async () => {
         <el-form-item label="项目案例名称" :label-width="formLabelWidth">
           <el-input v-model="form.className"/>
         </el-form-item>
+        <el-form-item label="项目案例描述" :label-width="formLabelWidth">
+          <el-input v-model="form.text" placeholder="请输入项目案例名称"/>
+        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -371,10 +415,16 @@ onMounted(async () => {
         <el-form-item label="课程名" :label-width="formLabelWidth">
           <el-input v-model="pptForm.name"/>
         </el-form-item>
-        <el-form-item label="课件链接" :label-width="formLabelWidth">
-          <el-input v-model="pptForm.docUrl"/>
+        <el-form-item label="课件文档" :label-width="formLabelWidth">
+          <el-upload
+              class=""
+              action=""
+              :show-file-list="false"
+              :http-request="fnUploadRequest">
+            <el-button type="primary">点此上传</el-button>
+          </el-upload>
         </el-form-item>
-        <el-form-item label="视频链接" :label-width="formLabelWidth">
+        <el-form-item label="课程描述" :label-width="formLabelWidth">
           <el-input v-model="pptForm.mp4Url"/>
         </el-form-item>
         <el-form-item label="关联课程名称" :label-width="formLabelWidth">
@@ -397,10 +447,16 @@ onMounted(async () => {
         <el-form-item label="课程名" :label-width="formLabelWidth">
           <el-input v-model="pptForm.name"/>
         </el-form-item>
-        <el-form-item label="课件链接" :label-width="formLabelWidth">
-          <el-input v-model="pptForm.docUrl"/>
+        <el-form-item label="课件文档" :label-width="formLabelWidth">
+          <el-upload
+              class=""
+              action=""
+              :show-file-list="false"
+              :http-request="fnUploadRequest">
+            <el-button type="primary">点此上传</el-button>
+          </el-upload>
         </el-form-item>
-        <el-form-item label="视频链接" :label-width="formLabelWidth">
+        <el-form-item label="课程描述" :label-width="formLabelWidth">
           <el-input v-model="pptForm.mp4Url"/>
         </el-form-item>
         <el-form-item label="关联课程名称" :label-width="formLabelWidth">
@@ -425,16 +481,12 @@ onMounted(async () => {
       <el-table :data="detailPPTList" :border="true">
         <el-table-column prop="name" label="课程名称" />
         <el-table-column prop="know" label="知识点" />
-        <el-table-column prop="docUrl" label="关联内容链接" width="160">
+        <el-table-column prop="docUrl" label="课件文档" width="160">
           <template #default="scope">
-            <el-link type="primary" :href="scope.row.docUrl" target="_blank">文档访问</el-link>
+            <el-button link type="primary" size="small" @click="download(scope.row)">下载文档</el-button>
           </template>
         </el-table-column>
-        <el-table-column prop="mp4Url" label="关联视频">
-          <template #default="scope">
-            <el-link v-if="scope.row.mp4Url !== ''" type="primary" :href="scope.row.mp4Url" target="_blank">点此观看视频</el-link>
-          </template>
-        </el-table-column>
+        <el-table-column prop="mp4Url" label="课程描述" width="400"/>
         <el-table-column fixed="right" label="操作" width="200">
           <template #default="scope">
             <el-button link type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>
