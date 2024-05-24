@@ -27,7 +27,7 @@ course.post('/del', async (req, res) => {
 
 course.post('/edit', async (req, res) => {
   const { body } = req
-  let sql = `update course_list set className='${body.className}',teacherid='${body.teacherid}' where id='${body.id}'`
+  let sql = `update course_list set className='${body.className}',teacherid='${body.teacherid}',text='${body.text}' where id='${body.id}'`
   console.log(sql)
   const database = new DataBase()
   await database.getSqlData(sql)
@@ -57,7 +57,7 @@ course.post('/add', async (req, res) => {
       msg: '此案例名已存在！'
     })
   } else {
-    let sql = `insert into course_list (id,className,statusType,studyNum,classCourse,classCourseNum,teacherid) values ('${new Date().getTime()}','${body.className}','${body.statusType}','0','0','0','${body.teacherid}')`
+    let sql = `insert into course_list (id,className,statusType,studyNum,classCourse,classCourseNum,teacherid,text) values ('${new Date().getTime()}','${body.className}','${body.statusType}','0','0','0','${body.teacherid}','${body.text}')`
     const database = new DataBase()
     await database.getSqlData(sql)
     res.send({

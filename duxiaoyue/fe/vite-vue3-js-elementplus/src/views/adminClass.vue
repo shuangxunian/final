@@ -14,6 +14,7 @@ const courseList = ref([])
 const form = ref({
   className: '',
   teacherName: '',
+  text: '',
   teacherid: '',
   statusType: '2'
 })
@@ -21,6 +22,7 @@ const formLabelWidth = '140px'
 
 const addClass = async function() {
   if (form.value.className === '') return element.message('请输入项目案例名称')
+  if (form.value.text === '') return element.message('请输入项目案例的描述')
   if (form.value.teacherid === '') return element.message('请选择负责老师')
   const { data } = await axios.post('http://localhost:3000/course/add', {
     ...form.value,
@@ -41,6 +43,7 @@ const refreshForm = function() {
   form.value = {
     className: '',
     teacherName: '',
+    text : '',
     teacherid: '',
     statusType: '2'
   }
@@ -188,7 +191,7 @@ onMounted(async() => {
           </div>
         </div>
         <div class="right">
-          <el-button type="primary" @click="addCourseDialog = true">新建课程</el-button>
+          <el-button type="primary" @click="addCourseDialog = true">新建项目案例</el-button>
         </div>
       </div>
       <div class="table">
@@ -198,6 +201,7 @@ onMounted(async() => {
           <el-table-column prop="studyNum" label="收藏人数" />
           <el-table-column prop="classCourse" label="评分" />
           <el-table-column prop="status" label="状态" />
+          <el-table-column prop="text" label="描述" />
           <el-table-column fixed="right" label="操作" width="160">
             <template #default="scope">
               <el-button link type="primary" size="small" @click="editClass(scope.row)">编辑</el-button>
@@ -218,6 +222,9 @@ onMounted(async() => {
       <el-form :model="form">
         <el-form-item label="项目案例名称" :label-width="formLabelWidth">
           <el-input v-model="form.className" placeholder="请输入项目案例名称"/>
+        </el-form-item>
+        <el-form-item label="项目案例描述" :label-width="formLabelWidth">
+          <el-input v-model="form.text" placeholder="请输入项目案例名称"/>
         </el-form-item>
         <el-form-item label="负责老师" :label-width="formLabelWidth">
           <el-select v-model="form.teacherid" placeholder="请选择教师">
