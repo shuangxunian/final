@@ -48,7 +48,7 @@ const download = async(row) => {
 }
 
 function getList() {
-  console.log(finishAllList.value)
+  console.log('finishAllList.value', finishAllList.value)
   const list = finishAllList.value.filter(item => {
     return (
       item.collegename.includes(findCollege.value) &&
@@ -57,6 +57,8 @@ function getList() {
       item.needname?.includes(findNeedName.value)
     )
   })
+  console.log('list',list)
+  console.log('findWord.value', findWord.value)
   if (findWord.value !== '') {
     const tableArr = []
     for (let i = 0; i < list.length; i++) {
@@ -67,6 +69,7 @@ function getList() {
         }
       }
       if (finishArr.length > 0) {
+        console.log('finishArr',finishArr)
         tableArr.push({
           ...list[i],
           finish: finishArr
@@ -89,6 +92,7 @@ function getList() {
         }
       }
       if (finishArr.length > 0) {
+        console.log('finishArr',finishArr)
         tableArr.push({
           ...list[i],
           finish: finishArr
