@@ -188,7 +188,7 @@ async function getWordList() {
     const everyData = []
     for (let i = 0; i < allNeedList.value.length; i++) {
       for (let j = 0; j < userList.value.length; j++) {
-        if (allNeedList.value[i].collegeid === userList.value[j].collegeid) {
+        if (allNeedList.value[i].collegeid === userList.value[j].collegeid && userList.value[j].roletype === 2) {
           everyData.push({
             ...userList.value[j],
             ...allNeedList.value[i],
@@ -265,7 +265,7 @@ onMounted(async() => {
       </div>
     </div>
     <div class="body">
-      <el-table :data="tableData" border style="width: 100%" max-height="600">
+      <el-table :data="tableData" border style="width: 100%" height="500">
         <el-table-column type="expand">
           <template #default="props">
             <div style="padding: 10px;">

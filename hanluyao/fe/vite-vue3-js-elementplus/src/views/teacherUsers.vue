@@ -177,7 +177,7 @@ onMounted(async() => {
       </div>
     </div>
     <div class="body">
-      <el-table :data="tableData" border style="width: 100%" max-height="600">
+      <el-table :data="tableData" border style="width: 100%" height="600">
         <el-table-column prop="id" label="工号"/>
         <el-table-column prop="name" label="姓名" />
         <el-table-column prop="belongClass" label="所属班级" />
@@ -223,6 +223,9 @@ onMounted(async() => {
         </el-form-item>
         <el-form-item label="教师姓名" label-width="100">
           <el-input v-model="form.name" />
+        </el-form-item>
+        <el-form-item label="所属班级" label-width="100">
+          <el-input v-model="form.belongClass" />
         </el-form-item>
         <el-form-item label="密码" label-width="100">
           <el-button link type="primary" size="small" @click="fixPassword">重置密码</el-button>

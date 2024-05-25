@@ -100,7 +100,7 @@ user.post('/fixPassword', async (req, res) => {
 
 user.post('/edit', async (req, res) => {
   const { body } = req
-  let sql = `update user_info set name='${body.name}' where id = '${body.id}'`
+  let sql = `update user_info set name='${body.name}',belongClass='${body.belongClass}' where id = '${body.id}'`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({

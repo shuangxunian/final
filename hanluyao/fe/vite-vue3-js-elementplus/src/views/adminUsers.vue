@@ -332,12 +332,16 @@ onMounted(async() => {
         <el-form-item label="用户姓名" label-width="100">
           <el-input v-model="form.name" />
         </el-form-item>
+        <el-form-item v-if="form.roletype === 2" label="用户班级" label-width="100">
+          <el-input v-model="form.belongClass" />
+        </el-form-item>
         <el-form-item label="身份：" label-width="100">
           <span v-if="form.roletype === 0">管理员</span>
           <span v-if="form.roletype === 1">系主任</span>
           <span v-if="form.roletype === 2">老师</span>
+          <span v-if="form.roletype === 3">督导</span>
         </el-form-item>
-        <el-form-item label="所属学院" label-width="100">
+        <el-form-item v-if="form.roletype !== 3" label="所属学院" label-width="100">
           <el-select
             v-model="form.collegeid"
             placeholder="请选择"
