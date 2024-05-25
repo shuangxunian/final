@@ -25,6 +25,7 @@ const findNeedname = ref('')
 const findWord = ref('')
 const talking = ref('')
 const selectWord = ref({})
+const findCollege = ref('')
 
 function refreshFrom() {
   talking.value = ''
@@ -33,6 +34,7 @@ function refreshFrom() {
 function getList() {
   const list = wordList.value.filter(item => {
     return (
+      item.collegename.includes(findCollege.value) &&
       item.classname.includes(findClass.value) &&
       item.name.includes(findName.value) &&
       item.belongClass.includes(findBelongClass.value) &&
@@ -61,7 +63,6 @@ async function addClass() {
     ElMessage.error('所需文档数量不能为0')
     return
   }
-  // console.log(form.value)
   const { data } = await axios.post('http://localhost:3000/class/add', {
     ...form.value,
     collegeid: collegeid.value
@@ -77,8 +78,6 @@ async function addClass() {
 
 async function editClass() {
   if (talking.value === '') return ElMessage.error('请填写评论')
-  console.log(selectWord.value)
-  console.log(talking.value)
   const { data } = await axios.post('http://localhost:3000/word/addtalk', {
     wordid: selectWord.value.wordid,
     talking: talking.value
@@ -106,7 +105,7 @@ async function getWordList() {
   if (data.code === 2) {
     const classMap = {}
     classList.value.forEach(item => {
-      classMap[item.classid] = item.classname
+      classMap[item.classid] = item
     })
     const needMap = {}
     needList.value.forEach(item => {
@@ -114,7 +113,8 @@ async function getWordList() {
     })
     data.body.forEach(item => {
       item.needname = needMap[item.needid].needname
-      item.classname = classMap[needMap[item.needid].classid]
+      item.classname = classMap[needMap[item.needid].classid].classname
+      item.collegename = classMap[needMap[item.needid].classid].collegename
     })
     const userMap = {}
     userList.value.forEach(item => {
@@ -164,7 +164,6 @@ const download = async(row) => {
 }
 
 const toTalking = async(row) => {
-  console.log(row)
   selectWord.value = row
   editClassDialog.value = true
 }
@@ -187,6 +186,10 @@ onMounted(async() => {
     <div class="header">
       <div class="left">
         <el-row :gutter="20">
+          <el-col :span="4">学院名：</el-col>
+          <el-col :span="8">
+            <el-input v-model="findCollege" style="width: 240px" placeholder="请输入内容" />
+          </el-col>
           <el-col :span="4">所属课程名称：</el-col>
           <el-col :span="8">
             <el-input v-model="findClass" style="width: 240px" placeholder="请输入内容" />
@@ -220,6 +223,7 @@ onMounted(async() => {
             {{ new Date(Number(scoped.row.wordid)).toLocaleString() }}
           </template>
         </el-table-column>
+        <el-table-column prop="collegename" label="所属学院"  width="400"/>
         <el-table-column prop="classname" label="所属课程" width="300" />
         <el-table-column prop="name" label="教师名"  width="400"/>
         <el-table-column prop="belongClass" label="所属班级"  width="400"/>
