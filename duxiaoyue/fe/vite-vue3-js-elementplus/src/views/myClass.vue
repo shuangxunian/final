@@ -386,12 +386,16 @@ onMounted(async () => {
         <el-form-item label="课程名" :label-width="formLabelWidth">
           <el-input v-model="pptForm.name"/>
         </el-form-item>
-        <el-form-item label="课件链接" :label-width="formLabelWidth">
-          <el-input v-model="pptForm.docUrl"/>
-        </el-form-item>
-        <el-form-item label="视频链接" :label-width="formLabelWidth">
-          <el-input v-model="pptForm.mp4Url"/>
-        </el-form-item>
+         <el-table-column prop="docUrl" label="课件文档" width="160">
+          <template #default="scope">
+            <el-button link type="primary" size="small" @click="download(scope.row,1)">下载文档</el-button>
+          </template>
+        </el-table-column>
+        <el-table-column prop="mp4Url" label="视频" width="160">
+          <template #default="scope">
+            <el-button link type="primary" size="small" @click="download(scope.row,2)">下载视频</el-button>
+          </template>
+        </el-table-column>
         <el-form-item label="关联课程名称" :label-width="formLabelWidth">
           <el-input disabled v-model="pptForm.coursename"/>
         </el-form-item>
@@ -443,10 +447,14 @@ onMounted(async () => {
         <el-table-column prop="know" label="知识点" />
         <el-table-column prop="docUrl" label="课件文档" width="160">
           <template #default="scope">
-            <el-button link type="primary" size="small" @click="download(scope.row)">下载文档</el-button>
+            <el-button link type="primary" size="small" @click="download(scope.row,1)">下载文档</el-button>
           </template>
         </el-table-column>
-        <el-table-column prop="mp4Url" label="课程描述" width="400"/>
+        <el-table-column prop="mp4Url" label="视频" width="160">
+          <template #default="scope">
+            <el-button link type="primary" size="small" @click="download(scope.row,2)">下载视频</el-button>
+          </template>
+        </el-table-column>
         <el-table-column fixed="right" label="操作" width="200">
           <template #default="scope">
             <el-button link type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>
