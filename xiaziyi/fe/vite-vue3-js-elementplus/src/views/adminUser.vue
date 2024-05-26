@@ -45,7 +45,19 @@ const editUser = (row) => {
   editUserDialog.value = true
 }
 
-const trueEditUser = () => {}
+const trueEditUser = async () => {
+  const{ data } = await axios.post('http://localhost:3000/user/edit',{
+    ...addUserForm.value
+  })
+  if (data.code === 2) {
+    ElMessage({
+      message: '修改成功',
+      type: 'success',
+    })
+    editUserDialog.value = false
+    await getUserList()
+  }
+}
 const fixPassword = async (row) => {
   const { data } = await axios.post('http://localhost:3000/user/fix', {
     id: row.id,
@@ -172,6 +184,9 @@ onMounted(async () => {
       <el-form :model="addUserForm">
         <el-form-item label="成员工号" :label-width="formLabelWidth" disabled>
           <el-input v-model="addUserForm.id" disabled/>
+        </el-form-item>
+        <el-form-item v-if="addUserForm.roleType == '2'" label="入职年份" :label-width="formLabelWidth">
+          <el-input v-model="addUserForm.joinyear" />
         </el-form-item>
         <el-form-item label="成员姓名" :label-width="formLabelWidth">
           <el-input v-model="addUserForm.name" />
