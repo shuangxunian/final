@@ -59,7 +59,26 @@ function getList() {
   })
   console.log('list',list)
   console.log('findWord.value', findWord.value)
-  if (findWord.value !== '') {
+  // wordname 文档名称 belongClass 所属班级
+  if (findWord.value !== '' && findBelongClass.value !== '') {
+    const tableArr = []
+    for (let i = 0; i < list.length; i++) {
+      const finishArr = [] 
+      for (let j = 0; j < list[i].finish.length; j++) {
+        if (list[i].finish[j].wordname.includes(findWord.value) && list[i].finish[j].belongClass.includes(findBelongClass.value)) {
+          finishArr.push(list[i].finish[j])
+        }
+      }
+      if (finishArr.length > 0) {
+        console.log('finishArr',finishArr)
+        tableArr.push({
+          ...list[i],
+          finish: finishArr
+        })
+      }
+    }
+    tableData.value = tableArr
+  } else if (findWord.value !== '') {
     const tableArr = []
     for (let i = 0; i < list.length; i++) {
       const finishArr = [] 
@@ -76,13 +95,8 @@ function getList() {
         })
       }
     }
-    if (tableArr.length === 0) {
-      tableData.value = []
-    } else {
-      tableData.value = tableArr
-    }
-  }
-  if (findBelongClass.value !== '') {
+    tableData.value = tableArr
+  } else if (findBelongClass.value !== '') {
     const tableArr = []
     for (let i = 0; i < list.length; i++) {
       const finishArr = [] 
@@ -99,13 +113,8 @@ function getList() {
         })
       }
     }
-    if (tableArr.length === 0) {
-      tableData.value = []
-    } else {
-      tableData.value = tableArr
-    }
-  }
-  if(findWord.value === ''&& findBelongClass.value === '') {
+    tableData.value = tableArr
+  } else {
     tableData.value = list
   }
 }

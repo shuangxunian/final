@@ -250,6 +250,9 @@ onMounted(async() => {
         <el-form-item label="项目案例名称" :label-width="formLabelWidth">
           <el-input v-model="form.className" placeholder="请输入项目案例"/>
         </el-form-item>
+        <el-form-item label="项目案例描述" :label-width="formLabelWidth">
+          <el-input v-model="form.text" placeholder="请输入项目案例名称"/>
+        </el-form-item>
         <el-form-item label="负责老师" :label-width="formLabelWidth">
           <el-select v-model="form.teacherid" placeholder="请选择教师">
             <el-option

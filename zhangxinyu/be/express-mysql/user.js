@@ -91,7 +91,7 @@ user.post('/login', async (req, res) => {
   const addDatabase = new DataBase()
   const info = await addDatabase.getSqlData(sql, data)
   if (info.length) {
-    sql = 'INSERT INTO `option_list` (`id`, `userid`, `username`, `optionType`,`wherefrom`) VALUES (?,?,?,?,?,?);'
+    sql = 'INSERT INTO `option_list` (`id`, `userid`, `username`, `optionType`,`wherefrom`) VALUES (?,?,?,?,?);'
     data = [new Date().getTime() + '',body.userid,info[0].username,'登录',body.wherefrom ? body.wherefrom : 'web']
     const addOptionDatabase = new DataBase()
     await addOptionDatabase.getSqlData(sql, data)

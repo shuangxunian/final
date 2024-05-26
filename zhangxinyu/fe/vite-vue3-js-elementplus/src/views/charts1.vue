@@ -60,16 +60,22 @@ const init1 = () => {
   const webList = []
   const appList = []
   const wxList = []
+  let webNum = 0
+  let appNum = 0
+  let wxNum = 0
   belongList.forEach(item => {
-    webList.push(belongMap[item].web)
-    appList.push(belongMap[item].app)
-    wxList.push(belongMap[item]['小程序'])
+    webNum += belongMap[item].web
+    appNum += belongMap[item].app
+    wxNum += belongMap[item]['小程序']
+    webList.push(webNum)
+    appList.push(appNum)
+    wxList.push(wxNum)
   })
 
   // 绘制图表
   let options = {
     title: {
-      text: '用户增长量'
+      text: '用户量'
     },
     tooltip: {
       trigger: 'axis'
@@ -89,7 +95,7 @@ const init1 = () => {
     },
     yAxis: {
       type: 'value',
-      name: '总增长数'
+      name: '总数'
     },
     series: [
       {
