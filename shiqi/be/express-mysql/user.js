@@ -46,7 +46,7 @@ user.post('/login', async (req, res) => {
   const database = new DataBase()
   let info = await database.getSqlData(sql)
   if (info.length !== 0) {
-    if (info[0].imgUrl !== '') {
+    if (body.imgUrl !== '') {
       const { data } = await axios.post('https://api-cn.faceplusplus.com/facepp/v3/compare', qs.stringify({
         api_key: process.env.APIKey,
         api_secret: process.env.APISecret,
