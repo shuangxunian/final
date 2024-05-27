@@ -81,7 +81,7 @@ const fnUploadRequest = async function (options) {
 onMounted(async() => {
   const { data } = await axios.post('http://localhost:3000/date/today', {})
   console.log(data)
-  if(data.info.length) {
+  if(data.info?.length) {
     flag.value = true
   }
 })

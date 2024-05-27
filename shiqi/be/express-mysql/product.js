@@ -38,6 +38,30 @@ product.post('/add', async (req, res) => {
   }
 })
 
+product.post('/edit', async (req, res) => {
+  const { body } = req
+  let sql = `select * from product_list where name='${body.name}' and belong='${body.belong}'`
+  const database = new DataBase()
+  let info = await database.getSqlData(sql)
+  if (info.length !== 0) {
+    res.send({
+      code: 4,
+      msg: '此厂家生成的此药已存在，请检查！'
+    })
+  } else {
+    sql = `update product_list set name='${body.name}',belong='${body.belong}' where id='${body.id}'`
+    const setDatabase = new DataBase()
+    await setDatabase.getSqlData(sql)
+    sql = `insert into option_list (id, userid, optionType,productid,productname,productbelong) values ('${new Date().getTime()}','${body.userid}','修改产品','${body.id}','${body.name}','${body.belong}')`
+    const addOptionDatabase = new DataBase()
+    await addOptionDatabase.getSqlData(sql)
+    res.send({
+      code: 2,
+      msg: ''
+    })
+  }
+})
+
 product.post('/del', async (req, res) => {
   const { body } = req
   let sql = `delete from product_list where id='${body.id}'`

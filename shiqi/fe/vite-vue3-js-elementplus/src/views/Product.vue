@@ -6,6 +6,7 @@ import { ElMessage } from 'element-plus'
 const isSelf = ref(false)
 const findData = ref('')
 const dialogAddProduct = ref(false)
+const dialogEditProduct = ref(false)
 const tableData = ref([])
 const addForm = ref({
   name: '',
@@ -65,8 +66,28 @@ const getTableData = async function () {
   loading.value = false
 }
 
-const editClick = async function (scoped) {
-  console.log(scoped.$index)
+const editClick = async function (row) {
+  dialogEditProduct.value = true
+  addForm.value.id = row.id
+  addForm.value.name = row.name
+  addForm.value.belong = row.belong
+}
+
+const editProduct = async function () {
+  if (addForm.value.name === '') return ElMessage.error('请输入药品名称')
+  if (addForm.value.belong === '') return ElMessage.error('请输入药品所属厂家')
+  const { data } = await axios.post('http://localhost:3000/product/edit', {
+    ...addForm.value,
+    userid: userid.value
+  })
+  if (data.code === 4) return ElMessage.error(data.msg)
+  ElMessage({
+    message: '添加成功！',
+    type: 'success',
+  })
+  refreshAddForm()
+  dialogEditProduct.value = false
+  getTableData()
 }
 // const delClick = async function (scoped) {
 //   console.log(scoped.$index)
@@ -100,7 +121,7 @@ onMounted(async() => {
         <el-button @click="getList">筛选</el-button>
       </div>
       <div class="right">
-        <el-button type="primary" @click="dialogAddProduct.value = true">添加产品</el-button>
+        <el-button type="primary" @click="dialogAddProduct = true">添加产品</el-button>
       </div>
     </div>
     <div class="body">
@@ -136,6 +157,27 @@ onMounted(async() => {
         <div class="dialog-footer">
           <el-button @click="doNotAddProduct">取消</el-button>
           <el-button type="primary" @click="addProduct">
+            确定
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
+    <el-dialog v-model="dialogEditProduct" title="添加/修改产品" width="500">
+      <el-form :model="addForm">
+        <el-form-item label="药品id" label-width="100">
+          <el-input v-model="addForm.id" placeholder="系统自动生成" disabled/>
+        </el-form-item>
+        <el-form-item label="药品名称" label-width="100">
+          <el-input v-model="addForm.name" placeholder="请输入药品名称"/>
+        </el-form-item>
+        <el-form-item label="所属厂家" label-width="100">
+          <el-input v-model="addForm.belong" placeholder="请输入所属厂家"/>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="doNotAddProduct">取消</el-button>
+          <el-button type="primary" @click="editProduct">
             确定
           </el-button>
         </div>
