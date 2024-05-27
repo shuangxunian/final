@@ -80,6 +80,7 @@ const getDetail = async function(row) {
   if (data.code === 2) {
     detailPPTDialog.value = true
     nowSelectRow.value = row
+    console.log(nowSelectRow.value.teacherid === userid.value)
     detailPPTList.value = data.body
   }
 }
@@ -514,7 +515,7 @@ onMounted(async () => {
 
     <el-dialog v-model="detailPPTDialog" title="案例详情" fullscreen @close="refreshForm">
       <div class="detail-header">
-        <el-button type="primary" @click="addPPT">添加课程</el-button>
+        <el-button v-if="nowSelectRow.value.teacherid === userid" type="primary" @click="addPPT">添加课程</el-button>
       </div>
       <el-table :data="detailPPTList" :border="true">
         <el-table-column prop="name" label="课程名称" />
@@ -529,10 +530,10 @@ onMounted(async () => {
             <el-button link type="primary" size="small" @click="download(scope.row,2)">下载视频</el-button>
           </template>
         </el-table-column>
-        <el-table-column fixed="right" label="操作" width="200">
+        <el-table-column  v-if="nowSelectRow.value.teacherid === userid" fixed="right" label="操作" width="200">
           <template #default="scope">
-            <el-button link type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDelDetail(scope.row)">
+            <el-button  link type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>
+            <el-popconfirm link type="primary" size="small"  confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDelDetail(scope.row)">
               <template #reference>
                 <el-button link type="danger" size="small">删除</el-button>
               </template>

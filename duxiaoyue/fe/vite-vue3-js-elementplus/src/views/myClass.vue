@@ -455,17 +455,16 @@ onMounted(async () => {
             <el-button link type="primary" size="small" @click="download(scope.row,2)">下载视频</el-button>
           </template>
         </el-table-column>
-        <el-table-column fixed="right" label="操作" width="200">
+        <!-- <el-table-column fixed="right" label="操作" width="200">
           <template #default="scope">
-            <el-button link type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-popconfirm confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDelDetail(scope.row)">
+            <el-button v-if="nowSelectRow.value.teacherid === userid" link type="primary" size="small" @click="handleEdit(scope.row)">编辑</el-button>
+            <el-popconfirm v-if="nowSelectRow.value.teacherid === userid" confirm-button-text="确认" cancel-button-text="取消" title="确认删除吗" @confirm="makeSureDelDetail(scope.row)">
               <template #reference>
                 <el-button link type="danger" size="small">删除</el-button>
               </template>
             </el-popconfirm>
-            <!-- <el-button link type="primary" size="small" @click="handleDelete(scope.row)">删除</el-button> -->
           </template>
-        </el-table-column>
+        </el-table-column> -->
       </el-table>
     </el-dialog>
 
