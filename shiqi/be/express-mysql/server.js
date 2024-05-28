@@ -63,15 +63,13 @@ const refreshData = async() => {
         await updateProductDatabase.getSqlData(sql)
       }
     }
-    // sql = `select * from sell_list where productID = '${info[i].id}'`
-    // const getSellDatabase = new DataBase()
-    // const sellList = await getSellDatabase.getSqlData(sql)
-    // console.log('haveNum1',haveNum)
-    // for (let j = 0; j < sellList.length; j++) {
-    //   haveNum -= Number(sellList[j].optionNum)
-    // }
-    // console.log('haveNum2',haveNum)
-    sql = `update product_list set haveNum='${haveNum}'  where id='${info[i].id}'`
+    sql = `select * from sell_list where productID = '${info[i].id}'`
+    const getSellDatabase = new DataBase()
+    const sellList = await getSellDatabase.getSqlData(sql)
+    for (let j = 0; j < sellList.length; j++) {
+      haveNum -= Number(sellList[j].optionNum)
+    }
+    sql = `update product_list set haveNum='${haveNum < 0 ? 0 : haveNum}'  where id='${info[i].id}'`
     const updateCRMDatabase = new DataBase()
     await updateCRMDatabase.getSqlData(sql)
   }

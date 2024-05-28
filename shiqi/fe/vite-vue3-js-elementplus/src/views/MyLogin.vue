@@ -35,12 +35,12 @@ const beforeAvatarUpload = function (file) {
 }
 
 async function login () {
-  if (flag.value) {
-    if (loginForm.value.imgUrl === '') {
-      ElMessage.error('请上传照片')
-      return
-    }
-  }
+  // if (flag.value) {
+  //   if (loginForm.value.imgUrl === '') {
+  //     ElMessage.error('请上传照片')
+  //     return
+  //   }
+  // }
   const { data } = await axios.post('http://localhost:3000/user/login', loginForm.value)
   if (data.code === 2) {
     window.sessionStorage.setItem('id', loginForm.value.id)

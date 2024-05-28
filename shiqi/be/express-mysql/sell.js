@@ -65,7 +65,7 @@ const refreshData = async() => {
     for (let j = 0; j < sellList.length; j++) {
       haveNum -= Number(sellList[j].optionNum)
     }
-    sql = `update product_list set haveNum='${haveNum}'  where id='${info[i].id}'`
+    sql = `update product_list set haveNum='${haveNum < 0 ? 0 : haveNum}'  where id='${info[i].id}'`
     const updateCRMDatabase = new DataBase()
     await updateCRMDatabase.getSqlData(sql)
   }
@@ -129,12 +129,13 @@ sell.post('/add', async (req, res) => {
   }
   
   for (let i = 0; i < endDateList.length; i++) {
+    if (endDateList[i].nowNum === 0) continue
     if (endDateList[i].nowNum >= body.optionNum) {
-
       sql = 'INSERT INTO `sell_list` (`productID`, `patientName`, `phone`, `optionNum`, `id`, `productLot`) VALUES (?,?,?,?,?,?);'
       data = [body.productID,body.patientName,body.phone,body.optionNum,new Date().getTime(),endDateList[i].productLot]
       const setDatabase = new DataBase()
       await setDatabase.getSqlData(sql, data)
+      body.optionNum = 0
       sql = `insert into option_list (id, userid, optionType,productname,productbelong,productLot,optionNum) values ('${new Date().getTime()}','${body.userID}','出库','${body.productname}','${body.productbelong}','${endDateList[i].productLot}','${body.optionNum}')`
       const addOptionDatabase = new DataBase()
       await addOptionDatabase.getSqlData(sql)
