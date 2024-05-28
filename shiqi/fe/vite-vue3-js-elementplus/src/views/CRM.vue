@@ -75,8 +75,8 @@ const getCRMList = async function () {
     data.info.forEach(item => {
       CRMList.value.push({
         ...item,
-        name: productMap[item.productID].name,
-        belong: productMap[item.productID].belong
+        name: productMap[item.productID]?productMap[item.productID].name:'已删除',
+        belong: productMap[item.productID]?productMap[item.productID].belong:'已删除'
       })
     })
     tableData.value = CRMList.value

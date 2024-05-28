@@ -147,8 +147,16 @@ onMounted(() => {
     <div class="body">
       <el-table v-loading="loading" :data="tableData" border style="width: 100%" max-height="600">
         <el-table-column prop="productLot" label="产品批号" width="300" />
-        <el-table-column prop="name" label="药品名称" width="300" />
-        <el-table-column prop="belong" label="所属厂家" width="300" />
+        <el-table-column prop="name" label="药品名称" width="300">
+          <template #default="scope">
+            <span>{{ scope.row.name || '已删除' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="belong" label="所属厂家" width="300">
+          <template #default="scope">
+            <span>{{ scope.row.belong || '已删除' }}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="patientName" label="病人姓名" width="200" />
         <el-table-column prop="phone" label="病人电话" width="200" />
         <el-table-column prop="optionNum" label="出库量" />
