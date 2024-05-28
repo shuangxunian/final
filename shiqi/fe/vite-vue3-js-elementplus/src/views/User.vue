@@ -19,7 +19,15 @@ const addForm = ref({
 })
 const formLabelWidth = ref(100)
 
-const getList = function () {}
+const getList = function () {
+  tableData.value = []
+  userList.value.forEach(item => {
+    if (item.id.indexOf(findData.value) !== -1
+    || item.name.indexOf(findData.value) !== -1) {
+      tableData.value.push(item)
+    }
+  })
+}
 
 const editData = function (row) {
   addForm.value = row

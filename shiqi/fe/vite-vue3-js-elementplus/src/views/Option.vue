@@ -10,6 +10,19 @@ const userList = ref([])
 const optionList = ref([])
 
 
+const getList = function () {
+  tableData.value = []
+  optionList.value.forEach(item => {
+    if (item.username.indexOf(findData.value) !== -1
+    || item.option.indexOf(findData.value) !== -1
+    || item.productLot.indexOf(findData.value) !== -1
+    || item.name.indexOf(findData.value) !== -1
+    || item.belong.indexOf(findData.value) !== -1) {
+      tableData.value.push(item)
+    }
+  })
+}
+
 const getProductList = async function () {
   const { data } = await axios.post('http://localhost:3000/product/allData', {})
   if (data.code === 2) {
