@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import Papa from 'papaparse'
+import { pinyin } from "pinyin-pro";
 
 const textData = ref([])
 const fileList = ref([])
@@ -189,6 +190,11 @@ onMounted(async() => {
           </template>
         </el-table-column>
         <el-table-column prop="china" label="中文词语" width="180" />
+        <el-table-column prop="china" label="拼音" width="180">
+          <template #default="scope">
+            {{ pinyin(scope.row.china || '') }}
+          </template>
+        </el-table-column>
         <el-table-column prop="pinyin" label="词语句子" />
         <el-table-column fixed="right" label="操作" width="180">
           <template #default="scope">

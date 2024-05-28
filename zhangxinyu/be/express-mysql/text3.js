@@ -1,3 +1,4 @@
+const { pinyin } = require('pinyin-pro');
 const express = require('express')
 const DataBase = require('./mysql')
 
@@ -60,7 +61,8 @@ text3.post('/find', async (req, res) => {
   if (info.length) {
     res.send({
       code: 2,
-      info
+      info,
+      pinyin: pinyin(info[0].china)
     })
   } else {
     res.send({

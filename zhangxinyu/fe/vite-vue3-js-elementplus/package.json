@@ -11,6 +11,7 @@
   "dependencies": {
     "@amap/amap-jsapi-loader": "^1.0.1",
     "@element-plus/icons-vue": "^2.3.1",
+    "ali-oss": "^6.20.0",
     "amap": "^1.0.7",
     "axios": "^1.6.7",
     "echarts": "^5.5.0",
@@ -18,6 +19,7 @@
     "less": "^4.2.0",
     "papaparse": "^5.4.1",
     "pinia": "^2.1.7",
+    "pinyin-pro": "^3.21.0",
     "vue": "^3.4.15",
     "vue-router": "^4.2.5"
   },
