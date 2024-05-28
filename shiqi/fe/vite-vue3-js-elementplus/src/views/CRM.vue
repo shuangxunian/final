@@ -149,7 +149,16 @@ const getTableData = async function () {
   await getCRMList()
 }
 
-const getList = async function () {}
+const getList = async function () {
+  tableData.value = []
+  CRMList.value.forEach(item => {
+    if (item.productLot.indexOf(findData.value) !== -1
+    || item.name.indexOf(findData.value) !== -1
+    || item.belong.indexOf(findData.value) !== -1) {
+      tableData.value.push(item)
+    }
+  })
+}
 
 const handleClick = async function () {}
 
