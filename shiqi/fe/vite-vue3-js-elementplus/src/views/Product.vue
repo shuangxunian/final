@@ -8,6 +8,7 @@ const findData = ref('')
 const dialogAddProduct = ref(false)
 const dialogEditProduct = ref(false)
 const tableData = ref([])
+const productList = ref([])
 const addForm = ref({
   name: '',
   belong: ''
@@ -15,7 +16,15 @@ const addForm = ref({
 const loading = ref(true)
 const userid = ref('')
 
-const getList = function () {}
+const getList = function () {
+  tableData.value = []
+  productList.value.forEach(item => {
+    if (item.name.indexOf(findData.value) !== -1
+    || item.belong.indexOf(findData.value) !== -1) {
+      tableData.value.push(item)
+    }
+  })
+}
 
 const refreshAddForm = function () {
   addForm.value.id = ''
@@ -62,6 +71,7 @@ const getTableData = async function () {
   const { data } = await axios.post('http://localhost:3000/product/allData', {})
   if (data.code === 2) {
     tableData.value = data.info
+    productList.value = data.info
   }
   loading.value = false
 }

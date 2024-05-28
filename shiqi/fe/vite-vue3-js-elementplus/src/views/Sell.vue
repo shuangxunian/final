@@ -6,6 +6,7 @@ import { ElMessage } from 'element-plus'
 const userid = ref('')
 const findData = ref('')
 const tableData = ref([])
+const allData = ref([])
 const productList = ref([])
 const CRMList = ref([])
 const sellList = ref([])
@@ -26,7 +27,18 @@ const loading = ref(true)
 //   })
 // }
 
-const getList = function () {}
+const getList = function () {
+  tableData.value = []
+  allData.value.forEach(item => {
+    if (item.productLot.indexOf(findData.value) !== -1
+    || item.name.indexOf(findData.value) !== -1
+    || item.belong.indexOf(findData.value) !== -1
+    || item.patientName.indexOf(findData.value) !== -1
+    || item.phone.indexOf(findData.value) !== -1) {
+      tableData.value.push(item)
+    }
+  })
+}
 
 const clearFrom = function () {
   addForm.value = {
@@ -97,6 +109,7 @@ const getProductList = async function () {
       name,
       belong
     })
+    allData.value = tableData.value
   })
   loading.value = false
 }

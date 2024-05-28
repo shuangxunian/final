@@ -91,7 +91,7 @@ function logout() {
     .left {
       width: 240px;
       height: 100%;
-      background-color: #fff
+      background-color: #fff;
     }
     .right {
       width: calc(100% - 240px);
