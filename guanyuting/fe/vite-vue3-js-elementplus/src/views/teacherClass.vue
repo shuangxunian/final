@@ -74,7 +74,14 @@ function endAddStudent() {
   }
 }
 
-function getList() {}
+function getList() {
+  tableData.value = []
+  classList.value.forEach(item => {
+    if (item.name.indexOf(findData.value) !== -1) {
+      tableData.value.push(item)
+    }
+  })
+}
 
 function addClass() {
   dialogFormVisible.value = true
@@ -87,11 +94,16 @@ function doNotPush() {
 
 async function pushUser() {
   if (form.value.name === '') return ElMessage.error('请输入课程名')
-  if (form.value.teacher === '') return ElMessage.error('请输入教师名')
-  // const { data } = await axios.post('http://localhost:3000/user/add', {})
-  // 判断一下老师是否存在
-  refreshFrom()
-  dialogFormVisible.value = false
+  form.value.teacherid = userid.value
+  // if (form.value.teacher === '') return ElMessage.error('请输入教师名')
+  const { data } = await axios.post('http://localhost:3000/class/add', form.value)
+  if (data.code === 2) {
+    dialogFormVisible.value = false
+    ElMessage.success('添加成功')
+    getClassList()
+  } else {
+    ElMessage.error(data.msg)
+  }
 }
 
 function editData(scoped) {
@@ -483,13 +495,10 @@ onMounted(async() => {
         </el-table-column>
       </el-table>
     </div>
-    <el-dialog v-model="dialogFormVisible" title="添加用户" width="500">
+    <el-dialog v-model="dialogFormVisible" title="添加课程" width="500">
       <el-form :model="form">
         <el-form-item label="课程名" label-width="100">
           <el-input v-model="form.name" placeholder="请填写课程名"/>
-        </el-form-item>
-        <el-form-item label="教师名" label-width="100">
-          <el-input v-model="form.teacher" placeholder="请填写教师名"/>
         </el-form-item>
         <el-form-item label="选课人数" label-width="100">
           <el-input v-model="form.num" disabled placeholder="请填写选课人数"/>

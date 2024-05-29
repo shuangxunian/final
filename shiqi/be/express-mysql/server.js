@@ -74,6 +74,7 @@ const refreshData = async() => {
     await updateCRMDatabase.getSqlData(sql)
   }
   console.log('数据库刷新完毕')
+  console.log('已在库存中删除过期药品')
 }
 
 schedule.scheduleJob('10 0 0 * * *', () => {

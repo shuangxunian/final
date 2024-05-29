@@ -58,7 +58,7 @@ talk.post('/begin', async (req, res) => {
 
 talk.post('/add', async (req, res) => {
   const { body } = req
-  let sql = `insert into data_list (id,talk,AIResult,UserResult) values ('${new Date().getTime()}','${body.talk}','${body.AIResult}','${body.UserResult}')`
+  let sql = `insert into data_list (id,talk,AIResult,UserResult,isModel) values ('${new Date().getTime()}','${body.talk}','${body.AIResult}','${body.UserResult}','0')`
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({
