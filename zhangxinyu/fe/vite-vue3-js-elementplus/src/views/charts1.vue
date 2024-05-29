@@ -101,19 +101,16 @@ const init1 = () => {
       {
         name: 'web',
         type: 'line',
-        stack: 'Total',
         data: webList
       },
       {
         name: 'app',
         type: 'line',
-        stack: 'Total',
         data: appList
       },
       {
         name: '小程序',
         type: 'line',
-        stack: 'Total',
         data: wxList
       }
     ]
