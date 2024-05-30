@@ -57,7 +57,13 @@ user.post('/add', async (req, res) => {
       msg: '此账户已存在！'
     })
   } else {
-    sql = `insert into user_info (id,name,password,roletype,collegeid,belongClass) values ('${body.id}','${body.name}','123456','${body.roletype}','${body.collegeid}','${body.belongClass}')`
+    if (body.belongClass && body.collegeid) {
+      sql = `insert into user_info (id,name,password,roletype,collegeid,belongClass) values ('${body.id}','${body.name}','123456','${body.roletype}','${body.collegeid}','${body.belongClass}')`
+    } else if(body.collegeid) {
+      sql = `insert into user_info (id,name,password,roletype,collegeid) values ('${body.id}','${body.name}','123456','${body.roletype}','${body.collegeid}')`
+    } else {
+      sql = `insert into user_info (id,name,password,roletype) values ('${body.id}','${body.name}','123456','${body.roletype}')`
+    }
     const addDatabase = new DataBase()
     await addDatabase.getSqlData(sql)
     res.send({
@@ -100,7 +106,14 @@ user.post('/fixPassword', async (req, res) => {
 
 user.post('/edit', async (req, res) => {
   const { body } = req
-  let sql = `update user_info set name='${body.name}',belongClass='${body.belongClass}' where id = '${body.id}'`
+  let sql = ''
+  if (body.roletype === 1) {
+    sql = `update user_info set name='${body.name}',collegeid='${body.collegeid}' where id = '${body.id}'`
+  } else if (body.roletype === 2) {
+    sql = `update user_info set name='${body.name}',collegeid='${body.collegeid}',belongClass='${body.belongClass}' where id = '${body.id}'`
+  } else if (body.roletype === 3) {
+    sql = `update user_info set name='${body.name}' where id = '${body.id}'`
+  }
   const database = new DataBase()
   await database.getSqlData(sql)
   res.send({
