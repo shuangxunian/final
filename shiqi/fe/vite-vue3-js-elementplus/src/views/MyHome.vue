@@ -34,6 +34,9 @@ onMounted(() => {
       },{
         value: "user",
         name: "用户管理"
+      },{
+        value: "newUser",
+        name: "人脸识别"
       },
       {
         value: "option",

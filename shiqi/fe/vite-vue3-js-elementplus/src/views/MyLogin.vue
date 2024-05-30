@@ -104,7 +104,7 @@ onMounted(async() => {
         <el-form-item prop="password" label="个人密码" >
           <el-input v-model="loginForm.password" placeholder="请输入密码" type="password"></el-input>
         </el-form-item>
-        <el-form-item v-if="flag" label="个人照片" >
+        <!-- <el-form-item v-if="flag" label="个人照片" >
           <el-upload
               class=""
               action=""
@@ -112,11 +112,9 @@ onMounted(async() => {
               :http-request="fnUploadRequest"
               :on-success="handleAvatarSuccess"
               :before-upload="beforeAvatarUpload">
-            <!-- <el-image v-if="loginForm.imgUrl" :src="loginForm.imgUrl" class="avatar" alt=""/> -->
             <el-button :disabled="loginForm.imgUrl !== ''" type="primary">点此上传</el-button>
-            <!-- <i v-else class="el-icon-plus avatar-uploader-icon"></i> -->
           </el-upload>
-        </el-form-item>
+        </el-form-item> -->
         <!-- 按钮区域 -->
         <el-form-item>
           <el-button type="primary" @click="login">登录</el-button>
