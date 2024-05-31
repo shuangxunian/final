@@ -25,7 +25,7 @@ test.post('/add', async (req, res) => {
       msg: '此考试名已存在！'
     })
   } else {
-    sql = `insert into test_list (id,name,questionStr,knowStr) values ('${new Date().getTime()}','${body.name}','${body.questionList.join(',')}', '${body.knowList.join(',')}')`
+    sql = `insert into test_list (id,name,questionStr,knowStr,isNew) values ('${new Date().getTime()}','${body.name}','${body.questionList.join(',')}', '${body.knowList.join(',')}','false')`
     const addDatabase = new DataBase()
     await addDatabase.getSqlData(sql)
     res.send({
