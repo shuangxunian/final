@@ -211,6 +211,7 @@ onMounted(async () => {
         <el-table-column prop="userid" label="用户ID"/>
         <el-table-column prop="username" label="用户昵称"/>
         <el-table-column prop="optionTime" label="使用次数"/>
+        <el-table-column prop="sex" label="性别"/>
         <el-table-column prop="birthday" label="出生年份">
           <template #default="scope">
             {{ Number((scope.row.birthday).substring(0, 4))}}

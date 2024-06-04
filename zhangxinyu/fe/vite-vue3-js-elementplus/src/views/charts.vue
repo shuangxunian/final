@@ -12,6 +12,7 @@ let chart1 = null
 let chart2 = null
 let chart3 = null
 let chart4 = null
+let chart5 = null
 
 
 const getTime = (time) => {
@@ -57,6 +58,7 @@ const init = async() => {
   await init2()
   await init3()
   await init4()
+  await init5()
 }
 
 const init1 = () => {
@@ -231,6 +233,48 @@ const init4 = async() => {
   chart4.setOption(options);
 }
 
+
+const init5 = async() => {
+  // 基于准备好的dom，初始化echarts实例
+  chart5 = echarts.init(document.getElementById("myEcharts5"));
+  let dataMap = {}
+  userList.value.forEach(item => {
+    if (dataMap[item.sex]) {
+      dataMap[item.sex]++
+    } else {
+      dataMap[item.sex] = 1
+    }
+  })
+  let xAxisData = []
+  let seriesData = []
+
+  for (let key in dataMap) {
+    xAxisData.push(key)
+    seriesData.push(dataMap[key])
+  }
+  // 绘制图表
+  let options = {
+    title: {
+      text: "年龄分布",
+    },
+    tooltip: {},
+    xAxis: {
+      data: xAxisData,
+    },
+    yAxis: {},
+    series: [
+      {
+        name: "年龄",
+        type: "bar",
+        data: seriesData,
+      },
+    ],
+  };
+  // 渲染图表
+  chart5.setOption(options);
+}
+
+
 onMounted(async () => {
   await getUserList()
   await getOptionList()
@@ -242,6 +286,7 @@ onUnmounted(() => {
   chart2?.dispose()
   chart3?.dispose()
   chart4?.dispose()
+  chart5?.dispose()
 })
 
 
@@ -259,10 +304,13 @@ onUnmounted(() => {
           <div id="myEcharts2" :style="{ width: '500px', height: '300px' }"></div>
         </div>
         <div>
-          <div id="myEcharts3" :style="{ width: '500px', height: '300px' }"></div>
+          <div id="myEcharts3" :style="{ width: '300px', height: '300px' }"></div>
         </div>
         <div>
-          <div id="myEcharts4" :style="{ width: '500px', height: '300px' }"></div>
+          <div id="myEcharts4" :style="{ width: '300px', height: '300px' }"></div>
+        </div>
+        <div>
+          <div id="myEcharts5" :style="{ width: '300px', height: '300px' }"></div>
         </div>
       </div>
     </div>
